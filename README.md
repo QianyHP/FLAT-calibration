@@ -1,6 +1,6 @@
 # BF-SAC：昂贵交通仿真的代理辅助标定
 
-面向 **固定 SUMO 仿真预算**（101 次：60 次 LHS + 41 次序贯 LCB）的行为指纹代理辅助标定（Behavioral Fingerprint Surrogate-Assisted Calibration, **BF-SAC**）开源实现，用于标定 SUMO 数字孪生微观参数。
+面向 **固定 SUMO 仿真预算** 的行为指纹代理辅助标定（Behavioral Fingerprint Surrogate-Assisted Calibration, **BF-SAC**）开源实现，用于标定 SUMO 数字孪生微观参数。
 
 ## 仓库结构
 
@@ -13,15 +13,13 @@
 | [`outputs/results/`](outputs/results/) | 对比 CSV 与 `comparison_cache/*_b101.json` |
 | [`docs/EXPERIMENT.md`](docs/EXPERIMENT.md) | 实验协议（标定 + 对比 + 作图） |
 
-学位论文专用实验（改造、SHAP、相似度等）在 `_local_archive/`（已 gitignore，不随本仓库发布）。
-
 ## 研究场景
 
 六个异构场景：
 
 `Tianjin`、`Changchun`、`Xian`、`YTDJ`、`RML`、`XAM-N6`
 
-（三个 SIND 信号交叉口 + 三个 UTE 快速路场景；**不含** 已移除的 Chongqing。）
+（三个 SIND 信号交叉口 + 三个 UTE 快速路场景）
 
 ## 环境要求
 
@@ -93,8 +91,8 @@ python code/experiments/check_sumo_scenes.py
 
 ## 数据集
 
-- [SIND](https://github.com/SIND-NUAA) — 信号交叉口轨迹
-- UTE — 城市快速路 Frenet 轨迹（见 `data/README.md`）
+- [SIND](https://github.com/SOTIF-AVLab/SinD) — 信号交叉口轨迹
+- [UTE](https://github.com/Ruyi-Feng/Ubiquitous-Traffic-Eye) — 城市快速路轨迹
 
 使用原始数据请遵守各数据提供方许可协议。
 
