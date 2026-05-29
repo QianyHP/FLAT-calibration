@@ -1,6 +1,6 @@
 # 数据目录说明
 
-本目录存放 BF-SAC 标定与对比实验所需的原始轨迹、SUMO 场景配置及标定结果。大体积原始 CSV / 仿真输出默认由 `.gitignore` 排除，请按下列步骤在本地准备。
+本目录存放 BF-SAC 标定与对比实验所需的原始轨迹、SUMO 场景配置及标定结果。
 
 ## 目录结构
 
@@ -9,8 +9,7 @@
 | `raw_data/SIND/{城市}/` | 交叉口轨迹、`map.osm`、`sumo/*.xml`（天津、长春、西安） |
 | `raw_data/UTE/{场景}/` | 快速路 `frenet.csv`、`sumo/*.xml`（YTDJ、RML、XAM-N6） |
 | `processed_data/calibration/` | BF-SAC 标定 JSON、`calibration_summary.csv` |
-| `processed_data/all_cities_od_stats.csv` | 预处理附属统计（可选） |
-| `external_data/SinD/` | SinD 仓库克隆（含西安等发布包） |
+| `processed_data/all_cities_od_stats.csv` | 预处理附属统计 |
 
 上游镜像（可选，不提交 git）：
 
@@ -70,7 +69,7 @@ python code/preprocessing/build_xam_sumo.py
 
 ## 对比实验结果（release 数据包）
 
-见 `outputs/results/`（由 `run_comparison.py` 生成，本仓库 release 已提交部分结果）：
+见 `outputs/results/`（由 `run_comparison.py` 生成）：
 
 - `comparison_summary.csv` / `comparison_convergence.csv`
 - `comparison_cache/{场景}_{方法}_b101.json`
