@@ -1,0 +1,34 @@
+{
+  "scene": "RML",
+  "description": "城市快速路入口匝道汇入与车道收缩（长沙东二环，Lane Drop 场景）",
+  "total_length_m": 220,
+  "key_points_m": {
+    "isolation_end": 25,
+    "lane_drop_start": 165,
+    "merge_window_m": 140
+  },
+  "lane_config": {
+    "main_lanes": [
+      1,
+      2,
+      3
+    ],
+    "ramp_lane": [
+      4
+    ]
+  },
+  "flows_vph": {
+    "main_through": 4575,
+    "ramp_merge": 2012
+  },
+  "sim_end_s": 300,
+  "verification": {
+    "departed": 362,
+    "arrived": 362
+  },
+  "sumo_files": {
+    "net": "C:\\Users\\10550\\Desktop\\26毕论项目\\data\\raw_data\\UTE\\RML\\sumo\\rml.net.xml",
+    "rou": "C:\\Users\\10550\\Desktop\\26毕论项目\\data\\raw_data\\UTE\\RML\\sumo\\rml.rou.xml",
+    "sumocfg": "C:\\Users\\10550\\Desktop\\26毕论项目\\data\\raw_data\\UTE\\RML\\sumo\\rml.sumocfg"
+  }
+}

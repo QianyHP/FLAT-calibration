@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='utf-8'?>
+<nodes>
+    <node id="bot_start_main" x="0" y="-4.8" />
+    <node id="bot_start_ramp" x="0" y="-12.8" />
+    <node id="bot_merge" x="15" y="-8.0" />
+    <node id="bot_diverge" x="125" y="-8.0" />
+    <node id="bot_end_main" x="140" y="-4.8" />
+    <node id="bot_end_ramp" x="140" y="-12.8" />
+    <node id="top_start_main" x="140" y="4.8" />
+    <node id="top_start_ramp" x="140" y="12.8" />
+    <node id="top_merge" x="125" y="8.0" />
+    <node id="top_diverge" x="15" y="8.0" />
+    <node id="top_end_main" x="0" y="4.8" />
+    <node id="top_end_ramp" x="0" y="12.8" />
+</nodes>

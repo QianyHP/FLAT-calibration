@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='utf-8'?>
+<routes>
+    <vType id="car" accel="1.60" decel="2.96" sigma="0.85" length="5.0" maxSpeed="22.22" tau="0.50" minGap="4.00" speedFactor="1.17" lcStrategic="2.33" lcCooperative="0.35" lcAssertive="2.11" lcSpeedGain="2.49" />
+    <vType id="car_ramp" accel="1.60" decel="2.96" sigma="0.85" length="5.0" maxSpeed="11.11" tau="0.50" minGap="4.00" speedFactor="1.17" lcStrategic="2.33" lcCooperative="0.35" lcAssertive="2.11" lcSpeedGain="2.49" />
+
+    
+    <route id="r_N_through" edges="top_main_in top_weave top_main_out" />
+    <flow id="f_N_through" type="car" route="r_N_through" begin="0" end="329" vehsPerHour="2929" departLane="best" />
+
+    
+    <route id="r_N_weave_enter" edges="top_ramp_in top_weave top_main_out" />
+    <flow id="f_N_weave_enter" type="car_ramp" route="r_N_weave_enter" begin="0" end="329" vehsPerHour="1104" departLane="free" />
+
+    
+    <route id="r_N_weave_exit" edges="top_main_in top_weave top_ramp_out" />
+    <flow id="f_N_weave_exit" type="car_ramp" route="r_N_weave_exit" begin="0" end="329" vehsPerHour="842" departLane="free" />
+
+    
+    <route id="r_N_ramp_through" edges="top_ramp_in top_weave top_ramp_out" />
+    <flow id="f_N_ramp_through" type="car_ramp" route="r_N_ramp_through" begin="0" end="329" vehsPerHour="503" departLane="best" />
+
+    
+    <route id="r_S_through" edges="bot_main_in bot_weave bot_main_out" />
+    <flow id="f_S_through" type="car" route="r_S_through" begin="0" end="329" vehsPerHour="2164" departLane="best" />
+
+    
+    <route id="r_S_weave_enter" edges="bot_ramp_in bot_weave bot_main_out" />
+    <flow id="f_S_weave_enter" type="car_ramp" route="r_S_weave_enter" begin="0" end="329" vehsPerHour="809" departLane="free" />
+
+    
+    <route id="r_S_weave_exit" edges="bot_main_in bot_weave bot_ramp_out" />
+    <flow id="f_S_weave_exit" type="car_ramp" route="r_S_weave_exit" begin="0" end="329" vehsPerHour="710" departLane="free" />
+
+    
+    <route id="r_S_ramp_through" edges="bot_ramp_in bot_weave bot_ramp_out" />
+    <flow id="f_S_ramp_through" type="car_ramp" route="r_S_ramp_through" begin="0" end="329" vehsPerHour="776" departLane="best" />
+
+</routes>

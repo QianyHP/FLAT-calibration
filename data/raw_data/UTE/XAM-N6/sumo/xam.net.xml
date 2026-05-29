@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2026-03-20 16:46:41 by Eclipse SUMO netconvert Version 1.22.0
+<netconvertConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/netconvertConfiguration.xsd">
+
+    <input>
+        <node-files value="C:\Users\10550\Desktop\26毕论项目\data\raw_data\UTE\XAM-N6\sumo\xam.nod.xml"/>
+        <edge-files value="C:\Users\10550\Desktop\26毕论项目\data\raw_data\UTE\XAM-N6\sumo\xam.edg.xml"/>
+        <connection-files value="C:\Users\10550\Desktop\26毕论项目\data\raw_data\UTE\XAM-N6\sumo\xam.con.xml"/>
+    </input>
+
+    <output>
+        <output-file value="C:\Users\10550\Desktop\26毕论项目\data\raw_data\UTE\XAM-N6\sumo\xam.net.xml"/>
+    </output>
+
+    <processing>
+        <geometry.min-radius value="5"/>
+        <offset.disable-normalization value="true"/>
+    </processing>
+
+    <junctions>
+        <no-turnarounds value="true"/>
+        <junctions.join value="false"/>
+    </junctions>
+
+</netconvertConfiguration>
+-->
+
+<net version="1.20" junctionCornerDetail="5" limitTurnSpeed="5.50" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/net_file.xsd">
+
+    <location netOffset="0.00,0.00" convBoundary="0.00,-12.80,140.00,12.80" origBoundary="0.00,-12.80,140.00,12.80" projParameter="!"/>
+
+    <edge id=":bot_diverge_0" function="internal">
+        <lane id=":bot_diverge_0_0" index="0" speed="13.89" length="5.66" shape="123.50,-22.40 126.50,-17.60"/>
+        <lane id=":bot_diverge_0_1" index="1" speed="13.89" length="5.66" shape="123.50,-19.20 126.50,-14.40"/>
+    </edge>
+    <edge id=":bot_diverge_2" function="internal">
+        <lane id=":bot_diverge_2_0" index="0" speed="19.45" length="4.39" shape="123.50,-16.00 126.50,-12.80"/>
+        <lane id=":bot_diverge_2_1" index="1" speed="19.45" length="4.39" shape="123.50,-12.80 126.50,-9.60"/>
+        <lane id=":bot_diverge_2_2" index="2" speed="19.45" length="4.39" shape="123.50,-9.60 126.50,-6.40"/>
+    </edge>
+    <edge id=":bot_merge_0" function="internal">
+        <lane id=":bot_merge_0_0" index="0" speed="19.45" length="4.39" shape="13.50,-12.80 16.50,-16.00"/>
+        <lane id=":bot_merge_0_1" index="1" speed="19.45" length="4.39" shape="13.50,-9.60 16.50,-12.80"/>
+        <lane id=":bot_merge_0_2" index="2" speed="19.45" length="4.39" shape="13.50,-6.40 16.50,-9.60"/>
+    </edge>
+    <edge id=":bot_merge_3" function="internal">
+        <lane id=":bot_merge_3_0" index="0" speed="13.89" length="5.66" shape="13.50,-17.60 16.50,-22.40"/>
+        <lane id=":bot_merge_3_1" index="1" speed="13.89" length="5.66" shape="13.50,-14.40 16.50,-19.20"/>
+    </edge>
+    <edge id=":top_diverge_0" function="internal">
+        <lane id=":top_diverge_0_0" index="0" speed="13.89" length="5.66" shape="16.50,22.40 13.50,17.60"/>
+        <lane id=":top_diverge_0_1" index="1" speed="13.89" length="5.66" shape="16.50,19.20 13.50,14.40"/>
+    </edge>
+    <edge id=":top_diverge_2" function="internal">
+        <lane id=":top_diverge_2_0" index="0" speed="19.45" length="4.39" shape="16.50,16.00 13.50,12.80"/>
+        <lane id=":top_diverge_2_1" index="1" speed="19.45" length="4.39" shape="16.50,12.80 13.50,9.60"/>
+        <lane id=":top_diverge_2_2" index="2" speed="19.45" length="4.39" shape="16.50,9.60 13.50,6.40"/>
+    </edge>
+    <edge id=":top_merge_0" function="internal">
+        <lane id=":top_merge_0_0" index="0" speed="19.45" length="4.39" shape="126.50,12.80 123.50,16.00"/>
+        <lane id=":top_merge_0_1" index="1" speed="19.45" length="4.39" shape="126.50,9.60 123.50,12.80"/>
+        <lane id=":top_merge_0_2" index="2" speed="19.45" length="4.39" shape="126.50,6.40 123.50,9.60"/>
+    </edge>
+    <edge id=":top_merge_3" function="internal">
+        <lane id=":top_merge_3_0" index="0" speed="13.89" length="5.66" shape="126.50,17.60 123.50,22.40"/>
+        <lane id=":top_merge_3_1" index="1" speed="13.89" length="5.66" shape="126.50,14.40 123.50,19.20"/>
+    </edge>
+
+    <edge id="bot_main_in" from="bot_start_main" to="bot_merge" priority="-1" shape="0.00,-4.80 15.00,-4.80">
+        <lane id="bot_main_in_0" index="0" speed="22.22" length="13.50" shape="0.00,-12.80 13.50,-12.80"/>
+        <lane id="bot_main_in_1" index="1" speed="22.22" length="13.50" shape="0.00,-9.60 13.50,-9.60"/>
+        <lane id="bot_main_in_2" index="2" speed="22.22" length="13.50" shape="0.00,-6.40 13.50,-6.40"/>
+    </edge>
+    <edge id="bot_main_out" from="bot_diverge" to="bot_end_main" priority="-1" shape="125.00,-4.80 140.00,-4.80">
+        <lane id="bot_main_out_0" index="0" speed="22.22" length="13.50" shape="126.50,-12.80 140.00,-12.80"/>
+        <lane id="bot_main_out_1" index="1" speed="22.22" length="13.50" shape="126.50,-9.60 140.00,-9.60"/>
+        <lane id="bot_main_out_2" index="2" speed="22.22" length="13.50" shape="126.50,-6.40 140.00,-6.40"/>
+    </edge>
+    <edge id="bot_ramp_in" from="bot_start_ramp" to="bot_merge" priority="-1" shape="0.00,-12.80 15.00,-12.80">
+        <lane id="bot_ramp_in_0" index="0" speed="11.11" length="13.50" shape="0.00,-17.60 13.50,-17.60"/>
+        <lane id="bot_ramp_in_1" index="1" speed="11.11" length="13.50" shape="0.00,-14.40 13.50,-14.40"/>
+    </edge>
+    <edge id="bot_ramp_out" from="bot_diverge" to="bot_end_ramp" priority="-1" shape="125.00,-12.80 140.00,-12.80">
+        <lane id="bot_ramp_out_0" index="0" speed="11.11" length="13.50" shape="126.50,-17.60 140.00,-17.60"/>
+        <lane id="bot_ramp_out_1" index="1" speed="11.11" length="13.50" shape="126.50,-14.40 140.00,-14.40"/>
+    </edge>
+    <edge id="bot_weave" from="bot_merge" to="bot_diverge" priority="-1">
+        <lane id="bot_weave_0" index="0" speed="16.67" length="107.00" acceleration="1" shape="16.50,-22.40 123.50,-22.40"/>
+        <lane id="bot_weave_1" index="1" speed="16.67" length="107.00" acceleration="1" shape="16.50,-19.20 123.50,-19.20"/>
+        <lane id="bot_weave_2" index="2" speed="16.67" length="107.00" shape="16.50,-16.00 123.50,-16.00"/>
+        <lane id="bot_weave_3" index="3" speed="16.67" length="107.00" shape="16.50,-12.80 123.50,-12.80"/>
+        <lane id="bot_weave_4" index="4" speed="16.67" length="107.00" shape="16.50,-9.60 123.50,-9.60"/>
+    </edge>
+    <edge id="top_main_in" from="top_start_main" to="top_merge" priority="-1" shape="140.00,4.80 125.00,4.80">
+        <lane id="top_main_in_0" index="0" speed="22.22" length="13.50" shape="140.00,12.80 126.50,12.80"/>
+        <lane id="top_main_in_1" index="1" speed="22.22" length="13.50" shape="140.00,9.60 126.50,9.60"/>
+        <lane id="top_main_in_2" index="2" speed="22.22" length="13.50" shape="140.00,6.40 126.50,6.40"/>
+    </edge>
+    <edge id="top_main_out" from="top_diverge" to="top_end_main" priority="-1" shape="15.00,4.80 0.00,4.80">
+        <lane id="top_main_out_0" index="0" speed="22.22" length="13.50" shape="13.50,12.80 0.00,12.80"/>
+        <lane id="top_main_out_1" index="1" speed="22.22" length="13.50" shape="13.50,9.60 0.00,9.60"/>
+        <lane id="top_main_out_2" index="2" speed="22.22" length="13.50" shape="13.50,6.40 0.00,6.40"/>
+    </edge>
+    <edge id="top_ramp_in" from="top_start_ramp" to="top_merge" priority="-1" shape="140.00,12.80 125.00,12.80">
+        <lane id="top_ramp_in_0" index="0" speed="11.11" length="13.50" shape="140.00,17.60 126.50,17.60"/>
+        <lane id="top_ramp_in_1" index="1" speed="11.11" length="13.50" shape="140.00,14.40 126.50,14.40"/>
+    </edge>
+    <edge id="top_ramp_out" from="top_diverge" to="top_end_ramp" priority="-1" shape="15.00,12.80 0.00,12.80">
+        <lane id="top_ramp_out_0" index="0" speed="11.11" length="13.50" shape="13.50,17.60 0.00,17.60"/>
+        <lane id="top_ramp_out_1" index="1" speed="11.11" length="13.50" shape="13.50,14.40 0.00,14.40"/>
+    </edge>
+    <edge id="top_weave" from="top_merge" to="top_diverge" priority="-1">
+        <lane id="top_weave_0" index="0" speed="16.67" length="107.00" acceleration="1" shape="123.50,22.40 16.50,22.40"/>
+        <lane id="top_weave_1" index="1" speed="16.67" length="107.00" acceleration="1" shape="123.50,19.20 16.50,19.20"/>
+        <lane id="top_weave_2" index="2" speed="16.67" length="107.00" shape="123.50,16.00 16.50,16.00"/>
+        <lane id="top_weave_3" index="3" speed="16.67" length="107.00" shape="123.50,12.80 16.50,12.80"/>
+        <lane id="top_weave_4" index="4" speed="16.67" length="107.00" shape="123.50,9.60 16.50,9.60"/>
+    </edge>
+
+    <junction id="bot_diverge" type="priority" x="125.00" y="-8.00" incLanes="bot_weave_0 bot_weave_1 bot_weave_2 bot_weave_3 bot_weave_4" intLanes=":bot_diverge_0_0 :bot_diverge_0_1 :bot_diverge_2_0 :bot_diverge_2_1 :bot_diverge_2_2" shape="126.50,-4.80 126.50,-19.20 123.50,-24.00 123.50,-8.00">
+        <request index="0" response="00000" foes="00000" cont="0"/>
+        <request index="1" response="00000" foes="00000" cont="0"/>
+        <request index="2" response="00000" foes="00000" cont="0"/>
+        <request index="3" response="00000" foes="00000" cont="0"/>
+        <request index="4" response="00000" foes="00000" cont="0"/>
+    </junction>
+    <junction id="bot_end_main" type="dead_end" x="140.00" y="-4.80" incLanes="bot_main_out_0 bot_main_out_1 bot_main_out_2" intLanes="" shape="140.00,-14.40 140.00,-4.80"/>
+    <junction id="bot_end_ramp" type="dead_end" x="140.00" y="-12.80" incLanes="bot_ramp_out_0 bot_ramp_out_1" intLanes="" shape="140.00,-19.20 140.00,-12.80"/>
+    <junction id="bot_merge" type="priority" x="15.00" y="-8.00" incLanes="bot_main_in_0 bot_main_in_1 bot_main_in_2 bot_ramp_in_0 bot_ramp_in_1" intLanes=":bot_merge_0_0 :bot_merge_0_1 :bot_merge_0_2 :bot_merge_3_0 :bot_merge_3_1" shape="16.50,-8.00 16.50,-24.00 13.50,-19.20 13.50,-4.80">
+        <request index="0" response="00000" foes="00000" cont="0"/>
+        <request index="1" response="00000" foes="00000" cont="0"/>
+        <request index="2" response="00000" foes="00000" cont="0"/>
+        <request index="3" response="00000" foes="00000" cont="0"/>
+        <request index="4" response="00000" foes="00000" cont="0"/>
+    </junction>
+    <junction id="bot_start_main" type="dead_end" x="0.00" y="-4.80" incLanes="" intLanes="" shape="0.00,-4.80 0.00,-14.40"/>
+    <junction id="bot_start_ramp" type="dead_end" x="0.00" y="-12.80" incLanes="" intLanes="" shape="0.00,-12.80 0.00,-19.20"/>
+    <junction id="top_diverge" type="priority" x="15.00" y="8.00" incLanes="top_weave_0 top_weave_1 top_weave_2 top_weave_3 top_weave_4" intLanes=":top_diverge_0_0 :top_diverge_0_1 :top_diverge_2_0 :top_diverge_2_1 :top_diverge_2_2" shape="16.50,24.00 16.50,8.00 13.50,4.80 13.50,19.20">
+        <request index="0" response="00000" foes="00000" cont="0"/>
+        <request index="1" response="00000" foes="00000" cont="0"/>
+        <request index="2" response="00000" foes="00000" cont="0"/>
+        <request index="3" response="00000" foes="00000" cont="0"/>
+        <request index="4" response="00000" foes="00000" cont="0"/>
+    </junction>
+    <junction id="top_end_main" type="dead_end" x="0.00" y="4.80" incLanes="top_main_out_0 top_main_out_1 top_main_out_2" intLanes="" shape="0.00,14.40 0.00,4.80"/>
+    <junction id="top_end_ramp" type="dead_end" x="0.00" y="12.80" incLanes="top_ramp_out_0 top_ramp_out_1" intLanes="" shape="0.00,19.20 0.00,12.80"/>
+    <junction id="top_merge" type="priority" x="125.00" y="8.00" incLanes="top_main_in_0 top_main_in_1 top_main_in_2 top_ramp_in_0 top_ramp_in_1" intLanes=":top_merge_0_0 :top_merge_0_1 :top_merge_0_2 :top_merge_3_0 :top_merge_3_1" shape="126.50,19.20 126.50,4.80 123.50,8.00 123.50,24.00">
+        <request index="0" response="00000" foes="00000" cont="0"/>
+        <request index="1" response="00000" foes="00000" cont="0"/>
+        <request index="2" response="00000" foes="00000" cont="0"/>
+        <request index="3" response="00000" foes="00000" cont="0"/>
+        <request index="4" response="00000" foes="00000" cont="0"/>
+    </junction>
+    <junction id="top_start_main" type="dead_end" x="140.00" y="4.80" incLanes="" intLanes="" shape="140.00,4.80 140.00,14.40"/>
+    <junction id="top_start_ramp" type="dead_end" x="140.00" y="12.80" incLanes="" intLanes="" shape="140.00,12.80 140.00,19.20"/>
+
+    <connection from="bot_main_in" to="bot_weave" fromLane="0" toLane="2" via=":bot_merge_0_0" dir="s" state="M"/>
+    <connection from="bot_main_in" to="bot_weave" fromLane="1" toLane="3" via=":bot_merge_0_1" dir="s" state="M"/>
+    <connection from="bot_main_in" to="bot_weave" fromLane="2" toLane="4" via=":bot_merge_0_2" dir="s" state="M"/>
+    <connection from="bot_ramp_in" to="bot_weave" fromLane="0" toLane="0" via=":bot_merge_3_0" dir="s" state="M"/>
+    <connection from="bot_ramp_in" to="bot_weave" fromLane="1" toLane="1" via=":bot_merge_3_1" dir="s" state="M"/>
+    <connection from="bot_weave" to="bot_ramp_out" fromLane="0" toLane="0" via=":bot_diverge_0_0" dir="s" state="M"/>
+    <connection from="bot_weave" to="bot_ramp_out" fromLane="1" toLane="1" via=":bot_diverge_0_1" dir="s" state="M"/>
+    <connection from="bot_weave" to="bot_main_out" fromLane="2" toLane="0" via=":bot_diverge_2_0" dir="s" state="M"/>
+    <connection from="bot_weave" to="bot_main_out" fromLane="3" toLane="1" via=":bot_diverge_2_1" dir="s" state="M"/>
+    <connection from="bot_weave" to="bot_main_out" fromLane="4" toLane="2" via=":bot_diverge_2_2" dir="s" state="M"/>
+    <connection from="top_main_in" to="top_weave" fromLane="0" toLane="2" via=":top_merge_0_0" dir="s" state="M"/>
+    <connection from="top_main_in" to="top_weave" fromLane="1" toLane="3" via=":top_merge_0_1" dir="s" state="M"/>
+    <connection from="top_main_in" to="top_weave" fromLane="2" toLane="4" via=":top_merge_0_2" dir="s" state="M"/>
+    <connection from="top_ramp_in" to="top_weave" fromLane="0" toLane="0" via=":top_merge_3_0" dir="s" state="M"/>
+    <connection from="top_ramp_in" to="top_weave" fromLane="1" toLane="1" via=":top_merge_3_1" dir="s" state="M"/>
+    <connection from="top_weave" to="top_ramp_out" fromLane="0" toLane="0" via=":top_diverge_0_0" dir="s" state="M"/>
+    <connection from="top_weave" to="top_ramp_out" fromLane="1" toLane="1" via=":top_diverge_0_1" dir="s" state="M"/>
+    <connection from="top_weave" to="top_main_out" fromLane="2" toLane="0" via=":top_diverge_2_0" dir="s" state="M"/>
+    <connection from="top_weave" to="top_main_out" fromLane="3" toLane="1" via=":top_diverge_2_1" dir="s" state="M"/>
+    <connection from="top_weave" to="top_main_out" fromLane="4" toLane="2" via=":top_diverge_2_2" dir="s" state="M"/>
+
+    <connection from=":bot_diverge_0" to="bot_ramp_out" fromLane="0" toLane="0" dir="s" state="M"/>
+    <connection from=":bot_diverge_0" to="bot_ramp_out" fromLane="1" toLane="1" dir="s" state="M"/>
+    <connection from=":bot_diverge_2" to="bot_main_out" fromLane="0" toLane="0" dir="s" state="M"/>
+    <connection from=":bot_diverge_2" to="bot_main_out" fromLane="1" toLane="1" dir="s" state="M"/>
+    <connection from=":bot_diverge_2" to="bot_main_out" fromLane="2" toLane="2" dir="s" state="M"/>
+    <connection from=":bot_merge_0" to="bot_weave" fromLane="0" toLane="2" dir="s" state="M"/>
+    <connection from=":bot_merge_0" to="bot_weave" fromLane="1" toLane="3" dir="s" state="M"/>
+    <connection from=":bot_merge_0" to="bot_weave" fromLane="2" toLane="4" dir="s" state="M"/>
+    <connection from=":bot_merge_3" to="bot_weave" fromLane="0" toLane="0" dir="s" state="M"/>
+    <connection from=":bot_merge_3" to="bot_weave" fromLane="1" toLane="1" dir="s" state="M"/>
+    <connection from=":top_diverge_0" to="top_ramp_out" fromLane="0" toLane="0" dir="s" state="M"/>
+    <connection from=":top_diverge_0" to="top_ramp_out" fromLane="1" toLane="1" dir="s" state="M"/>
+    <connection from=":top_diverge_2" to="top_main_out" fromLane="0" toLane="0" dir="s" state="M"/>
+    <connection from=":top_diverge_2" to="top_main_out" fromLane="1" toLane="1" dir="s" state="M"/>
+    <connection from=":top_diverge_2" to="top_main_out" fromLane="2" toLane="2" dir="s" state="M"/>
+    <connection from=":top_merge_0" to="top_weave" fromLane="0" toLane="2" dir="s" state="M"/>
+    <connection from=":top_merge_0" to="top_weave" fromLane="1" toLane="3" dir="s" state="M"/>
+    <connection from=":top_merge_0" to="top_weave" fromLane="2" toLane="4" dir="s" state="M"/>
+    <connection from=":top_merge_3" to="top_weave" fromLane="0" toLane="0" dir="s" state="M"/>
+    <connection from=":top_merge_3" to="top_weave" fromLane="1" toLane="1" dir="s" state="M"/>
+
+</net>

@@ -1,0 +1,52 @@
+{
+  "scene": "XAM-N6",
+  "description": "双向对称交织区（南京西安门段），上半幅E→W，下半幅W→E，110m核心交织段",
+  "total_length_m": 140,
+  "weave_length_m": 110,
+  "lane_config": {
+    "top_half": {
+      "direction": "E→W",
+      "main_lanes": [
+        2,
+        3,
+        4
+      ],
+      "weave_lanes": [
+        0,
+        1
+      ]
+    },
+    "bot_half": {
+      "direction": "W→E",
+      "main_lanes": [
+        5,
+        6,
+        7
+      ],
+      "weave_lanes": [
+        8,
+        9
+      ]
+    }
+  },
+  "flows_vph": {
+    "N_through": 2929,
+    "N_weave_enter": 1104,
+    "N_weave_exit": 842,
+    "N_ramp_through": 503,
+    "S_through": 2164,
+    "S_weave_enter": 809,
+    "S_weave_exit": 710,
+    "S_ramp_through": 776
+  },
+  "sim_end_s": 329,
+  "verification": {
+    "departed": 755,
+    "arrived": 755
+  },
+  "sumo_files": {
+    "net": "C:\\Users\\10550\\Desktop\\26毕论项目\\data\\raw_data\\UTE\\XAM-N6\\sumo\\xam.net.xml",
+    "rou": "C:\\Users\\10550\\Desktop\\26毕论项目\\data\\raw_data\\UTE\\XAM-N6\\sumo\\xam.rou.xml",
+    "sumocfg": "C:\\Users\\10550\\Desktop\\26毕论项目\\data\\raw_data\\UTE\\XAM-N6\\sumo\\xam.sumocfg"
+  }
+}

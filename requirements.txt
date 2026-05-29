@@ -1,0 +1,9 @@
+# Core scientific stack (plotting + calibration + comparison)
+numpy
+pandas
+scipy
+matplotlib
+scikit-learn
+
+# SUMO TraCI Python interface (install with SUMO; required only for re-running sims)
+# traci

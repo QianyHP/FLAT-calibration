@@ -1,0 +1,31 @@
+{
+  "city": "Xian",
+  "disp_max_m": 5.0,
+  "vmax_max_mps": 0.5,
+  "tracks_before": 423,
+  "tracks_removed": 2,
+  "tracks_after": 421,
+  "rows_before": 116836,
+  "rows_after": 107279,
+  "row_removed_pct": 8.18,
+  "fingerprint_before": {
+    "v_mean": 3.5371,
+    "v_p15": 0.0116,
+    "v_p85": 8.5289,
+    "stop_frac": 0.4918,
+    "n_rows": 116836,
+    "n_tracks": 423
+  },
+  "fingerprint_after": {
+    "v_mean": 3.8522,
+    "v_p15": 0.0254,
+    "v_p85": 8.8662,
+    "stop_frac": 0.4465,
+    "n_rows": 107279,
+    "n_tracks": 421
+  },
+  "removed_track_ids": [
+    4,
+    394
+  ]
+}

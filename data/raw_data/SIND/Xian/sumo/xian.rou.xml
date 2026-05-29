@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='utf-8'?>
+<routes>
+    <vType id="car" accel="1.37" decel="3.82" sigma="0.57" length="5.0" maxSpeed="13.89" tau="0.57" minGap="3.88" speedFactor="0.55" lcStrategic="0.73" lcCooperative="1.80" lcAssertive="0.83" lcSpeedGain="0.86" />
+    <vType id="motorcycle" accel="1.37" decel="3.82" sigma="0.57" length="1.5" width="0.7" maxSpeed="11.11" tau="0.57" minGap="3.88" speedFactor="0.55" lcStrategic="0.73" lcCooperative="1.80" lcAssertive="0.83" lcSpeedGain="0.86" />
+
+    <flow id="f_E_left" type="car" from="EC" to="CN" begin="0" end="600" vehsPerHour="47" departLane="best" />
+    <flow id="f_E_straight" type="car" from="EC" to="CW" begin="0" end="600" vehsPerHour="297" departLane="best" />
+    <flow id="f_E_right" type="car" from="EC" to="CS" begin="0" end="600" vehsPerHour="103" departLane="best" />
+    <flow id="f_W_left" type="car" from="WC" to="CS" begin="0" end="600" vehsPerHour="186" departLane="best" />
+    <flow id="f_W_straight" type="car" from="WC" to="CE" begin="0" end="600" vehsPerHour="399" departLane="best" />
+    <flow id="f_W_right" type="car" from="WC" to="CN" begin="0" end="600" vehsPerHour="99" departLane="best" />
+    <flow id="f_N_left" type="car" from="NC" to="CW" begin="0" end="600" vehsPerHour="79" departLane="best" />
+    <flow id="f_N_straight" type="car" from="NC" to="CS" begin="0" end="600" vehsPerHour="83" departLane="best" />
+    <flow id="f_N_right" type="car" from="NC" to="CE" begin="0" end="600" vehsPerHour="24" departLane="best" />
+    <flow id="f_S_left" type="car" from="SC" to="CE" begin="0" end="600" vehsPerHour="91" departLane="best" />
+    <flow id="f_S_straight" type="car" from="SC" to="CN" begin="0" end="600" vehsPerHour="99" departLane="best" />
+    <flow id="f_S_right" type="car" from="SC" to="CW" begin="0" end="600" vehsPerHour="51" departLane="best" />
+</routes>

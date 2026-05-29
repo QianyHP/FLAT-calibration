@@ -1,0 +1,43 @@
+{
+  "scene": "YTDJ",
+  "description": "双向非对称城市快速路出入口段（北侧E→W分流出口，南侧W→E匝道汇入）",
+  "total_length_m": 362,
+  "north_side": {
+    "direction": "E→W",
+    "lanes_max": 5,
+    "main_lanes": 3,
+    "ramp_lanes": 2,
+    "key_points": {
+      "widen_start_m": 180,
+      "diverge_start_m": 104
+    }
+  },
+  "south_side": {
+    "direction": "W→E",
+    "lanes_max": 5,
+    "main_lanes": 3,
+    "ramp_lanes": 2,
+    "key_points": {
+      "merge_at_m": 80,
+      "narrow_start_m": 202,
+      "narrow_end_m": 240
+    }
+  },
+  "flows_vph": {
+    "duration_s": 545.25,
+    "n_main_vph": 4787,
+    "n_ramp_vph": 436,
+    "s_main_vph": 2819,
+    "s_ramp_vph": 2185
+  },
+  "sim_end_s": 545,
+  "verification": {
+    "departed": 1066,
+    "arrived": 1066
+  },
+  "sumo_files": {
+    "net": "C:\\Users\\10550\\Desktop\\26毕论项目\\data\\raw_data\\UTE\\YTDJ\\sumo\\ytdj.net.xml",
+    "rou": "C:\\Users\\10550\\Desktop\\26毕论项目\\data\\raw_data\\UTE\\YTDJ\\sumo\\ytdj.rou.xml",
+    "sumocfg": "C:\\Users\\10550\\Desktop\\26毕论项目\\data\\raw_data\\UTE\\YTDJ\\sumo\\ytdj.sumocfg"
+  }
+}

@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='utf-8'?>
+<connections>
+    <connection from="bot_ramp_in" to="bot_weave" fromLane="0" toLane="0" />
+    <connection from="bot_ramp_in" to="bot_weave" fromLane="1" toLane="1" />
+    <connection from="bot_main_in" to="bot_weave" fromLane="0" toLane="2" />
+    <connection from="bot_main_in" to="bot_weave" fromLane="1" toLane="3" />
+    <connection from="bot_main_in" to="bot_weave" fromLane="2" toLane="4" />
+    <connection from="bot_weave" to="bot_ramp_out" fromLane="0" toLane="0" />
+    <connection from="bot_weave" to="bot_ramp_out" fromLane="1" toLane="1" />
+    <connection from="bot_weave" to="bot_main_out" fromLane="2" toLane="0" />
+    <connection from="bot_weave" to="bot_main_out" fromLane="3" toLane="1" />
+    <connection from="bot_weave" to="bot_main_out" fromLane="4" toLane="2" />
+    <connection from="top_ramp_in" to="top_weave" fromLane="0" toLane="0" />
+    <connection from="top_ramp_in" to="top_weave" fromLane="1" toLane="1" />
+    <connection from="top_main_in" to="top_weave" fromLane="0" toLane="2" />
+    <connection from="top_main_in" to="top_weave" fromLane="1" toLane="3" />
+    <connection from="top_main_in" to="top_weave" fromLane="2" toLane="4" />
+    <connection from="top_weave" to="top_ramp_out" fromLane="0" toLane="0" />
+    <connection from="top_weave" to="top_ramp_out" fromLane="1" toLane="1" />
+    <connection from="top_weave" to="top_main_out" fromLane="2" toLane="0" />
+    <connection from="top_weave" to="top_main_out" fromLane="3" toLane="1" />
+    <connection from="top_weave" to="top_main_out" fromLane="4" toLane="2" />
+</connections>

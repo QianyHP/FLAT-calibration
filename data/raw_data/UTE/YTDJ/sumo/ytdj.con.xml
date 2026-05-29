@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='utf-8'?>
+<connections>
+    <connection from="we_ramp_in" to="we_parallel" fromLane="0" toLane="0" />
+    <connection from="we_ramp_in" to="we_parallel" fromLane="1" toLane="1" />
+    <connection from="we_main_in" to="we_parallel" fromLane="0" toLane="2" />
+    <connection from="we_main_in" to="we_parallel" fromLane="1" toLane="3" />
+    <connection from="we_main_in" to="we_parallel" fromLane="2" toLane="4" />
+    <connection from="we_parallel" to="we_main_out" fromLane="2" toLane="0" />
+    <connection from="we_parallel" to="we_main_out" fromLane="3" toLane="1" />
+    <connection from="we_parallel" to="we_main_out" fromLane="4" toLane="2" />
+    <connection from="ew_main_in" to="ew_parallel" fromLane="0" toLane="0" />
+    <connection from="ew_main_in" to="ew_parallel" fromLane="0" toLane="1" />
+    <connection from="ew_main_in" to="ew_parallel" fromLane="0" toLane="2" />
+    <connection from="ew_main_in" to="ew_parallel" fromLane="1" toLane="3" />
+    <connection from="ew_main_in" to="ew_parallel" fromLane="2" toLane="4" />
+    <connection from="ew_parallel" to="ew_ramp_out" fromLane="0" toLane="0" />
+    <connection from="ew_parallel" to="ew_ramp_out" fromLane="1" toLane="1" />
+    <connection from="ew_parallel" to="ew_main_out" fromLane="2" toLane="0" />
+    <connection from="ew_parallel" to="ew_main_out" fromLane="3" toLane="1" />
+    <connection from="ew_parallel" to="ew_main_out" fromLane="4" toLane="2" />
+</connections>

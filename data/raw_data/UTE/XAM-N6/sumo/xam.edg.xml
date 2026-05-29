@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='utf-8'?>
+<edges>
+    <edge id="bot_main_in" shape="0,-4.8 15,-4.8" from="bot_start_main" to="bot_merge" numLanes="3" speed="22.22" />
+    <edge id="bot_ramp_in" shape="0,-12.8 15,-12.8" from="bot_start_ramp" to="bot_merge" numLanes="2" speed="11.11" />
+    <edge id="bot_weave" shape="15,-8.0 125,-8.0" from="bot_merge" to="bot_diverge" numLanes="5" speed="16.67" />
+    <edge id="bot_main_out" shape="125,-4.8 140,-4.8" from="bot_diverge" to="bot_end_main" numLanes="3" speed="22.22" />
+    <edge id="bot_ramp_out" shape="125,-12.8 140,-12.8" from="bot_diverge" to="bot_end_ramp" numLanes="2" speed="11.11" />
+    <edge id="top_main_in" shape="140,4.8 125,4.8" from="top_start_main" to="top_merge" numLanes="3" speed="22.22" />
+    <edge id="top_ramp_in" shape="140,12.8 125,12.8" from="top_start_ramp" to="top_merge" numLanes="2" speed="11.11" />
+    <edge id="top_weave" shape="125,8.0 15,8.0" from="top_merge" to="top_diverge" numLanes="5" speed="16.67" />
+    <edge id="top_main_out" shape="15,4.8 0,4.8" from="top_diverge" to="top_end_main" numLanes="3" speed="22.22" />
+    <edge id="top_ramp_out" shape="15,12.8 0,12.8" from="top_diverge" to="top_end_ramp" numLanes="2" speed="11.11" />
+</edges>

@@ -1,0 +1,13 @@
+<configuration>
+    <input>
+        <net-file value="xian.net.xml"/>
+        <route-files value="xian.rou.xml"/>
+    </input>
+    <time>
+        <begin value="0"/>
+        <end value="600"/>
+    </time>
+    <processing>
+        <time-to-teleport value="-1"/>
+    </processing>
+</configuration>

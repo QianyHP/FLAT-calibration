@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='utf-8'?>
+<connections>
+    <connection from="ramp_in" to="parallel" fromLane="0" toLane="0" />
+    <connection from="main_in" to="parallel" fromLane="0" toLane="1" />
+    <connection from="main_in" to="parallel" fromLane="1" toLane="2" />
+    <connection from="main_in" to="parallel" fromLane="2" toLane="3" />
+    <connection from="parallel" to="main_out" fromLane="1" toLane="0" />
+    <connection from="parallel" to="main_out" fromLane="2" toLane="1" />
+    <connection from="parallel" to="main_out" fromLane="3" toLane="2" />
+</connections>

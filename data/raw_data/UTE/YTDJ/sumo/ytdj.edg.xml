@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='utf-8'?>
+<edges>
+    <edge id="we_main_in" from="we_start_main" to="we_merge" numLanes="3" speed="22.22" />
+    <edge id="we_ramp_in" from="we_start_ramp" to="we_merge" numLanes="2" speed="11.11" />
+    <edge id="we_parallel" from="we_merge" to="we_narrow" numLanes="5" speed="16.67" />
+    <edge id="we_main_out" from="we_narrow" to="we_end" numLanes="3" speed="16.67" />
+    <edge id="ew_main_in" from="ew_start" to="ew_widen" numLanes="3" speed="22.22" />
+    <edge id="ew_parallel" from="ew_widen" to="ew_split" numLanes="5" speed="16.67" />
+    <edge id="ew_main_out" from="ew_split" to="ew_end_main" numLanes="3" speed="16.67" />
+    <edge id="ew_ramp_out" from="ew_split" to="ew_end_ramp" numLanes="2" speed="11.11" />
+</edges>

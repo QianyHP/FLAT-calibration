@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<edges>
+    <edge id="main_in" from="start_main" to="merge_pt" numLanes="3" speed="22.22" />
+    <edge id="ramp_in" from="ramp_start" to="merge_pt" numLanes="1" speed="11.11" />
+    <edge id="parallel" shape="25,-1.75 165,-1.75" from="merge_pt" to="drop_pt" numLanes="4" speed="16.67" />
+    <edge id="main_out" from="drop_pt" to="end_main" numLanes="3" speed="22.22" />
+</edges>

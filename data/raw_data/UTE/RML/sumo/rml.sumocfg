@@ -1,0 +1,17 @@
+<configuration>
+    <input>
+        <net-file    value="rml.net.xml"/>
+        <route-files value="rml.rou.xml"/>
+    </input>
+    <time>
+        <begin value="0"/>
+        <end   value="300"/>
+    </time>
+    <processing>
+        <ignore-route-errors value="true"/>
+    </processing>
+    <report>
+        <no-warnings value="false"/>
+        <verbose      value="false"/>
+    </report>
+</configuration>

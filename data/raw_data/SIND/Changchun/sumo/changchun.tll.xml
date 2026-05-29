@@ -1,0 +1,10 @@
+<tlLogics>
+    <tlLogic id="C" type="static" programID="sind" offset="0">
+        <phase duration="38" state="GGGgrrrrGGGgrrrr"/>
+        <phase duration="3" state="yyyyrrrryyyyrrrr"/>
+        <phase duration="1" state="rrrrrrrrrrrrrrrr"/>
+        <phase duration="38" state="rrrrGGGgrrrrGGGg"/>
+        <phase duration="3" state="rrrryyyyrrrryyyy"/>
+        <phase duration="1" state="rrrrrrrrrrrrrrrr"/>
+    </tlLogic>
+</tlLogics>

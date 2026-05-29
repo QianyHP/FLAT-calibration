@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='utf-8'?>
+<routes>
+    <vType id="car" accel="2.68" decel="2.99" sigma="0.35" length="5.0" maxSpeed="22.22" tau="2.32" minGap="2.31" speedFactor="0.51" lcStrategic="1.02" lcCooperative="0.70" lcAssertive="2.35" lcSpeedGain="0.54" />
+    <vType id="car_ramp" accel="2.68" decel="2.99" sigma="0.35" length="5.0" maxSpeed="11.11" tau="2.32" minGap="2.31" speedFactor="0.51" lcStrategic="1.02" lcCooperative="0.70" lcAssertive="2.35" lcSpeedGain="0.54" />
+
+    
+    <route id="r_main_through" edges="main_in parallel main_out" />
+    <flow id="f_main_through" type="car" route="r_main_through" begin="0" end="300" vehsPerHour="4575" departLane="best" />
+
+    
+    <route id="r_ramp_merge" edges="ramp_in parallel main_out" />
+    <flow id="f_ramp_merge" type="car_ramp" route="r_ramp_merge" begin="0" end="300" vehsPerHour="2012" departLane="free" />
+
+</routes>

@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='utf-8'?>
+<routes>
+    <vType id="car" accel="3.50" decel="3.63" sigma="0.71" length="5.0" maxSpeed="22.22" tau="0.69" minGap="1.10" speedFactor="0.56" lcStrategic="0.62" lcCooperative="1.13" lcAssertive="0.46" lcSpeedGain="2.76" />
+    <vType id="car_ramp" accel="3.50" decel="3.63" sigma="0.71" length="5.0" maxSpeed="11.11" tau="0.69" minGap="1.10" speedFactor="0.56" lcStrategic="0.62" lcCooperative="1.13" lcAssertive="0.46" lcSpeedGain="2.76" />
+
+    
+    <route id="r_N_main" edges="ew_main_in ew_parallel ew_main_out" />
+    <flow id="f_N_main" type="car" route="r_N_main" begin="0" end="545" vehsPerHour="4787" departLane="best" />
+
+    
+    <route id="r_N_ramp" edges="ew_main_in ew_parallel ew_ramp_out" />
+    <flow id="f_N_ramp" type="car_ramp" route="r_N_ramp" begin="0" end="545" vehsPerHour="436" departLane="free" />
+
+    
+    <route id="r_S_main" edges="we_main_in we_parallel we_main_out" />
+    <flow id="f_S_main" type="car" route="r_S_main" begin="0" end="545" vehsPerHour="2819" departLane="best" />
+
+    
+    <route id="r_S_ramp" edges="we_ramp_in we_parallel we_main_out" />
+    <flow id="f_S_ramp" type="car_ramp" route="r_S_ramp" begin="0" end="545" vehsPerHour="2185" departLane="best" />
+</routes>
