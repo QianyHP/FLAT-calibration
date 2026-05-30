@@ -9,24 +9,38 @@ Behavioral Fingerprint Surrogate-Assisted Calibration (BF-SAC)
     → 下置信界 (LCB) 选点 → 真实 SUMO 评估并入库
 
 用法:
-  python unified_calibration.py              # 六场景
+  python unified_calibration.py              # 六场景（RF 代理，默认）
   python unified_calibration.py XAM-N6       # 单场景
+  python unified_calibration.py --mlp        # 改用 MLP 集成代理（平替 RF）
+  python unified_calibration.py --mlp XAM-N6 # 单场景 + MLP
+  BFSAC_SURROGATE=mlp python unified_calibration.py   # 等价环境变量写法
+
+代理选择：RF（随机森林，默认）与 MLP（深度集成）二选一，框架/预算/LCB 不变。
+MLP 模式输出文件名追加 ``__mlp_hX-Y_mM`` 后缀并保存网络权重，绝不覆盖 RF 结果。
 """
 
 from __future__ import annotations
 
 import json
+import os
 import sys
 import time
+import warnings
 from pathlib import Path
 
+import joblib
 import numpy as np
 import pandas as pd
 from scipy.stats.qmc import LatinHypercube
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.neural_network import MLPRegressor
 
 PROJ = Path(__file__).resolve().parents[2]
+
+# 代理模型选择："rf"（默认，随机森林）或 "mlp"（MLP 集成平替）。
+# 可用环境变量 BFSAC_SURROGATE 或命令行 --surrogate/--mlp/--rf 覆盖。
+SURROGATE_KIND = os.environ.get("BFSAC_SURROGATE", "rf").lower()
 
 # ═════════════════════════════════════════════════════════════════════
 # 场景配置
@@ -155,6 +169,78 @@ TRUST_FRAC = 0.18   # 信赖域：最优点附近各维 ± 该比例 × 参数�
 MIN_DIST_REL = 0.02 # 与已评估点最小相对距离（避免重复仿真）
 MIN_VALID_RF = 10
 
+# ═════════════════════════════════════════════════════════════════════
+# MLP 集成代理（RF 的平行平替；保留 RF，二选一）
+# ═════════════════════════════════════════════════════════════════════
+# 小数据（每场景 60→100 个评估点、10 维输入、标量输出）下的稳健配置：
+#   - 集成个数 5：足以给出稳定的 σ（深度集成经验甜点 5~10），训练成本可忽略
+#   - 2 隐藏层 × 64：容量够拟合 10 维平滑目标，又不至于过拟合 ~100 点
+#   - tanh + lbfgs：小样本回归收敛快、曲面平滑；alpha 提供 L2 正则
+#   - bootstrap：成员间用有放回重采样增加分歧，改善 σ（类比 RF 的 bagging）
+MLP_HIDDEN_LAYERS = (64, 64)   # 每个 MLP 的隐藏层 → 神经元数
+MLP_ENSEMBLE_SIZE = 5          # 并行训练的网络个数（集成成员数）
+MLP_ACTIVATION = "tanh"
+MLP_SOLVER = "lbfgs"
+MLP_ALPHA = 1e-3
+MLP_MAX_ITER = 2000
+MLP_BOOTSTRAP = True
+
+
+def _mlp_tag() -> str:
+    """编码网络结构信息，用于模型文件名与输出后缀，便于适配与区分。"""
+    h = "-".join(str(x) for x in MLP_HIDDEN_LAYERS)
+    return f"mlp_h{h}_m{MLP_ENSEMBLE_SIZE}"
+
+
+def _surrogate_config() -> dict | None:
+    """记录 MLP 集成的网络超参（写入结果 JSON，便于复现与适配）；RF 模式返回 None。"""
+    if SURROGATE_KIND != "mlp":
+        return None
+    return {
+        "tag": _mlp_tag(),
+        "hidden_layers": list(MLP_HIDDEN_LAYERS),
+        "ensemble_size": MLP_ENSEMBLE_SIZE,
+        "activation": MLP_ACTIVATION,
+        "solver": MLP_SOLVER,
+        "alpha": MLP_ALPHA,
+        "max_iter": MLP_MAX_ITER,
+        "bootstrap": MLP_BOOTSTRAP,
+    }
+
+
+def _out_suffix() -> str:
+    """RF 模式无后缀（保持既有文件名/结果不变）；MLP 模式追加网络标签以并存。"""
+    return "" if SURROGATE_KIND != "mlp" else f"__{_mlp_tag()}"
+
+
+def _save_mlp_model(name: str, model: "MLPEnsemble") -> None:
+    """持久化训练好的 MLP 集成（含归一化参数与各成员权重），文件名标注网络结构。"""
+    mdl_dir = PROJ / "data" / "processed_data" / "calibration" / "mlp_models"
+    mdl_dir.mkdir(parents=True, exist_ok=True)
+    path = mdl_dir / f"{name}_{_mlp_tag()}.joblib"
+    joblib.dump(model, path)
+    print(f"  Saved MLP ensemble: {path}", flush=True)
+
+
+def _parse_args(argv: list[str]) -> list[str]:
+    """解析命令行：--mlp / --rf / --surrogate=<kind> 设定代理；其余视作场景名。
+
+    通过模块级 SURROGATE_KIND 生效（不改变既有“位置参数=场景”的用法）。
+    """
+    global SURROGATE_KIND
+    scenes: list[str] = []
+    for a in argv:
+        al = a.lower()
+        if al == "--mlp":
+            SURROGATE_KIND = "mlp"
+        elif al == "--rf":
+            SURROGATE_KIND = "rf"
+        elif al.startswith("--surrogate="):
+            SURROGATE_KIND = al.split("=", 1)[1]
+        else:
+            scenes.append(a)
+    return scenes
+
 
 def _lhs_seed_for_scene(name: str) -> int:
     return {
@@ -178,11 +264,118 @@ def _fit_rf(X: np.ndarray, Y: np.ndarray, name: str) -> RandomForestRegressor | 
 
 
 def _rf_lcb(rf: RandomForestRegressor, X: np.ndarray, kappa: float) -> np.ndarray:
-    """下置信界：预测均值 − κ×树间标准差（越小越优）。"""
+    """下置信界：预测均值 − κ×成员间标准差（越小越优）。
+
+    对 RF 取树间方差，对 MLPEnsemble 取网络间方差——二者皆暴露
+    ``.estimators_``（每个成员有 ``.predict``），故同一函数可复用。
+    """
     preds = np.stack([t.predict(X) for t in rf.estimators_], axis=0)
     mu = preds.mean(axis=0)
     sigma = preds.std(axis=0)
     return mu - kappa * sigma
+
+
+# ═════════════════════════════════════════════════════════════════════
+# MLP 集成代理：与 RandomForestRegressor 接口对齐（.estimators_/.predict/.score）
+# ═════════════════════════════════════════════════════════════════════
+
+class _ScaledMLP:
+    """单个 MLP 成员：内部做输入/输出归一化，对外 .predict 接受原始参数尺度，
+    与决策树成员表现一致，从而可被 _rf_lcb 直接复用。"""
+
+    def __init__(self, mlp, x_lo, x_span, y_mean, y_std):
+        self.mlp = mlp
+        self.x_lo = x_lo
+        self.x_span = x_span
+        self.y_mean = y_mean
+        self.y_std = y_std
+
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        xs = (np.asarray(X, dtype=float) - self.x_lo) / self.x_span
+        return self.mlp.predict(xs) * self.y_std + self.y_mean
+
+
+class MLPEnsemble:
+    """RF 的平替：M 个独立 MLP 的集成。
+
+    输入 10 维参数向量、输出标量 J_b（与 RF 完全一致）；σ 由成员间分歧给出，
+    供 LCB 采集使用。接口（``estimators_`` / ``predict`` / ``score``）对齐
+    ``RandomForestRegressor``，因此 ``_rf_lcb`` / ``_pick_lcb_point`` 无需改动。
+    """
+
+    def __init__(self, hidden_layers, ensemble_size, activation,
+                 solver, alpha, max_iter, bootstrap):
+        self.hidden_layers = hidden_layers
+        self.ensemble_size = ensemble_size
+        self.activation = activation
+        self.solver = solver
+        self.alpha = alpha
+        self.max_iter = max_iter
+        self.bootstrap = bootstrap
+        self.estimators_: list[_ScaledMLP] = []
+
+    def fit(self, X: np.ndarray, Y: np.ndarray, bounds: np.ndarray) -> "MLPEnsemble":
+        X = np.asarray(X, dtype=float)
+        Y = np.asarray(Y, dtype=float)
+        x_lo = bounds[:, 0]
+        x_span = np.maximum(bounds[:, 1] - bounds[:, 0], 1e-6)
+        y_mean = float(Y.mean())
+        y_std = float(Y.std()) or 1.0
+        n = len(X)
+        self.estimators_ = []
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")  # 抑制 lbfgs 偶发未收敛告警
+            for m in range(self.ensemble_size):
+                seed = 42 + m
+                if self.bootstrap:
+                    idx = np.random.RandomState(seed).randint(0, n, n)
+                    xb, yb = X[idx], Y[idx]
+                else:
+                    xb, yb = X, Y
+                xs = (xb - x_lo) / x_span
+                ys = (yb - y_mean) / y_std
+                mlp = MLPRegressor(
+                    hidden_layer_sizes=self.hidden_layers,
+                    activation=self.activation,
+                    solver=self.solver,
+                    alpha=self.alpha,
+                    max_iter=self.max_iter,
+                    random_state=seed,
+                )
+                mlp.fit(xs, ys)
+                self.estimators_.append(
+                    _ScaledMLP(mlp, x_lo, x_span, y_mean, y_std))
+        return self
+
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        preds = np.stack([e.predict(X) for e in self.estimators_], axis=0)
+        return preds.mean(axis=0)
+
+    def score(self, X: np.ndarray, Y: np.ndarray) -> float:
+        return float(r2_score(np.asarray(Y, dtype=float), self.predict(X)))
+
+
+def _fit_mlp(X: np.ndarray, Y: np.ndarray, name: str) -> MLPEnsemble | None:
+    valid = ~np.isnan(Y) & (Y < 10.0)
+    if valid.sum() < MIN_VALID_RF:
+        return None
+    ens = MLPEnsemble(
+        hidden_layers=MLP_HIDDEN_LAYERS,
+        ensemble_size=MLP_ENSEMBLE_SIZE,
+        activation=MLP_ACTIVATION,
+        solver=MLP_SOLVER,
+        alpha=MLP_ALPHA,
+        max_iter=MLP_MAX_ITER,
+        bootstrap=MLP_BOOTSTRAP,
+    )
+    return ens.fit(X[valid], Y[valid], get_param_bounds(name))
+
+
+def _fit_surrogate(X: np.ndarray, Y: np.ndarray, name: str):
+    """按 SURROGATE_KIND 选择代理：'mlp' → MLP 集成；其余 → 随机森林。"""
+    if SURROGATE_KIND == "mlp":
+        return _fit_mlp(X, Y, name)
+    return _fit_rf(X, Y, name)
 
 
 def _min_rel_dist(cand: np.ndarray, X_seen: np.ndarray, bounds: np.ndarray) -> np.ndarray:
@@ -417,21 +610,22 @@ def calibrate_one(name: str) -> dict:
     rf_rmse: float | None = None
     rf_r2: float | None = None
     seq_errors: list[float] = []
+    model = None
 
     for j in range(n_seq):
-        rf = _fit_rf(X[:n_seen], Y[:n_seen], name)
-        if rf is None:
-            print("       [!] Too few valid runs for RF; stopping sequential phase", flush=True)
+        model = _fit_surrogate(X[:n_seen], Y[:n_seen], name)
+        if model is None:
+            print("       [!] Too few valid runs for surrogate; stopping sequential phase", flush=True)
             break
 
-        pred_tr = rf.predict(X[:n_seen])
+        pred_tr = model.predict(X[:n_seen])
         valid = ~np.isnan(Y[:n_seen]) & (Y[:n_seen] < 10.0)
         rf_rmse = float(np.sqrt(mean_squared_error(Y[:n_seen][valid], pred_tr[valid])))
-        rf_r2 = float(rf.score(X[:n_seen][valid], Y[:n_seen][valid]))
+        rf_r2 = float(model.score(X[:n_seen][valid], Y[:n_seen][valid]))
 
         best_idx = int(np.nanargmin(Y[:n_seen]))
         x_best = X[best_idx].copy()
-        x_new = _pick_lcb_point(rf, bounds_arr, X[:n_seen], x_best, LC_KAPPA, rng)
+        x_new = _pick_lcb_point(model, bounds_arr, X[:n_seen], x_best, LC_KAPPA, rng)
         params = dict(zip(PARAM_NAMES, x_new))
 
         err, sf = _eval_params(name, params, real_feat, weights)
@@ -453,7 +647,10 @@ def calibrate_one(name: str) -> dict:
         })
         if (j + 1) % 5 == 0 or j == n_seq - 1:
             print(f"       seq {j+1:>2d}/{n_seq}  err={err:.4f}  best={running_best:.4f}"
-                  f"  RF R2={rf_r2:.3f}", flush=True)
+                  f"  R2={rf_r2:.3f}", flush=True)
+
+    if SURROGATE_KIND == "mlp" and model is not None:
+        _save_mlp_model(name, model)
 
     best_idx = int(np.nanargmin(Y[:n_seen]))
     best_params = dict(zip(PARAM_NAMES, X[best_idx]))
@@ -484,6 +681,8 @@ def calibrate_one(name: str) -> dict:
     return {
         "scenario": name,
         "calibration_mode": "sequential_lcb",
+        "surrogate": SURROGATE_KIND,
+        "surrogate_config": _surrogate_config(),
         "calibrated_params": {k: round(v, 4) for k, v in best_params.items()},
         "feature_error": round(best_err, 4),
         "doe_best_error": round(doe_best_err, 4),
@@ -530,7 +729,10 @@ def main() -> None:
     out_dir = PROJ / "data" / "processed_data" / "calibration"
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    targets = sys.argv[1:] if len(sys.argv) > 1 else list(SCENARIOS.keys())
+    targets = _parse_args(sys.argv[1:]) or list(SCENARIOS.keys())
+    suffix = _out_suffix()
+    if SURROGATE_KIND == "mlp":
+        print(f"[surrogate] MLP ensemble ({_mlp_tag()}); outputs suffixed '{suffix}'")
 
     all_results = {}
     for name in targets:
@@ -540,24 +742,26 @@ def main() -> None:
         result = calibrate_one(name)
         all_results[name] = result
 
-        per_file = out_dir / f"{name}_calibration.json"
+        per_file = out_dir / f"{name}_calibration{suffix}.json"
         slim = {k: v for k, v in result.items() if k != "doe_history"}
         per_file.write_text(json.dumps(slim, ensure_ascii=False, indent=2),
                             encoding="utf-8")
         print(f"  Saved: {per_file}")
 
         # Full version with convergence history
-        hist_file = out_dir / f"{name}_calibration_with_history.json"
+        hist_file = out_dir / f"{name}_calibration_with_history{suffix}.json"
         hist_file.write_text(json.dumps(result, ensure_ascii=False, indent=2),
                              encoding="utf-8")
         print(f"  Saved (with history): {hist_file}")
 
-        apply_calibration(name, result["calibrated_params"])
+        # 仅 RF（默认）模式写回 .rou.xml，避免 MLP 实验污染既有标定产物
+        if SURROGATE_KIND != "mlp":
+            apply_calibration(name, result["calibrated_params"])
 
     if not all_results:
         return
 
-    all_path = out_dir / "calibration_all.json"
+    all_path = out_dir / f"calibration_all{suffix}.json"
     merged: dict = {}
     if all_path.exists():
         try:
@@ -571,7 +775,7 @@ def main() -> None:
 
     summary_rows = []
     for name in SCENARIOS:
-        pf = out_dir / f"{name}_calibration.json"
+        pf = out_dir / f"{name}_calibration{suffix}.json"
         if not pf.exists():
             continue
         r = json.loads(pf.read_text(encoding="utf-8"))
@@ -579,7 +783,7 @@ def main() -> None:
         row.update(r["calibrated_params"])
         summary_rows.append(row)
     summary_df = pd.DataFrame(summary_rows)
-    summary_path = out_dir / "calibration_summary.csv"
+    summary_path = out_dir / f"calibration_summary{suffix}.csv"
     summary_df.to_csv(summary_path, index=False, encoding="utf-8-sig")
     print(f"\nCalibration summary → {summary_path}")
 
