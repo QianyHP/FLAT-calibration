@@ -263,6 +263,9 @@ def _rf_pick_lcb_point(
 #     CV 证实关掉 bootstrap 会令 σ 塌缩、严重过自信，务必保留
 #   - σ 校准系数 1.2：MLP 集成的成员间 σ 偏过自信（CV 得 c*≈1.2 才达 95% 覆盖），
 #     在 LCB 中按此放大 σ，使探索更充分（见 _mlp_lcb）
+#   - 子采样（subagging）抗过拟合：每轮每个成员只在「固定大小 = N_INIT」的随机子集上训练，
+#     而非全部历史数据。Phase B 数据从 60 增至 100 时，单个网络始终只见 ≤60 个点，
+#     既降低单网络过拟合，又让各成员看到不同子集、进一步增大分歧（详见 MLPEnsemble.fit）。
 MLP_HIDDEN_LAYERS = (64, 64)   # 每个 MLP 的隐藏层 → 神经元数
 MLP_ENSEMBLE_SIZE = 10         # 并行训练的网络个数（集成成员数）
 MLP_ACTIVATION = "tanh"
@@ -271,6 +274,7 @@ MLP_ALPHA = 1e-3
 MLP_MAX_ITER = 2000
 MLP_BOOTSTRAP = True
 MLP_SIGMA_CALIB = 1.2          # σ 校准放大系数（修正集成 σ 的过自信）
+MLP_TRAIN_SUBSET = N_INIT      # 每个成员训练子集大小（= Phase A 数据量 60）；抗过拟合子采样
 
 
 def _mlp_tag() -> str:
@@ -304,7 +308,7 @@ class MLPEnsemble:
     """
 
     def __init__(self, hidden_layers, ensemble_size, activation,
-                 solver, alpha, max_iter, bootstrap):
+                 solver, alpha, max_iter, bootstrap, subset_size=None):
         self.hidden_layers = hidden_layers
         self.ensemble_size = ensemble_size
         self.activation = activation
@@ -312,6 +316,7 @@ class MLPEnsemble:
         self.alpha = alpha
         self.max_iter = max_iter
         self.bootstrap = bootstrap
+        self.subset_size = subset_size   # 每个成员训练子集上限（None=用全部历史数据）
         self.seeds: list[int] = []       # 各成员实际抽到的随机种子（运行时记录）
         self.members: list[_ScaledMLP] = []
 
@@ -323,18 +328,24 @@ class MLPEnsemble:
         y_mean = float(Y.mean())
         y_std = float(Y.std()) or 1.0
         n = len(X)
+        # 每个成员训练子集大小 k：抗过拟合子采样，固定为 subset_size（= N_INIT），
+        # 但不超过当前可用样本数 n。Phase B 数据增至 100 时仍只取 60，使单网络不“吃满”全部数据。
+        k = min(self.subset_size, n) if self.subset_size else n
         self.members = []
         self.seeds = []
         # 由操作系统熵源播种，给每个子 MLP 抽取互不相同的随机种子，
-        # 使各成员的网络参数初始化（及 bootstrap 重采样）真正随机、互相多样。
+        # 使各成员的网络参数初始化（及子采样）真正随机、互相多样。
         seed_rng = np.random.default_rng()
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")  # 抑制 lbfgs 偶发未收敛告警
             for m in range(self.ensemble_size):
                 seed = int(seed_rng.integers(0, 2**31 - 1))
                 self.seeds.append(seed)
-                if self.bootstrap:
-                    idx = np.random.RandomState(seed).randint(0, n, n)
+                # bootstrap=True → 有放回抽 k 个（保留 σ 分歧，CV 验证必需）；
+                # bootstrap=False → 无放回抽 k 个（k<n 时为真子集）。k==n 且无放回时即全量。
+                if self.bootstrap or k < n:
+                    idx = np.random.RandomState(seed).choice(
+                        n, size=k, replace=self.bootstrap)
                     xb, yb = X[idx], Y[idx]
                 else:
                     xb, yb = X, Y
@@ -373,6 +384,7 @@ def _fit_mlp(X: np.ndarray, Y: np.ndarray, name: str) -> MLPEnsemble | None:
         alpha=MLP_ALPHA,
         max_iter=MLP_MAX_ITER,
         bootstrap=MLP_BOOTSTRAP,
+        subset_size=MLP_TRAIN_SUBSET,
     )
     return ens.fit(X[valid], Y[valid], get_param_bounds(name))
 
@@ -453,6 +465,7 @@ def _surrogate_config() -> dict | None:
         "max_iter": MLP_MAX_ITER,
         "bootstrap": MLP_BOOTSTRAP,
         "sigma_calib": MLP_SIGMA_CALIB,
+        "train_subset": MLP_TRAIN_SUBSET,
     }
 
 
