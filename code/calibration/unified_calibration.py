@@ -266,15 +266,19 @@ def _rf_pick_lcb_point(
 #   - 子采样（subagging）抗过拟合：每轮每个成员只在「固定大小 = N_INIT」的随机子集上训练，
 #     而非全部历史数据。Phase B 数据从 60 增至 100 时，单个网络始终只见 ≤60 个点，
 #     既降低单网络过拟合，又让各成员看到不同子集、进一步增大分歧（详见 MLPEnsemble.fit）。
+#   - warm-start 增量续训：Phase B 首轮从零训练，之后每轮在「上一轮各成员的权重」上继续
+#     训练（lbfgs 从已有权重出发再优化），而非每轮从零重训；新增样本得以增量更新参数。
+#     为使续训在同一目标尺度下进行，输出归一化(y_mean/y_std)在首训时冻结（见 MLPEnsemble.update）。
 MLP_HIDDEN_LAYERS = (64, 64)   # 每个 MLP 的隐藏层 → 神经元数
 MLP_ENSEMBLE_SIZE = 10         # 并行训练的网络个数（集成成员数）
 MLP_ACTIVATION = "tanh"
 MLP_SOLVER = "lbfgs"
-MLP_ALPHA = 1e-3
+MLP_ALPHA = 1e-3          # L2 正则化强度（过拟合风险较大，需正则；CV 标定得到 1e-4 既能拟合又不至过拟合）
 MLP_MAX_ITER = 2000
 MLP_BOOTSTRAP = True
 MLP_SIGMA_CALIB = 1.2          # σ 校准放大系数（修正集成 σ 的过自信）
 MLP_TRAIN_SUBSET = N_INIT      # 每个成员训练子集大小（= Phase A 数据量 60）；抗过拟合子采样
+MLP_WARM_START = True          # Phase B 续训：每轮在上一轮成员权重上继续训练，而非从零重训
 
 
 def _mlp_tag() -> str:
@@ -308,7 +312,8 @@ class MLPEnsemble:
     """
 
     def __init__(self, hidden_layers, ensemble_size, activation,
-                 solver, alpha, max_iter, bootstrap, subset_size=None):
+                 solver, alpha, max_iter, bootstrap, subset_size=None,
+                 warm_start=False):
         self.hidden_layers = hidden_layers
         self.ensemble_size = ensemble_size
         self.activation = activation
@@ -317,8 +322,14 @@ class MLPEnsemble:
         self.max_iter = max_iter
         self.bootstrap = bootstrap
         self.subset_size = subset_size   # 每个成员训练子集上限（None=用全部历史数据）
+        self.warm_start = warm_start     # True → 各成员可在已有权重上续训（见 update）
         self.seeds: list[int] = []       # 各成员实际抽到的随机种子（运行时记录）
         self.members: list[_ScaledMLP] = []
+        # 首训时冻结的归一化（供 warm-start 续训复用，保证同一输入/目标尺度）
+        self.x_lo = None
+        self.x_span = None
+        self.y_mean = None
+        self.y_std = None
 
     def fit(self, X: np.ndarray, Y: np.ndarray, bounds: np.ndarray) -> "MLPEnsemble":
         X = np.asarray(X, dtype=float)
@@ -327,6 +338,9 @@ class MLPEnsemble:
         x_span = np.maximum(bounds[:, 1] - bounds[:, 0], 1e-6)
         y_mean = float(Y.mean())
         y_std = float(Y.std()) or 1.0
+        # 冻结首训归一化，供后续 warm-start 续训复用（保证同一输入/目标尺度）
+        self.x_lo, self.x_span = x_lo, x_span
+        self.y_mean, self.y_std = y_mean, y_std
         n = len(X)
         # 每个成员训练子集大小 k：抗过拟合子采样，固定为 subset_size（= N_INIT），
         # 但不超过当前可用样本数 n。Phase B 数据增至 100 时仍只取 60，使单网络不“吃满”全部数据。
@@ -358,10 +372,40 @@ class MLPEnsemble:
                     alpha=self.alpha,
                     max_iter=self.max_iter,
                     random_state=seed,
+                    warm_start=self.warm_start,  # True → 后续 update 可在此权重上续训
                 )
                 mlp.fit(xs, ys)
                 self.members.append(
                     _ScaledMLP(mlp, x_lo, x_span, y_mean, y_std))
+        return self
+
+    def update(self, X: np.ndarray, Y: np.ndarray, bounds: np.ndarray) -> "MLPEnsemble":
+        """Phase B 增量续训：在「已有成员权重」上继续训练，而非从零重建。
+
+        - 复用首训冻结的归一化(x/y)，使续训在同一输入/目标尺度下进行；
+        - 每个成员各自重抽一份子集（大小 = subset_size），从当前权重出发再用
+          lbfgs 优化（warm_start=True，通常很快收敛到含新样本的新最优）；
+        - 各成员起始权重不同、每轮所见子集不同，故续训中仍保持成员间分歧（σ）。
+        若尚未首训（members 为空），退化为从零 fit。
+        """
+        if not self.members:
+            return self.fit(X, Y, bounds)
+        X = np.asarray(X, dtype=float)
+        Y = np.asarray(Y, dtype=float)
+        n = len(X)
+        k = min(self.subset_size, n) if self.subset_size else n
+        sub_rng = np.random.default_rng()  # 每轮重新随机抽子集
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")  # 抑制 lbfgs 偶发未收敛告警
+            for member in self.members:
+                if self.bootstrap or k < n:
+                    idx = sub_rng.choice(n, size=k, replace=self.bootstrap)
+                    xb, yb = X[idx], Y[idx]
+                else:
+                    xb, yb = X, Y
+                xs = (xb - self.x_lo) / self.x_span
+                ys = (yb - self.y_mean) / self.y_std
+                member.mlp.fit(xs, ys)  # warm_start=True → 在已有权重上续训
         return self
 
     def predict(self, X: np.ndarray) -> np.ndarray:
@@ -385,8 +429,18 @@ def _fit_mlp(X: np.ndarray, Y: np.ndarray, name: str) -> MLPEnsemble | None:
         max_iter=MLP_MAX_ITER,
         bootstrap=MLP_BOOTSTRAP,
         subset_size=MLP_TRAIN_SUBSET,
+        warm_start=MLP_WARM_START,
     )
     return ens.fit(X[valid], Y[valid], get_param_bounds(name))
+
+
+def _update_mlp(ens: MLPEnsemble, X: np.ndarray, Y: np.ndarray,
+                name: str) -> MLPEnsemble:
+    """Phase B 续训：在已有集成上增量更新（warm-start），保留各成员权重。"""
+    valid = ~np.isnan(Y) & (Y < 10.0)
+    if valid.sum() < MIN_VALID_RF:
+        return ens
+    return ens.update(X[valid], Y[valid], get_param_bounds(name))
 
 
 def _mlp_lcb(ens: MLPEnsemble, X: np.ndarray, kappa: float) -> np.ndarray:
@@ -466,6 +520,7 @@ def _surrogate_config() -> dict | None:
         "bootstrap": MLP_BOOTSTRAP,
         "sigma_calib": MLP_SIGMA_CALIB,
         "train_subset": MLP_TRAIN_SUBSET,
+        "warm_start": MLP_WARM_START,
     }
 
 
@@ -690,7 +745,12 @@ def calibrate_one(name: str) -> dict:
     model = None
 
     for j in range(n_seq):
-        model = _fit_surrogate(X[:n_seen], Y[:n_seen], name)
+        if (SURROGATE_KIND == "mlp" and MLP_WARM_START
+                and isinstance(model, MLPEnsemble)):
+            # MLP 续训：在上一轮成员权重上增量更新（首轮 model 仍为 None，走下面从零训练）
+            model = _update_mlp(model, X[:n_seen], Y[:n_seen], name)
+        else:
+            model = _fit_surrogate(X[:n_seen], Y[:n_seen], name)
         if model is None:
             print("       [!] Too few valid runs for surrogate; stopping sequential phase", flush=True)
             break
