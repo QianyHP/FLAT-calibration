@@ -1,0 +1,4 @@
+﻿scenario,feature_error,accel,decel,sigma,tau,minGap,speedFactor,lcStrategic,lcCooperative,lcAssertive,lcSpeedGain
+Tianjin,0.1556,1.3539,5.5449,0.213,2.004,1.423,0.5687,1.6874,1.7896,2.6892,2.4425
+Changchun,0.2173,2.2812,4.2009,0.8603,0.6083,1.1146,0.5499,0.6949,1.8599,2.0969,2.6409
+XAM-N6,0.1069,1.3488,3.0069,0.7595,2.3844,2.9997,1.104,0.9976,1.5184,2.0505,2.3775
