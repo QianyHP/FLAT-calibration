@@ -224,33 +224,61 @@ python code/calibration/unified_calibration.py --rf
 
 > `--mlp` / `--rf` / `--surrogate=<kind>` 之外的位置参数仍按「场景名」解析，用法与 RF 模式完全一致。
 
-### MLP 子采样的命令行参数化（仅 `--mlp` 模式有效，RF 不受影响）
+### MLP 超参的命令行参数化（仅 `--mlp` 模式有效，RF 一概不受影响）
 
-成员子采样的两个关键参数可直接在命令行覆盖，**无需改代码**（不传则用代码默认 `MLP_BOOTSTRAP=True` / `MLP_TRAIN_SUBSET=60`）：
+MLP 的全部可调超参都能直接在命令行覆盖，**无需改代码**（不传则用顶部常量的默认值）。适合做参数扫描（如平行量 5 vs 10、结构、正则）而不必反复改源码：
 
 ```bash
-# 关闭有放回重采样（无放回抽子集）
-python code/calibration/unified_calibration.py --mlp --no-bootstrap XAM-N6
+# 平行量（集成成员数）：5 vs 10
+python code/calibration/unified_calibration.py --mlp --ensemble=5 XAM-N6
 
-# 无放回 + 子集大小 40（消除重复样本、靠更小子集维持成员分歧）
-python code/calibration/unified_calibration.py --mlp --no-bootstrap --subset=40 XAM-N6
+# 网络结构 / 正则 / 迭代 / 激活 / 求解器
+python code/calibration/unified_calibration.py --mlp --hidden=128,128 --alpha=3e-3 XAM-N6
+python code/calibration/unified_calibration.py --mlp --activation=relu --solver=adam --max-iter=500 XAM-N6
+python code/calibration/unified_calibration.py --mlp --sigma-calib=1.5 XAM-N6
 
-# 改子集大小 / 用全部历史数据（不做子采样）
-python code/calibration/unified_calibration.py --mlp --subset=80 XAM-N6
-python code/calibration/unified_calibration.py --mlp --subset=none XAM-N6   # none/all/full/0 均表示用全部数据
+# 子采样 / 续训
+python code/calibration/unified_calibration.py --mlp --no-bootstrap --subset=40 XAM-N6   # 无放回 + 40 子集
+python code/calibration/unified_calibration.py --mlp --subset=none XAM-N6                # 用全部历史数据
+python code/calibration/unified_calibration.py --mlp --no-warm-start XAM-N6              # 每轮从零重训
+
+# 组合：平行量 5 + 无放回 40 子集
+python code/calibration/unified_calibration.py --mlp --ensemble=5 --no-bootstrap --subset=40 Tianjin
 ```
 
 | 参数 | 取值 | 作用（覆盖的常量） |
 |------|------|------|
+| `--ensemble=<M>` | 正整数 | `MLP_ENSEMBLE_SIZE`：集成成员数（“平行量”，如 5/10） |
+| `--hidden=<A,B,...>` | 逗号分隔整数 | `MLP_HIDDEN_LAYERS`：各隐藏层神经元数（如 `64,64` 或 `128`） |
+| `--activation=<name>` | `tanh`/`relu`/… | `MLP_ACTIVATION`：激活函数 |
+| `--solver=<name>` | `lbfgs`/`adam`/`sgd` | `MLP_SOLVER`：求解器 |
+| `--alpha=<x>` | 浮点 | `MLP_ALPHA`：L2 正则强度 |
+| `--max-iter=<N>` | 正整数 | `MLP_MAX_ITER`：单次拟合最大迭代 |
+| `--sigma-calib=<x>` | 浮点 | `MLP_SIGMA_CALIB`：σ 校准放大系数 |
 | `--bootstrap` / `--no-bootstrap` | 开 / 关 | `MLP_BOOTSTRAP`：成员训练子集是否有放回抽样 |
 | `--subset=<N>` | 正整数 | `MLP_TRAIN_SUBSET`：每个成员训练子集大小 |
 | `--subset=none` | `none`/`all`/`full`/`0` | `MLP_TRAIN_SUBSET=None`，用全部历史数据、不做子采样 |
+| `--warm-start` / `--no-warm-start` | 开 / 关 | `MLP_WARM_START`：Phase B 是否在上一轮权重上续训 |
 
+> 取值无法解析时（如 `--ensemble=abc`）会打印告警并**保留默认值**，不会中断运行。
 > 提示：仅把 bootstrap 关掉而子集仍为 60，离线 CV 显示会令 σ 塌缩（成员重叠过高）；如要无放回，建议同时 `--subset=40` 维持成员分歧。
 
 ### 输出与 RF 并存（不会互相覆盖）
 
-MLP 模式下，结果文件名追加网络结构标签 `__<tag>`（`tag` 由 `_mlp_tag()` 生成，形如 `mlp_h64-64_m10`，编码隐藏层与集成规模），因此 **RF 的既有结果不会被覆盖**。**非默认的子采样设置还会再追加标记，避免实验覆盖默认结果**：`--no-bootstrap` → `_nob`、`--subset=N` → `_sN`、`--subset=none` → `_sfull`（例：`--no-bootstrap --subset=40` 得 `mlp_h64-64_m10_nob_s40`）：
+MLP 模式下，结果文件名追加网络结构标签 `__<tag>`（`tag` 由 `_mlp_tag()` 生成，主标签形如 `mlp_h64-64_m10`，始终编码隐藏层与平行量），因此 **RF 的既有结果不会被覆盖**。**任何被改成非默认的超参都会再追加紧凑标记，让参数扫描的每个配置各自落盘、互不覆盖**（默认配置标签保持不变、向后兼容）：
+
+| 改动 | 追加标记 | 例 |
+|------|---------|----|
+| `--activation=relu` | `_ac<name>` | `..._m10_acrelu` |
+| `--solver=adam` | `_sv<name>` | `..._m10_svadam` |
+| `--alpha=3e-3` | `_a<x>` | `..._m10_a0.003` |
+| `--max-iter=500` | `_it<N>` | `..._m10_it500` |
+| `--no-bootstrap` | `_nob` | `..._m10_nob` |
+| `--subset=40` / `none` | `_s40` / `_sfull` | `..._m10_s40` |
+| `--no-warm-start` | `_nows` | `..._m10_nows` |
+| `--sigma-calib=1.5` | `_sc<x>` | `..._m10_sc1.5` |
+
+（`--ensemble` / `--hidden` 直接体现在主标签的 `m..` / `h..` 上。例：`--ensemble=5 --no-bootstrap --subset=40` 得 `mlp_h64-64_m5_nob_s40`。）
 
 | 产物 | RF（默认） | MLP |
 |------|-----------|-----|
@@ -260,7 +288,7 @@ MLP 模式下，结果文件名追加网络结构标签 `__<tag>`（`tag` 由 `_
 
 ### MLP 集成配置（`unified_calibration.py` 顶部常量，可按需调整）
 
-下表所列默认值经**日志离线交叉验证**标定（在已评估点上做 RepeatedKFold，比较 RMSE / R² / σ 校准），是当前数据支撑的最优组合：
+下表所列默认值经**日志离线交叉验证**标定（在已评估点上做 RepeatedKFold，比较 RMSE / R² / σ 校准），是当前数据支撑的最优组合。**下表每一项都可在命令行覆盖**（见上文「MLP 超参的命令行参数化」），改源码与传参二选一：
 
 | 项 | 默认值 | 说明 |
 |----|--------|------|

@@ -15,13 +15,15 @@ Behavioral Fingerprint Surrogate-Assisted Calibration (BF-SAC)
   python unified_calibration.py --mlp XAM-N6 # 单场景 + MLP
   BFSAC_SURROGATE=mlp python unified_calibration.py   # 等价环境变量写法
 
-  # MLP 子采样可在命令行参数化（仅 MLP 模式有效，RF 不受影响）：
+  # MLP 超参可在命令行参数化（仅 MLP 模式有效，RF 不受影响）：
+  python unified_calibration.py --mlp --ensemble=5 XAM-N6                # 平行量改为 5
+  python unified_calibration.py --mlp --hidden=128,128 --alpha=3e-3 XAM-N6  # 改结构/正则
   python unified_calibration.py --mlp --no-bootstrap --subset=40 XAM-N6  # 无放回 + 40 子集
   python unified_calibration.py --mlp --subset=none XAM-N6               # 用全部历史数据
 
 代理选择：RF（随机森林，默认）与 MLP（深度集成）二选一，框架/预算/LCB 不变。
 MLP 模式输出文件名追加 ``__mlp_hX-Y_mM`` 后缀并保存网络权重，绝不覆盖 RF 结果；
-``--no-bootstrap`` / ``--subset=N`` 等非默认设置会再追加 ``_nob`` / ``_sN`` 以区分实验。
+被改成非默认的超参会再追加紧凑标记（如 ``_a0.003`` / ``_nob`` / ``_s40``）以区分实验。
 """
 
 from __future__ import annotations
@@ -275,29 +277,52 @@ def _rf_pick_lcb_point(
 #     训练（lbfgs 从已有权重出发再优化），而非每轮从零重训；新增样本得以增量更新参数。
 #     为使续训在同一目标尺度下进行，输出归一化(y_mean/y_std)在首训时冻结（见 MLPEnsemble.update）。
 MLP_HIDDEN_LAYERS = (64, 64)   # 每个 MLP 的隐藏层 → 神经元数
-MLP_ENSEMBLE_SIZE = 10         # 并行训练的网络个数（集成成员数）
+MLP_ENSEMBLE_SIZE = 10         # 并行训练的网络个数（集成成员数，即“平行量”）
 MLP_ACTIVATION = "tanh"
 MLP_SOLVER = "lbfgs"
-MLP_ALPHA = 1e-3          # L2 正则化强度（过拟合风险较大，需正则；CV 标定得到 1e-4 既能拟合又不至过拟合）
+MLP_ALPHA = 1e-3          # L2 正则化强度（过拟合风险较大，需正则；CV 标定得到 1e-3 既能拟合又不至过拟合）
 MLP_MAX_ITER = 2000
 MLP_BOOTSTRAP = True
 MLP_SIGMA_CALIB = 1.2          # σ 校准放大系数（修正集成 σ 的过自信）
 MLP_TRAIN_SUBSET = N_INIT      # 每个成员训练子集大小（= Phase A 数据量 60）；抗过拟合子采样
 MLP_WARM_START = True          # Phase B 续训：每轮在上一轮成员权重上继续训练，而非从零重训
 
+# 捕获 MLP 数值/字符串超参的「出厂默认值」（在任何命令行覆盖之前），
+# 供 _mlp_tag 判断某项是否被改成非默认，从而只在非默认时追加文件名标记。
+_MLP_DEFAULTS = {
+    "activation": MLP_ACTIVATION,
+    "solver": MLP_SOLVER,
+    "alpha": MLP_ALPHA,
+    "max_iter": MLP_MAX_ITER,
+    "sigma_calib": MLP_SIGMA_CALIB,
+}
+
 
 def _mlp_tag() -> str:
-    """编码网络结构信息，用于模型文件名与输出后缀，便于适配与区分。
+    """编码网络超参，用于模型文件名与输出后缀，便于区分不同实验、避免互相覆盖。
 
-    仅当 bootstrap/subset 为「非默认」时才追加标记（_nob / _sN / _sfull），
-    保证默认配置文件名不变、向后兼容，同时避免非默认实验覆盖默认结果文件。
+    主标签 `mlp_h<隐藏层>_m<集成数>` 始终反映网络结构与平行量；其余超参仅当被改成
+    「非默认」时才追加紧凑标记（_ac/_sv/_a/_it/_sc/_nob/_sN/_sfull/_nows），
+    从而保证默认配置文件名不变、向后兼容，同时让参数扫描的每个配置各自落盘、不覆盖。
     """
     h = "-".join(str(x) for x in MLP_HIDDEN_LAYERS)
     tag = f"mlp_h{h}_m{MLP_ENSEMBLE_SIZE}"
+    if MLP_ACTIVATION != _MLP_DEFAULTS["activation"]:
+        tag += f"_ac{MLP_ACTIVATION}"
+    if MLP_SOLVER != _MLP_DEFAULTS["solver"]:
+        tag += f"_sv{MLP_SOLVER}"
+    if MLP_ALPHA != _MLP_DEFAULTS["alpha"]:
+        tag += f"_a{MLP_ALPHA:g}"
+    if MLP_MAX_ITER != _MLP_DEFAULTS["max_iter"]:
+        tag += f"_it{MLP_MAX_ITER}"
     if not MLP_BOOTSTRAP:
         tag += "_nob"                                   # 关闭自助重采样（非默认）
     if MLP_TRAIN_SUBSET != N_INIT:
         tag += "_sfull" if not MLP_TRAIN_SUBSET else f"_s{MLP_TRAIN_SUBSET}"
+    if not MLP_WARM_START:
+        tag += "_nows"                                  # 关闭 warm-start 续训（非默认）
+    if MLP_SIGMA_CALIB != _MLP_DEFAULTS["sigma_calib"]:
+        tag += f"_sc{MLP_SIGMA_CALIB:g}"
     return tag
 
 
@@ -547,12 +572,37 @@ def _parse_args(argv: list[str]) -> list[str]:
     """解析命令行；均通过模块级全局变量生效（不改变既有“位置参数=场景”的用法）。
 
     代理选择：--mlp / --rf / --surrogate=<kind>
-    MLP 子采样（仅 MLP 模式有意义，RF 不受影响）：
-      --bootstrap / --no-bootstrap   开/关成员自助重采样（有放回）→ MLP_BOOTSTRAP
+    MLP 超参（仅 MLP 模式有意义，RF 一概不受影响）：
+      --ensemble=<M>                 集成成员数（“平行量”，如 5/10） → MLP_ENSEMBLE_SIZE
+      --hidden=<A,B,...>             隐藏层神经元，逗号分隔（如 64,64 或 128） → MLP_HIDDEN_LAYERS
+      --activation=<name>            激活函数（tanh/relu/...） → MLP_ACTIVATION
+      --solver=<name>                求解器（lbfgs/adam/sgd） → MLP_SOLVER
+      --alpha=<x>                    L2 正则强度（如 1e-3） → MLP_ALPHA
+      --max-iter=<N>                 单次拟合最大迭代 → MLP_MAX_ITER
+      --sigma-calib=<x>              σ 校准放大系数 → MLP_SIGMA_CALIB
+      --bootstrap / --no-bootstrap   开/关成员自助重采样（有放回） → MLP_BOOTSTRAP
       --subset=<N|none>              每个成员训练子集大小；none/all/full/0 表示用全部历史 → MLP_TRAIN_SUBSET
+      --warm-start / --no-warm-start Phase B 是否在上一轮权重上续训 → MLP_WARM_START
     其余参数一律视作场景名。
     """
-    global SURROGATE_KIND, MLP_BOOTSTRAP, MLP_TRAIN_SUBSET
+    global SURROGATE_KIND, MLP_BOOTSTRAP, MLP_TRAIN_SUBSET, MLP_WARM_START
+    global MLP_ENSEMBLE_SIZE, MLP_HIDDEN_LAYERS, MLP_ACTIVATION, MLP_SOLVER
+    global MLP_ALPHA, MLP_MAX_ITER, MLP_SIGMA_CALIB
+
+    def _num(flag, raw, cast, current):
+        """解析数值/结构参数，失败则告警并保留默认。"""
+        try:
+            return cast(raw)
+        except (ValueError, TypeError):
+            print(f"       [!] 无法解析 {flag}={raw}，保留默认 {current}", flush=True)
+            return current
+
+    def _hidden(raw):
+        layers = tuple(int(x) for x in raw.split(",") if x.strip())
+        if not layers:
+            raise ValueError(raw)
+        return layers
+
     scenes: list[str] = []
     for a in argv:
         al = a.lower()
@@ -566,16 +616,30 @@ def _parse_args(argv: list[str]) -> list[str]:
             MLP_BOOTSTRAP = True
         elif al == "--no-bootstrap":
             MLP_BOOTSTRAP = False
+        elif al == "--warm-start":
+            MLP_WARM_START = True
+        elif al == "--no-warm-start":
+            MLP_WARM_START = False
         elif al.startswith("--subset="):
             v = al.split("=", 1)[1]
             if v in ("none", "all", "full", "0"):
                 MLP_TRAIN_SUBSET = None          # 用全部历史数据，不做子采样
             else:
-                try:
-                    MLP_TRAIN_SUBSET = int(v)
-                except ValueError:
-                    print(f"       [!] 无法解析 --subset={v}，保留默认 "
-                          f"{MLP_TRAIN_SUBSET}", flush=True)
+                MLP_TRAIN_SUBSET = _num("--subset", v, int, MLP_TRAIN_SUBSET)
+        elif al.startswith("--ensemble="):
+            MLP_ENSEMBLE_SIZE = _num("--ensemble", al.split("=", 1)[1], int, MLP_ENSEMBLE_SIZE)
+        elif al.startswith("--hidden="):
+            MLP_HIDDEN_LAYERS = _num("--hidden", a.split("=", 1)[1], _hidden, MLP_HIDDEN_LAYERS)
+        elif al.startswith("--activation="):
+            MLP_ACTIVATION = al.split("=", 1)[1]
+        elif al.startswith("--solver="):
+            MLP_SOLVER = al.split("=", 1)[1]
+        elif al.startswith("--alpha="):
+            MLP_ALPHA = _num("--alpha", al.split("=", 1)[1], float, MLP_ALPHA)
+        elif al.startswith("--max-iter="):
+            MLP_MAX_ITER = _num("--max-iter", al.split("=", 1)[1], int, MLP_MAX_ITER)
+        elif al.startswith("--sigma-calib="):
+            MLP_SIGMA_CALIB = _num("--sigma-calib", al.split("=", 1)[1], float, MLP_SIGMA_CALIB)
         else:
             scenes.append(a)
     return scenes
