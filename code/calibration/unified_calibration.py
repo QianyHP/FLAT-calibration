@@ -15,8 +15,13 @@ Behavioral Fingerprint Surrogate-Assisted Calibration (BF-SAC)
   python unified_calibration.py --mlp XAM-N6 # 单场景 + MLP
   BFSAC_SURROGATE=mlp python unified_calibration.py   # 等价环境变量写法
 
+  # MLP 子采样可在命令行参数化（仅 MLP 模式有效，RF 不受影响）：
+  python unified_calibration.py --mlp --no-bootstrap --subset=40 XAM-N6  # 无放回 + 40 子集
+  python unified_calibration.py --mlp --subset=none XAM-N6               # 用全部历史数据
+
 代理选择：RF（随机森林，默认）与 MLP（深度集成）二选一，框架/预算/LCB 不变。
-MLP 模式输出文件名追加 ``__mlp_hX-Y_mM`` 后缀并保存网络权重，绝不覆盖 RF 结果。
+MLP 模式输出文件名追加 ``__mlp_hX-Y_mM`` 后缀并保存网络权重，绝不覆盖 RF 结果；
+``--no-bootstrap`` / ``--subset=N`` 等非默认设置会再追加 ``_nob`` / ``_sN`` 以区分实验。
 """
 
 from __future__ import annotations
@@ -282,9 +287,18 @@ MLP_WARM_START = True          # Phase B 续训：每轮在上一轮成员权重
 
 
 def _mlp_tag() -> str:
-    """编码网络结构信息，用于模型文件名与输出后缀，便于适配与区分。"""
+    """编码网络结构信息，用于模型文件名与输出后缀，便于适配与区分。
+
+    仅当 bootstrap/subset 为「非默认」时才追加标记（_nob / _sN / _sfull），
+    保证默认配置文件名不变、向后兼容，同时避免非默认实验覆盖默认结果文件。
+    """
     h = "-".join(str(x) for x in MLP_HIDDEN_LAYERS)
-    return f"mlp_h{h}_m{MLP_ENSEMBLE_SIZE}"
+    tag = f"mlp_h{h}_m{MLP_ENSEMBLE_SIZE}"
+    if not MLP_BOOTSTRAP:
+        tag += "_nob"                                   # 关闭自助重采样（非默认）
+    if MLP_TRAIN_SUBSET != N_INIT:
+        tag += "_sfull" if not MLP_TRAIN_SUBSET else f"_s{MLP_TRAIN_SUBSET}"
+    return tag
 
 
 class _ScaledMLP:
@@ -530,11 +544,15 @@ def _out_suffix() -> str:
 
 
 def _parse_args(argv: list[str]) -> list[str]:
-    """解析命令行：--mlp / --rf / --surrogate=<kind> 设定代理；其余视作场景名。
+    """解析命令行；均通过模块级全局变量生效（不改变既有“位置参数=场景”的用法）。
 
-    通过模块级 SURROGATE_KIND 生效（不改变既有“位置参数=场景”的用法）。
+    代理选择：--mlp / --rf / --surrogate=<kind>
+    MLP 子采样（仅 MLP 模式有意义，RF 不受影响）：
+      --bootstrap / --no-bootstrap   开/关成员自助重采样（有放回）→ MLP_BOOTSTRAP
+      --subset=<N|none>              每个成员训练子集大小；none/all/full/0 表示用全部历史 → MLP_TRAIN_SUBSET
+    其余参数一律视作场景名。
     """
-    global SURROGATE_KIND
+    global SURROGATE_KIND, MLP_BOOTSTRAP, MLP_TRAIN_SUBSET
     scenes: list[str] = []
     for a in argv:
         al = a.lower()
@@ -544,6 +562,20 @@ def _parse_args(argv: list[str]) -> list[str]:
             SURROGATE_KIND = "rf"
         elif al.startswith("--surrogate="):
             SURROGATE_KIND = al.split("=", 1)[1]
+        elif al == "--bootstrap":
+            MLP_BOOTSTRAP = True
+        elif al == "--no-bootstrap":
+            MLP_BOOTSTRAP = False
+        elif al.startswith("--subset="):
+            v = al.split("=", 1)[1]
+            if v in ("none", "all", "full", "0"):
+                MLP_TRAIN_SUBSET = None          # 用全部历史数据，不做子采样
+            else:
+                try:
+                    MLP_TRAIN_SUBSET = int(v)
+                except ValueError:
+                    print(f"       [!] 无法解析 --subset={v}，保留默认 "
+                          f"{MLP_TRAIN_SUBSET}", flush=True)
         else:
             scenes.append(a)
     return scenes

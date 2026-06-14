@@ -176,12 +176,13 @@ BF-SAC 中的**学习型模型**是回归**代理（surrogate）**：学习「10
 |----|------|
 | 实现 | `sklearn.neural_network.MLPRegressor` 的**深度集成**，封装为 `MLPEnsemble` 类，于 [`unified_calibration.py`](code/calibration/unified_calibration.py) 的 `_fit_mlp()` 构建 |
 | 结构 | `MLP_ENSEMBLE_SIZE=10` 个独立 MLP 的集成；每个网络 `MLP_HIDDEN_LAYERS=(64,64)`、`MLP_ACTIVATION="tanh"`、`MLP_SOLVER="lbfgs"`、`MLP_ALPHA=1e-3`、`MLP_MAX_ITER=2000`；成员间 `MLP_BOOTSTRAP=True` 有放回重采样以增加分歧 |
-| 训练数据 | 与 RF 相同：已评估设计点 `X[:n_seen]`、`Y[:n_seen]`，过滤失败样本（`NaN` 或 `Y≥10`），有效样本需 `≥ MIN_VALID_RF=10`；集成内部按 `PARAM_BOUNDS` 归一化输入、标准化输出 |
+| 训练数据 | 与 RF 相同：已评估设计点 `X[:n_seen]`、`Y[:n_seen]`，过滤失败样本（`NaN` 或 `Y≥10`），有效样本需 `≥ MIN_VALID_RF=10`；集成内部按 `PARAM_BOUNDS` 归一化输入、标准化输出。**子采样抗过拟合**：每个成员只在固定大小 `MLP_TRAIN_SUBSET=60`（= 阶段 A 数据量 `N_INIT`）的随机子集上训练——阶段 B 数据从 60 增至 100 时，单网络始终只见 ≤60 个点，既降低过拟合、又让各成员看到不同子集而增大分歧 |
+| 续训方式 | **warm-start 增量续训**（`MLP_WARM_START=True`）：阶段 B 首轮从零训练（`_fit_mlp`），之后每轮在「上一轮各成员的权重」上继续训练（`_update_mlp`→`MLPEnsemble.update`，lbfgs 从已有权重再优化），而非每轮从零重训；为使续训处于同一目标尺度，输出归一化在首训时**冻结** |
 | 输入 | 与 RF 相同的 **10 维参数向量**（`PARAM_NAMES`），取值受 `PARAM_BOUNDS` / `get_param_bounds()` 约束 |
 | 输出 | **标量 $J_b$**，取 `MLP_ENSEMBLE_SIZE` 个成员预测的均值 $\mu$，即对 `feature_error()` 的回归预测 |
 | 不确定度 $\sigma$ | 来自**集成成员间分歧**（成员预测的标准差，而非单棵树方差），再乘 σ 校准系数 `MLP_SIGMA_CALIB=1.2` 修正过自信；每个子网络用**运行时随机种子**初始化（记于 `MLPEnsemble.seeds`）以保证多样性 |
 | 采集函数 | `_mlp_lcb()`：成员均值 $\mu$ 与（校准后）成员间标准差 $\sigma$ 给出 $\text{LCB}=\mu-\kappa\sigma$（`LC_KAPPA=1.96`）；`_mlp_pick_lcb_point()` 与 RF 同样的选点逻辑但**独立实现**（不复用 RF 任何函数） |
-| 调用位置 | 与 RF 相同，`calibrate_one()` 阶段 B 每轮：`_fit_mlp()` 重训 → `_pick_lcb_point()` 选点 → `_eval_params()` 真仿真验证 → 入库再训；循环结束 `_save_mlp_model()` 把集成持久化为 `.joblib` |
+| 调用位置 | 与 RF 相同，`calibrate_one()` 阶段 B 每轮：首轮 `_fit_mlp()` 从零训练、之后 `_update_mlp()` 续训 → `_pick_lcb_point()` 选点 → `_eval_params()` 真仿真验证 → 入库再训；循环结束 `_save_mlp_model()` 把集成持久化为 `.joblib` |
 | 作用 | 作为 RF 的**平行平替**（二选一）；结果文件名追加 `__mlp_h64-64_m10` 与 RF 结果并存。集成规模与 σ 校准由**日志离线交叉验证**标定：`M:5→10` 使留出 RMSE 降约 6%、$\sigma$ 的 95% 覆盖率从 0.85 升到 0.91 |
 
 #### MLP 的输入/输出归一化（训练与推理一致）
@@ -191,9 +192,10 @@ MLP 集成在内部对数据做归一化（**RF 路径不归一化**——树模
 | 数据 | 方式 | 公式（训练 / 推理共用） | 基准 |
 |------|------|------------------------|------|
 | **输入**（10 维参数向量） | Min-Max 归一化 | `xs = (x − x_lo) / x_span` | `x_lo`、`x_span` 取 `PARAM_BOUNDS` **物理边界**（非数据 min/max），缩放固定、确定 |
-| **输出**（标量 $J_b$） | Z-score 标准化 | 训练 `ys = (y − y_mean) / y_std`；推理 `y = ŷ·y_std + y_mean`（反标准化） | `y_mean`、`y_std` 由**整个有效训练集**计算（`bootstrap` 只改采样、不改标准化基准） |
+| **输出**（标量 $J_b$） | Z-score 标准化 | 训练 `ys = (y − y_mean) / y_std`；推理 `y = ŷ·y_std + y_mean`（反标准化） | `y_mean`、`y_std` 由**整个有效训练集**计算（`bootstrap`/子采样只改采样、不改标准化基准）；并在**首训时冻结**，供后续 warm-start 续训复用，保证增量更新处于同一目标尺度 |
 
-- **训练**（`MLPEnsemble.fit`）：先按上表归一化输入、标准化标签，再用归一化后的数据训练每个 `MLPRegressor`，并把 `(x_lo, x_span, y_mean, y_std)` 存入对应 `_ScaledMLP`。
+- **训练**（`MLPEnsemble.fit`）：先按上表归一化输入、标准化标签，再用归一化后的数据训练每个 `MLPRegressor`，并把 `(x_lo, x_span, y_mean, y_std)` 存入对应 `_ScaledMLP`；同时把归一化基准冻结到集成上。
+- **续训**（`MLPEnsemble.update`）：复用冻结的归一化基准，对各成员重抽一份子集后在已有权重上 warm-start 续训（见上文「续训方式」）。
 - **推理**（`_ScaledMLP.predict`）：同样归一化输入 → 网络预测 → 把输出**反标准化**回原始 $J_b$ 尺度。
 - 因此聚合得到的 $\mu$、$\sigma$ 以及 $\text{LCB}=\mu-\kappa\sigma$（含 σ 校准系数 `MLP_SIGMA_CALIB`）全部落在**真实 $J_b$ 物理尺度**上，量纲一致。
 
@@ -222,15 +224,39 @@ python code/calibration/unified_calibration.py --rf
 
 > `--mlp` / `--rf` / `--surrogate=<kind>` 之外的位置参数仍按「场景名」解析，用法与 RF 模式完全一致。
 
+### MLP 子采样的命令行参数化（仅 `--mlp` 模式有效，RF 不受影响）
+
+成员子采样的两个关键参数可直接在命令行覆盖，**无需改代码**（不传则用代码默认 `MLP_BOOTSTRAP=True` / `MLP_TRAIN_SUBSET=60`）：
+
+```bash
+# 关闭有放回重采样（无放回抽子集）
+python code/calibration/unified_calibration.py --mlp --no-bootstrap XAM-N6
+
+# 无放回 + 子集大小 40（消除重复样本、靠更小子集维持成员分歧）
+python code/calibration/unified_calibration.py --mlp --no-bootstrap --subset=40 XAM-N6
+
+# 改子集大小 / 用全部历史数据（不做子采样）
+python code/calibration/unified_calibration.py --mlp --subset=80 XAM-N6
+python code/calibration/unified_calibration.py --mlp --subset=none XAM-N6   # none/all/full/0 均表示用全部数据
+```
+
+| 参数 | 取值 | 作用（覆盖的常量） |
+|------|------|------|
+| `--bootstrap` / `--no-bootstrap` | 开 / 关 | `MLP_BOOTSTRAP`：成员训练子集是否有放回抽样 |
+| `--subset=<N>` | 正整数 | `MLP_TRAIN_SUBSET`：每个成员训练子集大小 |
+| `--subset=none` | `none`/`all`/`full`/`0` | `MLP_TRAIN_SUBSET=None`，用全部历史数据、不做子采样 |
+
+> 提示：仅把 bootstrap 关掉而子集仍为 60，离线 CV 显示会令 σ 塌缩（成员重叠过高）；如要无放回，建议同时 `--subset=40` 维持成员分歧。
+
 ### 输出与 RF 并存（不会互相覆盖）
 
-MLP 模式下，结果文件名追加网络结构标签 `__<tag>`（`tag` 由 `_mlp_tag()` 生成，形如 `mlp_h64-64_m10`，编码隐藏层与集成规模），因此 **RF 的既有结果不会被覆盖**：
+MLP 模式下，结果文件名追加网络结构标签 `__<tag>`（`tag` 由 `_mlp_tag()` 生成，形如 `mlp_h64-64_m10`，编码隐藏层与集成规模），因此 **RF 的既有结果不会被覆盖**。**非默认的子采样设置还会再追加标记，避免实验覆盖默认结果**：`--no-bootstrap` → `_nob`、`--subset=N` → `_sN`、`--subset=none` → `_sfull`（例：`--no-bootstrap --subset=40` 得 `mlp_h64-64_m10_nob_s40`）：
 
 | 产物 | RF（默认） | MLP |
 |------|-----------|-----|
 | 标定 JSON / 汇总 | `{场景}_calibration.json` 等（无后缀） | 追加 `__mlp_h64-64_m10` 后缀 |
 | 训练好的模型 | （RF 不落盘） | `data/processed_data/calibration/mlp_models/{场景}_mlp_h64-64_m10.joblib`（含归一化参数与各成员权重，便于复现/适配） |
-| 网络超参记录 | 结果 JSON 中 `surrogate_config = null` | 结果 JSON 中 `surrogate_config` 记录隐藏层/集成规模/激活/求解器/σ 校准系数等 |
+| 网络超参记录 | 结果 JSON 中 `surrogate_config = null` | 结果 JSON 中 `surrogate_config` 记录隐藏层/集成规模/激活/求解器/σ 校准系数/子采样大小（`train_subset`）/重采样开关（`bootstrap`）/续训开关（`warm_start`）等 |
 
 ### MLP 集成配置（`unified_calibration.py` 顶部常量，可按需调整）
 
@@ -243,9 +269,11 @@ MLP 模式下，结果文件名追加网络结构标签 `__<tag>`（`tag` 由 `_
 | `MLP_ENSEMBLE_SIZE` | `10` | 集成成员数；由 5→10 使留出 RMSE 降约 6%、σ 校准 95% 覆盖率 0.85→0.91，再加到 15 收益递减 |
 | `MLP_ACTIVATION` / `MLP_SOLVER` | `tanh` / `lbfgs` | 小样本回归收敛快、曲面平滑 |
 | `MLP_ALPHA` / `MLP_MAX_ITER` | `1e-3` / `2000` | L2 正则强度 / 最大迭代 |
-| `MLP_BOOTSTRAP` | `True` | 成员间有放回重采样以增加分歧（类比 RF 的 bagging）；CV 证实**关掉会令 σ 塌缩、严重过自信，务必保留** |
+| `MLP_BOOTSTRAP` | `True` | 成员间有放回重采样以增加分歧（类比 RF 的 bagging）；CV 证实**关掉而子集仍为 60 会令 σ 塌缩、严重过自信**。可用命令行 `--bootstrap` / `--no-bootstrap` 覆盖 |
+| `MLP_TRAIN_SUBSET` | `N_INIT`（=60） | 每个成员训练子集大小（抗过拟合子采样）；阶段 B 数据增至 100 时单网络仍只见 ≤60 点。可用命令行 `--subset=<N\|none>` 覆盖（`none` = 用全部数据） |
+| `MLP_WARM_START` | `True` | 阶段 B 续训：每轮在上一轮成员权重上继续训练（`MLPEnsemble.update`），而非从零重训；`False` 则恢复每轮从零训练 |
 | `MLP_SIGMA_CALIB` | `1.2` | σ 校准放大系数，在 `_mlp_lcb()` 中按此放大成员间标准差以修正过自信，使 LCB 探索更充分 |
 | 随机种子 | **运行时随机抽取**（`np.random.default_rng()`，记于 `MLPEnsemble.seeds`） | 每个子 MLP 用不同的随机种子初始化网络参数，保证集成内/场景间初始化多样性 |
 | 采集函数 | `_mlp_lcb()` → `_pick_lcb_point()` | 成员均值 $\mu$ 与（经 `MLP_SIGMA_CALIB` 校准的）成员标准差 $\sigma$ 给出 $\text{LCB}=\mu-\kappa\sigma$（`LC_KAPPA=1.96`），与 RF 块相同的选点接口但各自独立实现 |
 
-> 提示：MLP 各子网络在初始化时使用**随机种子**，因此每次运行得到的网络互不相同（非完全可复现）；实际抽到的种子记录在 `MLPEnsemble.seeds` 中以便追溯。单次运行共训练 10 个子网络 × Phase B 41 轮 = 410 次子网络训练（SUMO 仿真仍为 101 次，是真正的耗时瓶颈）。
+> 提示：MLP 各子网络在初始化时使用**随机种子**，因此每次运行得到的网络互不相同（非完全可复现）；实际抽到的种子记录在 `MLPEnsemble.seeds` 中以便追溯。单次运行涉及 10 个子网络 × Phase B 41 轮 = 410 次子网络拟合：首轮 10 次为从零训练，其余 400 次为 warm-start 续训（在已有权重上继续优化）。SUMO 仿真仍为 101 次，是真正的耗时瓶颈。
