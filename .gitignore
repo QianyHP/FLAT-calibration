@@ -31,6 +31,7 @@ outputs/figures/*.svg
 
 # Transient batch run logs (per-job stdout; reproducible)
 outputs/results/_batch_logs/
+outputs/results/_mlp_ablation_logs/
 
 # Run logs and thesis-era artifacts
 outputs/logs/*
