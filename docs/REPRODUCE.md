@@ -101,7 +101,7 @@ python code/experiments/run_comparison.py --scenes Tianjin --mode sweep --seeds 
 | `code/experiments/check_sumo_scenes.py` | 是 | 数据 + 单次 SUMO 自检 |
 | `code/experiments/experiment_io.py` | 否 | 多 seed cache 命名、解析与聚合 |
 | `code/experiments/aggregate_multiseed.py` | 否 | 生成 `comparison_multiseed_*.csv`（置信带/误差棒数据） |
-| `code/experiments/analyze_significance.py` | 否 | 跨场景配对 Wilcoxon → `comparison_significance.csv` |
+| `code/experiments/analyze_significance.py` | 否 | 30 个 scene×seed 配对 Wilcoxon（RF/MLP）→ `comparison_significance.csv` |
 | `code/experiments/plot_all_figures.py` | 否 | 一键生成四张主图（PNG + PDF + SVG）+ 显著性表 |
 | `code/experiments/plot_calibration_convergence.py` | 否 | 图 1 |
 | `code/experiments/plot_method_comparison.py` | 否 | 图 2 |
