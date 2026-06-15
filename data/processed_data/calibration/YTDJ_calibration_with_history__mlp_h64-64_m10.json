@@ -1,0 +1,1985 @@
+{
+  "scenario": "YTDJ",
+  "calibration_mode": "sequential_lcb",
+  "surrogate": "mlp",
+  "surrogate_config": {
+    "tag": "mlp_h64-64_m10",
+    "hidden_layers": [
+      64,
+      64
+    ],
+    "ensemble_size": 10,
+    "activation": "tanh",
+    "solver": "lbfgs",
+    "alpha": 0.001,
+    "max_iter": 2000,
+    "bootstrap": true,
+    "sigma_calib": 1.2,
+    "train_subset": 60,
+    "warm_start": true
+  },
+  "calibrated_params": {
+    "accel": 3.4174,
+    "decel": 2.9688,
+    "sigma": 0.6245,
+    "tau": 0.5,
+    "minGap": 3.315,
+    "speedFactor": 0.513,
+    "lcStrategic": 0.35,
+    "lcCooperative": 0.5733,
+    "lcAssertive": 1.9395,
+    "lcSpeedGain": 1.582
+  },
+  "feature_error": 0.2235,
+  "doe_best_error": 0.2554,
+  "sequential_best_error": 0.2235,
+  "surrogate_verified_error": 0.2235,
+  "proxy_beats_doe": true,
+  "n_sumo_runs": 101,
+  "rf_r2": 0.983,
+  "rf_rmse": 0.024,
+  "feature_comparison": {
+    "v_mean": {
+      "real": 6.6646,
+      "sim_calibrated": 5.7493,
+      "rel_error": 0.1373
+    },
+    "v_p15": {
+      "real": 2.6778,
+      "sim_calibrated": 3.5666,
+      "rel_error": 0.3319
+    },
+    "v_p85": {
+      "real": 10.9972,
+      "sim_calibrated": 7.8972,
+      "rel_error": 0.2819
+    },
+    "a_pos_mean": {
+      "real": 1.5039,
+      "sim_calibrated": 1.2653,
+      "rel_error": 0.1587
+    },
+    "a_neg_mean": {
+      "real": 1.3995,
+      "sim_calibrated": 1.1828,
+      "rel_error": 0.1549
+    },
+    "a_p05": {
+      "real": -2.29,
+      "sim_calibrated": -2.4457,
+      "rel_error": 0.068
+    },
+    "a_p95": {
+      "real": 2.29,
+      "sim_calibrated": 2.5782,
+      "rel_error": 0.1259
+    },
+    "stop_frac": {
+      "real": 0.0135,
+      "sim_calibrated": 0.0215,
+      "rel_error": 0.59
+    }
+  },
+  "doe_history": [
+    {
+      "sim_index": 1,
+      "phase": "init",
+      "error": 0.738516,
+      "best_so_far": 0.738516,
+      "params": {
+        "accel": 2.2594,
+        "decel": 5.7707,
+        "sigma": 0.5019,
+        "tau": 1.2434,
+        "minGap": 2.0453,
+        "speedFactor": 1.107,
+        "lcStrategic": 2.3606,
+        "lcCooperative": 1.4834,
+        "lcAssertive": 2.4273,
+        "lcSpeedGain": 0.9849
+      }
+    },
+    {
+      "sim_index": 2,
+      "phase": "init",
+      "error": 0.694975,
+      "best_so_far": 0.694975,
+      "params": {
+        "accel": 1.6929,
+        "decel": 5.9382,
+        "sigma": 0.3181,
+        "tau": 2.1392,
+        "minGap": 3.4278,
+        "speedFactor": 1.1507,
+        "lcStrategic": 0.6132,
+        "lcCooperative": 0.6782,
+        "lcAssertive": 1.2962,
+        "lcSpeedGain": 0.9367
+      }
+    },
+    {
+      "sim_index": 3,
+      "phase": "init",
+      "error": 0.594716,
+      "best_so_far": 0.594716,
+      "params": {
+        "accel": 3.4684,
+        "decel": 5.843,
+        "sigma": 0.4337,
+        "tau": 2.4702,
+        "minGap": 1.8111,
+        "speedFactor": 0.6961,
+        "lcStrategic": 1.6784,
+        "lcCooperative": 1.7513,
+        "lcAssertive": 1.6504,
+        "lcSpeedGain": 0.5263
+      }
+    },
+    {
+      "sim_index": 4,
+      "phase": "init",
+      "error": 0.76562,
+      "best_so_far": 0.594716,
+      "params": {
+        "accel": 1.0523,
+        "decel": 5.4022,
+        "sigma": 0.5623,
+        "tau": 2.3877,
+        "minGap": 3.8765,
+        "speedFactor": 1.1745,
+        "lcStrategic": 2.1414,
+        "lcCooperative": 1.6019,
+        "lcAssertive": 1.6066,
+        "lcSpeedGain": 2.4051
+      }
+    },
+    {
+      "sim_index": 5,
+      "phase": "init",
+      "error": 0.723851,
+      "best_so_far": 0.594716,
+      "params": {
+        "accel": 1.1901,
+        "decel": 2.2778,
+        "sigma": 0.8107,
+        "tau": 1.1896,
+        "minGap": 1.8584,
+        "speedFactor": 0.9223,
+        "lcStrategic": 1.11,
+        "lcCooperative": 0.7271,
+        "lcAssertive": 2.5271,
+        "lcSpeedGain": 0.671
+      }
+    },
+    {
+      "sim_index": 6,
+      "phase": "init",
+      "error": 0.493058,
+      "best_so_far": 0.493058,
+      "params": {
+        "accel": 2.9917,
+        "decel": 5.3328,
+        "sigma": 0.7162,
+        "tau": 1.5778,
+        "minGap": 1.9647,
+        "speedFactor": 0.8292,
+        "lcStrategic": 2.4138,
+        "lcCooperative": 0.6094,
+        "lcAssertive": 0.9976,
+        "lcSpeedGain": 2.5503
+      }
+    },
+    {
+      "sim_index": 7,
+      "phase": "init",
+      "error": 0.755711,
+      "best_so_far": 0.493058,
+      "params": {
+        "accel": 1.0971,
+        "decel": 5.0353,
+        "sigma": 0.8258,
+        "tau": 0.6745,
+        "minGap": 2.7183,
+        "speedFactor": 1.0185,
+        "lcStrategic": 1.6338,
+        "lcCooperative": 1.2491,
+        "lcAssertive": 1.7371,
+        "lcSpeedGain": 2.4555
+      }
+    },
+    {
+      "sim_index": 8,
+      "phase": "init",
+      "error": 0.663523,
+      "best_so_far": 0.493058,
+      "params": {
+        "accel": 1.7827,
+        "decel": 3.2394,
+        "sigma": 0.3286,
+        "tau": 2.2255,
+        "minGap": 2.0971,
+        "speedFactor": 0.9167,
+        "lcStrategic": 2.543,
+        "lcCooperative": 0.7443,
+        "lcAssertive": 0.6131,
+        "lcSpeedGain": 1.7472
+      }
+    },
+    {
+      "sim_index": 9,
+      "phase": "init",
+      "error": 0.494542,
+      "best_so_far": 0.493058,
+      "params": {
+        "accel": 1.2223,
+        "decel": 4.8396,
+        "sigma": 0.1691,
+        "tau": 1.8278,
+        "minGap": 3.2989,
+        "speedFactor": 0.6856,
+        "lcStrategic": 0.3613,
+        "lcCooperative": 0.9698,
+        "lcAssertive": 2.0992,
+        "lcSpeedGain": 1.187
+      }
+    },
+    {
+      "sim_index": 10,
+      "phase": "init",
+      "error": 0.792455,
+      "best_so_far": 0.493058,
+      "params": {
+        "accel": 1.4103,
+        "decel": 3.0869,
+        "sigma": 0.7607,
+        "tau": 0.854,
+        "minGap": 2.6349,
+        "speedFactor": 1.0993,
+        "lcStrategic": 2.3361,
+        "lcCooperative": 1.2001,
+        "lcAssertive": 0.4268,
+        "lcSpeedGain": 2.5974
+      }
+    },
+    {
+      "sim_index": 11,
+      "phase": "init",
+      "error": 0.572544,
+      "best_so_far": 0.493058,
+      "params": {
+        "accel": 2.0455,
+        "decel": 2.6867,
+        "sigma": 0.5898,
+        "tau": 1.6344,
+        "minGap": 2.3111,
+        "speedFactor": 0.8533,
+        "lcStrategic": 1.7608,
+        "lcCooperative": 0.37,
+        "lcAssertive": 1.4077,
+        "lcSpeedGain": 0.5581
+      }
+    },
+    {
+      "sim_index": 12,
+      "phase": "init",
+      "error": 0.396735,
+      "best_so_far": 0.396735,
+      "params": {
+        "accel": 3.3977,
+        "decel": 2.7865,
+        "sigma": 0.7493,
+        "tau": 1.5474,
+        "minGap": 1.5412,
+        "speedFactor": 0.805,
+        "lcStrategic": 1.5849,
+        "lcCooperative": 1.8427,
+        "lcAssertive": 0.4549,
+        "lcSpeedGain": 1.4677
+      }
+    },
+    {
+      "sim_index": 13,
+      "phase": "init",
+      "error": 0.644886,
+      "best_so_far": 0.396735,
+      "params": {
+        "accel": 2.4757,
+        "decel": 2.89,
+        "sigma": 0.6855,
+        "tau": 1.7861,
+        "minGap": 1.7479,
+        "speedFactor": 0.5409,
+        "lcStrategic": 0.949,
+        "lcCooperative": 1.006,
+        "lcAssertive": 1.2849,
+        "lcSpeedGain": 0.8977
+      }
+    },
+    {
+      "sim_index": 14,
+      "phase": "init",
+      "error": 0.573373,
+      "best_so_far": 0.396735,
+      "params": {
+        "accel": 1.2846,
+        "decel": 2.9383,
+        "sigma": 0.1856,
+        "tau": 1.0218,
+        "minGap": 2.8705,
+        "speedFactor": 0.6631,
+        "lcStrategic": 1.985,
+        "lcCooperative": 1.8767,
+        "lcAssertive": 2.1964,
+        "lcSpeedGain": 1.2858
+      }
+    },
+    {
+      "sim_index": 15,
+      "phase": "init",
+      "error": 0.595286,
+      "best_so_far": 0.396735,
+      "params": {
+        "accel": 2.1047,
+        "decel": 5.1006,
+        "sigma": 0.1275,
+        "tau": 2.2476,
+        "minGap": 1.9263,
+        "speedFactor": 1.0452,
+        "lcStrategic": 0.4181,
+        "lcCooperative": 1.4082,
+        "lcAssertive": 1.1896,
+        "lcSpeedGain": 0.8391
+      }
+    },
+    {
+      "sim_index": 16,
+      "phase": "init",
+      "error": 0.785779,
+      "best_so_far": 0.396735,
+      "params": {
+        "accel": 2.5489,
+        "decel": 2.0069,
+        "sigma": 0.2715,
+        "tau": 1.9815,
+        "minGap": 2.1446,
+        "speedFactor": 0.6205,
+        "lcStrategic": 0.9102,
+        "lcCooperative": 0.4694,
+        "lcAssertive": 2.6478,
+        "lcSpeedGain": 0.4819
+      }
+    },
+    {
+      "sim_index": 17,
+      "phase": "init",
+      "error": 0.565286,
+      "best_so_far": 0.396735,
+      "params": {
+        "accel": 2.2455,
+        "decel": 5.5389,
+        "sigma": 0.7903,
+        "tau": 0.5654,
+        "minGap": 2.9223,
+        "speedFactor": 0.7407,
+        "lcStrategic": 0.8061,
+        "lcCooperative": 1.5103,
+        "lcAssertive": 1.9296,
+        "lcSpeedGain": 1.0869
+      }
+    },
+    {
+      "sim_index": 18,
+      "phase": "init",
+      "error": 0.79653,
+      "best_so_far": 0.396735,
+      "params": {
+        "accel": 2.4045,
+        "decel": 4.4323,
+        "sigma": 0.2299,
+        "tau": 1.3688,
+        "minGap": 1.3918,
+        "speedFactor": 0.9078,
+        "lcStrategic": 0.4956,
+        "lcCooperative": 1.6977,
+        "lcAssertive": 1.2119,
+        "lcSpeedGain": 2.5653
+      }
+    },
+    {
+      "sim_index": 19,
+      "phase": "init",
+      "error": 0.411995,
+      "best_so_far": 0.396735,
+      "params": {
+        "accel": 2.7546,
+        "decel": 3.3404,
+        "sigma": 0.8664,
+        "tau": 1.8895,
+        "minGap": 3.2114,
+        "speedFactor": 0.7723,
+        "lcStrategic": 1.4372,
+        "lcCooperative": 1.2274,
+        "lcAssertive": 0.7278,
+        "lcSpeedGain": 0.7884
+      }
+    },
+    {
+      "sim_index": 20,
+      "phase": "init",
+      "error": 0.478156,
+      "best_so_far": 0.396735,
+      "params": {
+        "accel": 1.8776,
+        "decel": 5.9173,
+        "sigma": 0.6984,
+        "tau": 0.6056,
+        "minGap": 2.7923,
+        "speedFactor": 0.6029,
+        "lcStrategic": 1.3464,
+        "lcCooperative": 0.5734,
+        "lcAssertive": 0.8728,
+        "lcSpeedGain": 1.3582
+      }
+    },
+    {
+      "sim_index": 21,
+      "phase": "init",
+      "error": 0.561081,
+      "best_so_far": 0.396735,
+      "params": {
+        "accel": 3.2593,
+        "decel": 4.4685,
+        "sigma": 0.4,
+        "tau": 2.0619,
+        "minGap": 2.1993,
+        "speedFactor": 0.7307,
+        "lcStrategic": 1.3246,
+        "lcCooperative": 0.3864,
+        "lcAssertive": 1.8967,
+        "lcSpeedGain": 2.6977
+      }
+    },
+    {
+      "sim_index": 22,
+      "phase": "init",
+      "error": 0.67413,
+      "best_so_far": 0.396735,
+      "params": {
+        "accel": 2.3461,
+        "decel": 2.8279,
+        "sigma": 0.884,
+        "tau": 0.5732,
+        "minGap": 1.6642,
+        "speedFactor": 1.063,
+        "lcStrategic": 1.5288,
+        "lcCooperative": 1.8041,
+        "lcAssertive": 1.4963,
+        "lcSpeedGain": 1.7221
+      }
+    },
+    {
+      "sim_index": 23,
+      "phase": "init",
+      "error": 0.755481,
+      "best_so_far": 0.396735,
+      "params": {
+        "accel": 2.0291,
+        "decel": 5.5008,
+        "sigma": 0.4912,
+        "tau": 2.4348,
+        "minGap": 1.3357,
+        "speedFactor": 0.5125,
+        "lcStrategic": 1.2882,
+        "lcCooperative": 1.2697,
+        "lcAssertive": 2.3249,
+        "lcSpeedGain": 2.2648
+      }
+    },
+    {
+      "sim_index": 24,
+      "phase": "init",
+      "error": 0.61905,
+      "best_so_far": 0.396735,
+      "params": {
+        "accel": 1.5775,
+        "decel": 4.9054,
+        "sigma": 0.5938,
+        "tau": 1.9468,
+        "minGap": 3.5533,
+        "speedFactor": 0.7589,
+        "lcStrategic": 1.8826,
+        "lcCooperative": 1.6484,
+        "lcAssertive": 1.1251,
+        "lcSpeedGain": 1.6522
+      }
+    },
+    {
+      "sim_index": 25,
+      "phase": "init",
+      "error": 0.822057,
+      "best_so_far": 0.396735,
+      "params": {
+        "accel": 1.1321,
+        "decel": 2.4802,
+        "sigma": 0.4169,
+        "tau": 0.8156,
+        "minGap": 2.3697,
+        "speedFactor": 1.0265,
+        "lcStrategic": 1.2237,
+        "lcCooperative": 1.8237,
+        "lcAssertive": 1.8456,
+        "lcSpeedGain": 2.0884
+      }
+    },
+    {
+      "sim_index": 26,
+      "phase": "init",
+      "error": 0.692196,
+      "best_so_far": 0.396735,
+      "params": {
+        "accel": 3.0145,
+        "decel": 2.3422,
+        "sigma": 0.1206,
+        "tau": 2.0917,
+        "minGap": 1.1382,
+        "speedFactor": 0.9813,
+        "lcStrategic": 1.3783,
+        "lcCooperative": 1.5846,
+        "lcAssertive": 1.0414,
+        "lcSpeedGain": 1.0607
+      }
+    },
+    {
+      "sim_index": 27,
+      "phase": "init",
+      "error": 0.398455,
+      "best_so_far": 0.396735,
+      "params": {
+        "accel": 3.4522,
+        "decel": 5.6784,
+        "sigma": 0.8959,
+        "tau": 2.3285,
+        "minGap": 2.954,
+        "speedFactor": 0.8481,
+        "lcStrategic": 0.5834,
+        "lcCooperative": 1.3358,
+        "lcAssertive": 2.4686,
+        "lcSpeedGain": 0.7166
+      }
+    },
+    {
+      "sim_index": 28,
+      "phase": "init",
+      "error": 0.629838,
+      "best_so_far": 0.396735,
+      "params": {
+        "accel": 1.9977,
+        "decel": 3.7884,
+        "sigma": 0.4326,
+        "tau": 2.1803,
+        "minGap": 3.916,
+        "speedFactor": 0.6471,
+        "lcStrategic": 1.072,
+        "lcCooperative": 0.8036,
+        "lcAssertive": 1.1309,
+        "lcSpeedGain": 2.2752
+      }
+    },
+    {
+      "sim_index": 29,
+      "phase": "init",
+      "error": 0.754507,
+      "best_so_far": 0.396735,
+      "params": {
+        "accel": 1.5399,
+        "decel": 3.5212,
+        "sigma": 0.4702,
+        "tau": 1.0917,
+        "minGap": 1.0714,
+        "speedFactor": 0.9618,
+        "lcStrategic": 1.818,
+        "lcCooperative": 0.9447,
+        "lcAssertive": 2.1661,
+        "lcSpeedGain": 1.6933
+      }
+    },
+    {
+      "sim_index": 30,
+      "phase": "init",
+      "error": 0.676972,
+      "best_so_far": 0.396735,
+      "params": {
+        "accel": 1.5903,
+        "decel": 2.1965,
+        "sigma": 0.661,
+        "tau": 2.03,
+        "minGap": 3.4578,
+        "speedFactor": 1.1545,
+        "lcStrategic": 2.6783,
+        "lcCooperative": 0.8504,
+        "lcAssertive": 1.0532,
+        "lcSpeedGain": 2.7738
+      }
+    },
+    {
+      "sim_index": 31,
+      "phase": "init",
+      "error": 0.523549,
+      "best_so_far": 0.396735,
+      "params": {
+        "accel": 2.8425,
+        "decel": 4.391,
+        "sigma": 0.7329,
+        "tau": 1.5162,
+        "minGap": 3.3071,
+        "speedFactor": 0.8913,
+        "lcStrategic": 2.7843,
+        "lcCooperative": 0.5524,
+        "lcAssertive": 2.0541,
+        "lcSpeedGain": 1.406
+      }
+    },
+    {
+      "sim_index": 32,
+      "phase": "init",
+      "error": 0.378134,
+      "best_so_far": 0.378134,
+      "params": {
+        "accel": 2.6468,
+        "decel": 3.6389,
+        "sigma": 0.6569,
+        "tau": 1.0544,
+        "minGap": 2.2317,
+        "speedFactor": 0.5545,
+        "lcStrategic": 0.9878,
+        "lcCooperative": 1.0461,
+        "lcAssertive": 2.012,
+        "lcSpeedGain": 0.3929
+      }
+    },
+    {
+      "sim_index": 33,
+      "phase": "init",
+      "error": 0.533378,
+      "best_so_far": 0.378134,
+      "params": {
+        "accel": 3.1702,
+        "decel": 3.3013,
+        "sigma": 0.309,
+        "tau": 1.4822,
+        "minGap": 1.4576,
+        "speedFactor": 0.7841,
+        "lcStrategic": 1.9097,
+        "lcCooperative": 0.8854,
+        "lcAssertive": 0.4875,
+        "lcSpeedGain": 2.3391
+      }
+    },
+    {
+      "sim_index": 34,
+      "phase": "init",
+      "error": 0.463335,
+      "best_so_far": 0.378134,
+      "params": {
+        "accel": 2.4277,
+        "decel": 5.3865,
+        "sigma": 0.8374,
+        "tau": 1.6046,
+        "minGap": 3.8434,
+        "speedFactor": 0.6328,
+        "lcStrategic": 0.6728,
+        "lcCooperative": 1.8975,
+        "lcAssertive": 1.8165,
+        "lcSpeedGain": 1.5776
+      }
+    },
+    {
+      "sim_index": 35,
+      "phase": "init",
+      "error": 0.616281,
+      "best_so_far": 0.378134,
+      "params": {
+        "accel": 3.3276,
+        "decel": 2.0694,
+        "sigma": 0.4493,
+        "tau": 1.4135,
+        "minGap": 3.0109,
+        "speedFactor": 0.7007,
+        "lcStrategic": 2.2714,
+        "lcCooperative": 0.453,
+        "lcAssertive": 0.5301,
+        "lcSpeedGain": 1.2445
+      }
+    },
+    {
+      "sim_index": 36,
+      "phase": "init",
+      "error": 0.791461,
+      "best_so_far": 0.378134,
+      "params": {
+        "accel": 1.4743,
+        "decel": 4.9886,
+        "sigma": 0.5725,
+        "tau": 1.7476,
+        "minGap": 2.6767,
+        "speedFactor": 1.0889,
+        "lcStrategic": 1.4621,
+        "lcCooperative": 0.6855,
+        "lcAssertive": 2.7391,
+        "lcSpeedGain": 1.9588
+      }
+    },
+    {
+      "sim_index": 37,
+      "phase": "init",
+      "error": 0.255356,
+      "best_so_far": 0.255356,
+      "params": {
+        "accel": 3.2112,
+        "decel": 3.8587,
+        "sigma": 0.5384,
+        "tau": 0.7637,
+        "minGap": 1.1671,
+        "speedFactor": 0.5651,
+        "lcStrategic": 0.8492,
+        "lcCooperative": 1.1015,
+        "lcAssertive": 0.908,
+        "lcSpeedGain": 2.7225
+      }
+    },
+    {
+      "sim_index": 38,
+      "phase": "init",
+      "error": 0.921427,
+      "best_so_far": 0.255356,
+      "params": {
+        "accel": 3.0516,
+        "decel": 4.0486,
+        "sigma": 0.1618,
+        "tau": 1.1229,
+        "minGap": 3.6421,
+        "speedFactor": 1.1866,
+        "lcStrategic": 2.0676,
+        "lcCooperative": 1.6305,
+        "lcAssertive": 2.5802,
+        "lcSpeedGain": 2.6477
+      }
+    },
+    {
+      "sim_index": 39,
+      "phase": "init",
+      "error": 0.520354,
+      "best_so_far": 0.255356,
+      "params": {
+        "accel": 1.352,
+        "decel": 3.9376,
+        "sigma": 0.6096,
+        "tau": 1.4507,
+        "minGap": 2.5312,
+        "speedFactor": 0.5235,
+        "lcStrategic": 1.1374,
+        "lcCooperative": 1.5338,
+        "lcAssertive": 2.7135,
+        "lcSpeedGain": 0.7236
+      }
+    },
+    {
+      "sim_index": 40,
+      "phase": "init",
+      "error": 0.674835,
+      "best_so_far": 0.255356,
+      "params": {
+        "accel": 2.3068,
+        "decel": 2.2585,
+        "sigma": 0.1055,
+        "tau": 1.8438,
+        "minGap": 2.2994,
+        "speedFactor": 0.9497,
+        "lcStrategic": 2.1946,
+        "lcCooperative": 1.3044,
+        "lcAssertive": 2.1279,
+        "lcSpeedGain": 2.3736
+      }
+    },
+    {
+      "sim_index": 41,
+      "phase": "init",
+      "error": 0.516451,
+      "best_so_far": 0.255356,
+      "params": {
+        "accel": 2.5291,
+        "decel": 2.5388,
+        "sigma": 0.2896,
+        "tau": 0.963,
+        "minGap": 2.8001,
+        "speedFactor": 0.7464,
+        "lcStrategic": 0.4609,
+        "lcCooperative": 1.0695,
+        "lcAssertive": 0.8357,
+        "lcSpeedGain": 1.82
+      }
+    },
+    {
+      "sim_index": 42,
+      "phase": "init",
+      "error": 0.731813,
+      "best_so_far": 0.255356,
+      "params": {
+        "accel": 2.8889,
+        "decel": 4.7567,
+        "sigma": 0.7121,
+        "tau": 0.8701,
+        "minGap": 1.2486,
+        "speedFactor": 1.1272,
+        "lcStrategic": 1.5692,
+        "lcCooperative": 0.8236,
+        "lcAssertive": 0.5869,
+        "lcSpeedGain": 0.8436
+      }
+    },
+    {
+      "sim_index": 43,
+      "phase": "init",
+      "error": 0.513842,
+      "best_so_far": 0.255356,
+      "params": {
+        "accel": 2.681,
+        "decel": 3.9309,
+        "sigma": 0.3666,
+        "tau": 1.6983,
+        "minGap": 3.9697,
+        "speedFactor": 0.7123,
+        "lcStrategic": 2.5861,
+        "lcCooperative": 1.3441,
+        "lcAssertive": 0.7968,
+        "lcSpeedGain": 0.4398
+      }
+    },
+    {
+      "sim_index": 44,
+      "phase": "init",
+      "error": 0.658646,
+      "best_so_far": 0.255356,
+      "params": {
+        "accel": 2.7947,
+        "decel": 4.5485,
+        "sigma": 0.344,
+        "tau": 1.2721,
+        "minGap": 1.798,
+        "speedFactor": 0.801,
+        "lcStrategic": 2.7541,
+        "lcCooperative": 1.7661,
+        "lcAssertive": 1.7487,
+        "lcSpeedGain": 0.6101
+      }
+    },
+    {
+      "sim_index": 45,
+      "phase": "init",
+      "error": 0.66829,
+      "best_so_far": 0.255356,
+      "params": {
+        "accel": 1.9229,
+        "decel": 5.1897,
+        "sigma": 0.5435,
+        "tau": 1.9269,
+        "minGap": 3.6865,
+        "speedFactor": 0.5034,
+        "lcStrategic": 1.1675,
+        "lcCooperative": 1.3782,
+        "lcAssertive": 1.9811,
+        "lcSpeedGain": 1.019
+      }
+    },
+    {
+      "sim_index": 46,
+      "phase": "init",
+      "error": 0.546255,
+      "best_so_far": 0.255356,
+      "params": {
+        "accel": 3.3732,
+        "decel": 4.6744,
+        "sigma": 0.7972,
+        "tau": 1.2276,
+        "minGap": 3.1954,
+        "speedFactor": 0.8829,
+        "lcStrategic": 1.0041,
+        "lcCooperative": 1.1624,
+        "lcAssertive": 1.6655,
+        "lcSpeedGain": 1.794
+      }
+    },
+    {
+      "sim_index": 47,
+      "phase": "init",
+      "error": 0.634195,
+      "best_so_far": 0.255356,
+      "params": {
+        "accel": 2.1428,
+        "decel": 4.3237,
+        "sigma": 0.4741,
+        "tau": 2.3566,
+        "minGap": 1.2711,
+        "speedFactor": 1.0752,
+        "lcStrategic": 2.161,
+        "lcCooperative": 0.7641,
+        "lcAssertive": 1.3648,
+        "lcSpeedGain": 2.0442
+      }
+    },
+    {
+      "sim_index": 48,
+      "phase": "init",
+      "error": 0.733827,
+      "best_so_far": 0.255356,
+      "params": {
+        "accel": 2.6082,
+        "decel": 4.2351,
+        "sigma": 0.2584,
+        "tau": 1.7289,
+        "minGap": 1.6361,
+        "speedFactor": 0.9981,
+        "lcStrategic": 2.0475,
+        "lcCooperative": 0.5257,
+        "lcAssertive": 1.4266,
+        "lcSpeedGain": 2.0074
+      }
+    },
+    {
+      "sim_index": 49,
+      "phase": "init",
+      "error": 0.687904,
+      "best_so_far": 0.255356,
+      "params": {
+        "accel": 2.1913,
+        "decel": 3.7188,
+        "sigma": 0.1988,
+        "tau": 2.2894,
+        "minGap": 3.1482,
+        "speedFactor": 0.6701,
+        "lcStrategic": 0.7798,
+        "lcCooperative": 0.6463,
+        "lcAssertive": 2.2866,
+        "lcSpeedGain": 0.3677
+      }
+    },
+    {
+      "sim_index": 50,
+      "phase": "init",
+      "error": 0.379361,
+      "best_so_far": 0.255356,
+      "params": {
+        "accel": 3.1374,
+        "decel": 3.1568,
+        "sigma": 0.3713,
+        "tau": 0.5228,
+        "minGap": 1.4106,
+        "speedFactor": 0.6103,
+        "lcStrategic": 2.6191,
+        "lcCooperative": 1.4603,
+        "lcAssertive": 0.9478,
+        "lcSpeedGain": 1.1457
+      }
+    },
+    {
+      "sim_index": 51,
+      "phase": "init",
+      "error": 0.560445,
+      "best_so_far": 0.255356,
+      "params": {
+        "accel": 2.7193,
+        "decel": 4.6076,
+        "sigma": 0.5144,
+        "tau": 1.3499,
+        "minGap": 3.774,
+        "speedFactor": 0.8173,
+        "lcStrategic": 1.9705,
+        "lcCooperative": 0.9045,
+        "lcAssertive": 2.249,
+        "lcSpeedGain": 1.5703
+      }
+    },
+    {
+      "sim_index": 52,
+      "phase": "init",
+      "error": 0.771412,
+      "best_so_far": 0.255356,
+      "params": {
+        "accel": 1.3303,
+        "decel": 3.5439,
+        "sigma": 0.7793,
+        "tau": 0.7906,
+        "minGap": 3.0833,
+        "speedFactor": 1.0113,
+        "lcStrategic": 2.6647,
+        "lcCooperative": 1.9796,
+        "lcAssertive": 0.6761,
+        "lcSpeedGain": 1.8679
+      }
+    },
+    {
+      "sim_index": 53,
+      "phase": "init",
+      "error": 0.67739,
+      "best_so_far": 0.255356,
+      "params": {
+        "accel": 1.006,
+        "decel": 2.6418,
+        "sigma": 0.1513,
+        "tau": 0.7133,
+        "minGap": 3.744,
+        "speedFactor": 0.5891,
+        "lcStrategic": 2.23,
+        "lcCooperative": 1.6701,
+        "lcAssertive": 0.686,
+        "lcSpeedGain": 1.5215
+      }
+    },
+    {
+      "sim_index": 54,
+      "phase": "init",
+      "error": 0.745812,
+      "best_so_far": 0.255356,
+      "params": {
+        "accel": 1.638,
+        "decel": 2.4196,
+        "sigma": 0.6415,
+        "tau": 0.9786,
+        "minGap": 3.5495,
+        "speedFactor": 1.0576,
+        "lcStrategic": 1.8394,
+        "lcCooperative": 0.5105,
+        "lcAssertive": 1.5682,
+        "lcSpeedGain": 2.48
+      }
+    },
+    {
+      "sim_index": 55,
+      "phase": "init",
+      "error": 0.478676,
+      "best_so_far": 0.255356,
+      "params": {
+        "accel": 1.7088,
+        "decel": 4.1629,
+        "sigma": 0.8488,
+        "tau": 0.9003,
+        "minGap": 1.0429,
+        "speedFactor": 0.5764,
+        "lcStrategic": 1.7223,
+        "lcCooperative": 1.4478,
+        "lcAssertive": 2.6058,
+        "lcSpeedGain": 2.2106
+      }
+    },
+    {
+      "sim_index": 56,
+      "phase": "init",
+      "error": 0.695979,
+      "best_so_far": 0.255356,
+      "params": {
+        "accel": 1.8138,
+        "decel": 3.4566,
+        "sigma": 0.2176,
+        "tau": 1.1364,
+        "minGap": 2.4478,
+        "speedFactor": 1.1973,
+        "lcStrategic": 0.7464,
+        "lcCooperative": 1.024,
+        "lcAssertive": 2.3677,
+        "lcSpeedGain": 2.1674
+      }
+    },
+    {
+      "sim_index": 57,
+      "phase": "init",
+      "error": 0.657548,
+      "best_so_far": 0.255356,
+      "params": {
+        "accel": 1.4548,
+        "decel": 3.0504,
+        "sigma": 0.6221,
+        "tau": 2.4121,
+        "minGap": 1.5675,
+        "speedFactor": 0.9705,
+        "lcStrategic": 2.4422,
+        "lcCooperative": 1.9709,
+        "lcAssertive": 0.3759,
+        "lcSpeedGain": 1.9205
+      }
+    },
+    {
+      "sim_index": 58,
+      "phase": "init",
+      "error": 0.823944,
+      "best_so_far": 0.255356,
+      "params": {
+        "accel": 1.8609,
+        "decel": 5.2104,
+        "sigma": 0.2402,
+        "tau": 0.641,
+        "minGap": 3.3574,
+        "speedFactor": 1.1358,
+        "lcStrategic": 2.477,
+        "lcCooperative": 1.1314,
+        "lcAssertive": 2.4794,
+        "lcSpeedGain": 2.1328
+      }
+    },
+    {
+      "sim_index": 59,
+      "phase": "init",
+      "error": 0.702886,
+      "best_so_far": 0.255356,
+      "params": {
+        "accel": 3.1042,
+        "decel": 4.0979,
+        "sigma": 0.2853,
+        "tau": 1.32,
+        "minGap": 2.4541,
+        "speedFactor": 0.866,
+        "lcStrategic": 0.5469,
+        "lcCooperative": 0.4232,
+        "lcAssertive": 2.7922,
+        "lcSpeedGain": 1.329
+      }
+    },
+    {
+      "sim_index": 60,
+      "phase": "init",
+      "error": 0.571574,
+      "best_so_far": 0.255356,
+      "params": {
+        "accel": 2.9197,
+        "decel": 5.6368,
+        "sigma": 0.3892,
+        "tau": 2.1134,
+        "minGap": 2.5996,
+        "speedFactor": 0.9401,
+        "lcStrategic": 0.6888,
+        "lcCooperative": 1.9276,
+        "lcAssertive": 1.4532,
+        "lcSpeedGain": 1.4272
+      }
+    },
+    {
+      "sim_index": 61,
+      "phase": "sequential",
+      "lcb_round": 1,
+      "error": 0.242297,
+      "best_so_far": 0.242297,
+      "rf_r2": 0.8755,
+      "params": {
+        "accel": 3.0975,
+        "decel": 2.7984,
+        "sigma": 0.6591,
+        "tau": 0.693,
+        "minGap": 3.7524,
+        "speedFactor": 0.5163,
+        "lcStrategic": 0.4171,
+        "lcCooperative": 0.6376,
+        "lcAssertive": 1.9804,
+        "lcSpeedGain": 0.8004
+      }
+    },
+    {
+      "sim_index": 62,
+      "phase": "sequential",
+      "lcb_round": 2,
+      "error": 0.290148,
+      "best_so_far": 0.242297,
+      "rf_r2": 0.9487,
+      "params": {
+        "accel": 3.3154,
+        "decel": 2.1176,
+        "sigma": 0.6777,
+        "tau": 0.5,
+        "minGap": 4.0,
+        "speedFactor": 0.5,
+        "lcStrategic": 0.35,
+        "lcCooperative": 0.7734,
+        "lcAssertive": 2.1985,
+        "lcSpeedGain": 0.3951
+      }
+    },
+    {
+      "sim_index": 63,
+      "phase": "sequential",
+      "lcb_round": 3,
+      "error": 0.567546,
+      "best_so_far": 0.242297,
+      "rf_r2": 0.9564,
+      "params": {
+        "accel": 2.9132,
+        "decel": 2.1022,
+        "sigma": 0.8282,
+        "tau": 0.9375,
+        "minGap": 2.5717,
+        "speedFactor": 0.5114,
+        "lcStrategic": 2.6748,
+        "lcCooperative": 0.9944,
+        "lcAssertive": 1.795,
+        "lcSpeedGain": 2.3288
+      }
+    },
+    {
+      "sim_index": 64,
+      "phase": "sequential",
+      "lcb_round": 4,
+      "error": 0.230847,
+      "best_so_far": 0.230847,
+      "rf_r2": 0.9652,
+      "params": {
+        "accel": 3.426,
+        "decel": 2.85,
+        "sigma": 0.7616,
+        "tau": 0.5,
+        "minGap": 3.8103,
+        "speedFactor": 0.555,
+        "lcStrategic": 0.35,
+        "lcCooperative": 0.8136,
+        "lcAssertive": 1.545,
+        "lcSpeedGain": 1.1499
+      }
+    },
+    {
+      "sim_index": 65,
+      "phase": "sequential",
+      "lcb_round": 5,
+      "error": 0.298189,
+      "best_so_far": 0.230847,
+      "rf_r2": 0.9772,
+      "params": {
+        "accel": 3.3458,
+        "decel": 2.3052,
+        "sigma": 0.7396,
+        "tau": 0.5,
+        "minGap": 4.0,
+        "speedFactor": 0.5,
+        "lcStrategic": 0.35,
+        "lcCooperative": 0.9768,
+        "lcAssertive": 1.1434,
+        "lcSpeedGain": 1.5821
+      }
+    },
+    {
+      "sim_index": 66,
+      "phase": "sequential",
+      "lcb_round": 6,
+      "error": 0.26815,
+      "best_so_far": 0.230847,
+      "rf_r2": 0.9861,
+      "params": {
+        "accel": 3.5,
+        "decel": 2.9482,
+        "sigma": 0.8921,
+        "tau": 0.5,
+        "minGap": 3.5833,
+        "speedFactor": 0.5743,
+        "lcStrategic": 0.35,
+        "lcCooperative": 1.0637,
+        "lcAssertive": 1.3022,
+        "lcSpeedGain": 0.7379
+      }
+    },
+    {
+      "sim_index": 67,
+      "phase": "sequential",
+      "lcb_round": 7,
+      "error": 0.53258,
+      "best_so_far": 0.230847,
+      "rf_r2": 0.9893,
+      "params": {
+        "accel": 3.5,
+        "decel": 2.4083,
+        "sigma": 0.8778,
+        "tau": 0.7137,
+        "minGap": 3.2993,
+        "speedFactor": 0.5,
+        "lcStrategic": 0.35,
+        "lcCooperative": 0.5444,
+        "lcAssertive": 1.9419,
+        "lcSpeedGain": 1.3677
+      }
+    },
+    {
+      "sim_index": 68,
+      "phase": "sequential",
+      "lcb_round": 8,
+      "error": 0.659264,
+      "best_so_far": 0.230847,
+      "rf_r2": 0.9875,
+      "params": {
+        "accel": 1.0466,
+        "decel": 2.3119,
+        "sigma": 0.1743,
+        "tau": 0.9713,
+        "minGap": 1.4138,
+        "speedFactor": 0.5936,
+        "lcStrategic": 0.731,
+        "lcCooperative": 1.9472,
+        "lcAssertive": 2.7254,
+        "lcSpeedGain": 1.9285
+      }
+    },
+    {
+      "sim_index": 69,
+      "phase": "sequential",
+      "lcb_round": 9,
+      "error": 0.256922,
+      "best_so_far": 0.230847,
+      "rf_r2": 0.9828,
+      "params": {
+        "accel": 2.6815,
+        "decel": 3.099,
+        "sigma": 0.8665,
+        "tau": 0.6861,
+        "minGap": 1.3499,
+        "speedFactor": 0.5125,
+        "lcStrategic": 0.3864,
+        "lcCooperative": 1.2977,
+        "lcAssertive": 1.5998,
+        "lcSpeedGain": 0.6185
+      }
+    },
+    {
+      "sim_index": 70,
+      "phase": "sequential",
+      "lcb_round": 10,
+      "error": 0.234432,
+      "best_so_far": 0.230847,
+      "rf_r2": 0.9856,
+      "params": {
+        "accel": 3.11,
+        "decel": 3.484,
+        "sigma": 0.6936,
+        "tau": 0.5,
+        "minGap": 3.9247,
+        "speedFactor": 0.5,
+        "lcStrategic": 0.6795,
+        "lcCooperative": 0.7795,
+        "lcAssertive": 1.2464,
+        "lcSpeedGain": 1.5392
+      }
+    },
+    {
+      "sim_index": 71,
+      "phase": "sequential",
+      "lcb_round": 11,
+      "error": 0.392768,
+      "best_so_far": 0.230847,
+      "rf_r2": 0.9816,
+      "params": {
+        "accel": 1.8306,
+        "decel": 4.666,
+        "sigma": 0.4688,
+        "tau": 0.6562,
+        "minGap": 3.8194,
+        "speedFactor": 0.5031,
+        "lcStrategic": 0.4557,
+        "lcCooperative": 0.9411,
+        "lcAssertive": 2.1863,
+        "lcSpeedGain": 1.0232
+      }
+    },
+    {
+      "sim_index": 72,
+      "phase": "sequential",
+      "lcb_round": 12,
+      "error": 0.340065,
+      "best_so_far": 0.230847,
+      "rf_r2": 0.989,
+      "params": {
+        "accel": 3.0265,
+        "decel": 3.1994,
+        "sigma": 0.6467,
+        "tau": 0.5,
+        "minGap": 4.0,
+        "speedFactor": 0.6476,
+        "lcStrategic": 0.35,
+        "lcCooperative": 1.1055,
+        "lcAssertive": 1.5137,
+        "lcSpeedGain": 0.8124
+      }
+    },
+    {
+      "sim_index": 73,
+      "phase": "sequential",
+      "lcb_round": 13,
+      "error": 0.513452,
+      "best_so_far": 0.230847,
+      "rf_r2": 0.9892,
+      "params": {
+        "accel": 2.72,
+        "decel": 5.5312,
+        "sigma": 0.8508,
+        "tau": 1.0862,
+        "minGap": 1.353,
+        "speedFactor": 0.5009,
+        "lcStrategic": 1.0966,
+        "lcCooperative": 0.5697,
+        "lcAssertive": 2.6222,
+        "lcSpeedGain": 1.7939
+      }
+    },
+    {
+      "sim_index": 74,
+      "phase": "sequential",
+      "lcb_round": 14,
+      "error": 0.259745,
+      "best_so_far": 0.230847,
+      "rf_r2": 0.9908,
+      "params": {
+        "accel": 3.5,
+        "decel": 2.7278,
+        "sigma": 0.6244,
+        "tau": 0.5,
+        "minGap": 3.3527,
+        "speedFactor": 0.5,
+        "lcStrategic": 0.35,
+        "lcCooperative": 1.0898,
+        "lcAssertive": 1.2437,
+        "lcSpeedGain": 0.8787
+      }
+    },
+    {
+      "sim_index": 75,
+      "phase": "sequential",
+      "lcb_round": 15,
+      "error": 0.293554,
+      "best_so_far": 0.230847,
+      "rf_r2": 0.9895,
+      "params": {
+        "accel": 3.0985,
+        "decel": 3.3151,
+        "sigma": 0.7774,
+        "tau": 0.5,
+        "minGap": 4.0,
+        "speedFactor": 0.5,
+        "lcStrategic": 0.35,
+        "lcCooperative": 0.5692,
+        "lcAssertive": 1.9842,
+        "lcSpeedGain": 0.9495
+      }
+    },
+    {
+      "sim_index": 76,
+      "phase": "sequential",
+      "lcb_round": 16,
+      "error": 0.368362,
+      "best_so_far": 0.230847,
+      "rf_r2": 0.9906,
+      "params": {
+        "accel": 2.8093,
+        "decel": 4.0298,
+        "sigma": 0.265,
+        "tau": 0.5489,
+        "minGap": 2.0325,
+        "speedFactor": 0.5376,
+        "lcStrategic": 0.442,
+        "lcCooperative": 0.6652,
+        "lcAssertive": 1.1808,
+        "lcSpeedGain": 2.0904
+      }
+    },
+    {
+      "sim_index": 77,
+      "phase": "sequential",
+      "lcb_round": 17,
+      "error": 0.30985,
+      "best_so_far": 0.230847,
+      "rf_r2": 0.9904,
+      "params": {
+        "accel": 3.0513,
+        "decel": 4.0206,
+        "sigma": 0.8658,
+        "tau": 0.8222,
+        "minGap": 1.3299,
+        "speedFactor": 0.5281,
+        "lcStrategic": 0.6446,
+        "lcCooperative": 1.724,
+        "lcAssertive": 1.0266,
+        "lcSpeedGain": 2.021
+      }
+    },
+    {
+      "sim_index": 78,
+      "phase": "sequential",
+      "lcb_round": 18,
+      "error": 0.308946,
+      "best_so_far": 0.230847,
+      "rf_r2": 0.9853,
+      "params": {
+        "accel": 3.1859,
+        "decel": 5.2647,
+        "sigma": 0.8488,
+        "tau": 0.5877,
+        "minGap": 1.3757,
+        "speedFactor": 0.5157,
+        "lcStrategic": 1.3018,
+        "lcCooperative": 0.5467,
+        "lcAssertive": 0.6269,
+        "lcSpeedGain": 2.1985
+      }
+    },
+    {
+      "sim_index": 79,
+      "phase": "sequential",
+      "lcb_round": 19,
+      "error": 0.252473,
+      "best_so_far": 0.230847,
+      "rf_r2": 0.9844,
+      "params": {
+        "accel": 3.477,
+        "decel": 3.4218,
+        "sigma": 0.7138,
+        "tau": 0.6498,
+        "minGap": 3.2159,
+        "speedFactor": 0.5297,
+        "lcStrategic": 0.9752,
+        "lcCooperative": 1.9244,
+        "lcAssertive": 1.1012,
+        "lcSpeedGain": 2.0351
+      }
+    },
+    {
+      "sim_index": 80,
+      "phase": "sequential",
+      "lcb_round": 20,
+      "error": 0.323636,
+      "best_so_far": 0.230847,
+      "rf_r2": 0.9852,
+      "params": {
+        "accel": 3.3385,
+        "decel": 2.6091,
+        "sigma": 0.4501,
+        "tau": 0.7676,
+        "minGap": 1.1302,
+        "speedFactor": 0.619,
+        "lcStrategic": 0.9408,
+        "lcCooperative": 0.7803,
+        "lcAssertive": 0.48,
+        "lcSpeedGain": 2.7402
+      }
+    },
+    {
+      "sim_index": 81,
+      "phase": "sequential",
+      "lcb_round": 21,
+      "error": 0.534057,
+      "best_so_far": 0.230847,
+      "rf_r2": 0.9894,
+      "params": {
+        "accel": 1.3808,
+        "decel": 3.1055,
+        "sigma": 0.88,
+        "tau": 0.5816,
+        "minGap": 3.8933,
+        "speedFactor": 0.5725,
+        "lcStrategic": 0.9473,
+        "lcCooperative": 1.6583,
+        "lcAssertive": 1.4859,
+        "lcSpeedGain": 1.475
+      }
+    },
+    {
+      "sim_index": 82,
+      "phase": "sequential",
+      "lcb_round": 22,
+      "error": 0.331696,
+      "best_so_far": 0.230847,
+      "rf_r2": 0.9839,
+      "params": {
+        "accel": 3.5,
+        "decel": 3.1517,
+        "sigma": 0.8485,
+        "tau": 0.5,
+        "minGap": 3.4044,
+        "speedFactor": 0.6653,
+        "lcStrategic": 0.35,
+        "lcCooperative": 1.0781,
+        "lcAssertive": 1.9113,
+        "lcSpeedGain": 1.5439
+      }
+    },
+    {
+      "sim_index": 83,
+      "phase": "sequential",
+      "lcb_round": 23,
+      "error": 0.366794,
+      "best_so_far": 0.230847,
+      "rf_r2": 0.9844,
+      "params": {
+        "accel": 3.0627,
+        "decel": 5.0013,
+        "sigma": 0.2786,
+        "tau": 0.6304,
+        "minGap": 3.1403,
+        "speedFactor": 0.541,
+        "lcStrategic": 0.5146,
+        "lcCooperative": 0.5205,
+        "lcAssertive": 0.5384,
+        "lcSpeedGain": 1.7755
+      }
+    },
+    {
+      "sim_index": 84,
+      "phase": "sequential",
+      "lcb_round": 24,
+      "error": 0.290944,
+      "best_so_far": 0.230847,
+      "rf_r2": 0.9889,
+      "params": {
+        "accel": 3.5,
+        "decel": 3.4625,
+        "sigma": 0.7417,
+        "tau": 0.5,
+        "minGap": 4.0,
+        "speedFactor": 0.5,
+        "lcStrategic": 0.35,
+        "lcCooperative": 1.0498,
+        "lcAssertive": 1.5248,
+        "lcSpeedGain": 0.79
+      }
+    },
+    {
+      "sim_index": 85,
+      "phase": "sequential",
+      "lcb_round": 25,
+      "error": 0.462963,
+      "best_so_far": 0.230847,
+      "rf_r2": 0.9855,
+      "params": {
+        "accel": 2.3741,
+        "decel": 2.1075,
+        "sigma": 0.8318,
+        "tau": 0.8515,
+        "minGap": 3.6342,
+        "speedFactor": 0.6634,
+        "lcStrategic": 0.8015,
+        "lcCooperative": 0.3994,
+        "lcAssertive": 1.8334,
+        "lcSpeedGain": 2.6918
+      }
+    },
+    {
+      "sim_index": 86,
+      "phase": "sequential",
+      "lcb_round": 26,
+      "error": 0.287059,
+      "best_so_far": 0.230847,
+      "rf_r2": 0.9846,
+      "params": {
+        "accel": 3.5,
+        "decel": 2.1551,
+        "sigma": 0.6452,
+        "tau": 0.5,
+        "minGap": 3.8882,
+        "speedFactor": 0.6195,
+        "lcStrategic": 0.35,
+        "lcCooperative": 1.1083,
+        "lcAssertive": 1.5477,
+        "lcSpeedGain": 1.4229
+      }
+    },
+    {
+      "sim_index": 87,
+      "phase": "sequential",
+      "lcb_round": 27,
+      "error": 0.557113,
+      "best_so_far": 0.230847,
+      "rf_r2": 0.9773,
+      "params": {
+        "accel": 3.5,
+        "decel": 2.471,
+        "sigma": 0.875,
+        "tau": 0.8421,
+        "minGap": 3.388,
+        "speedFactor": 0.5,
+        "lcStrategic": 0.6291,
+        "lcCooperative": 0.6048,
+        "lcAssertive": 1.2054,
+        "lcSpeedGain": 0.7936
+      }
+    },
+    {
+      "sim_index": 88,
+      "phase": "sequential",
+      "lcb_round": 28,
+      "error": 0.282679,
+      "best_so_far": 0.230847,
+      "rf_r2": 0.9853,
+      "params": {
+        "accel": 3.439,
+        "decel": 2.443,
+        "sigma": 0.6864,
+        "tau": 0.5,
+        "minGap": 4.0,
+        "speedFactor": 0.6581,
+        "lcStrategic": 0.35,
+        "lcCooperative": 0.5194,
+        "lcAssertive": 1.4805,
+        "lcSpeedGain": 0.8018
+      }
+    },
+    {
+      "sim_index": 89,
+      "phase": "sequential",
+      "lcb_round": 29,
+      "error": 0.398046,
+      "best_so_far": 0.230847,
+      "rf_r2": 0.978,
+      "params": {
+        "accel": 1.9594,
+        "decel": 2.1317,
+        "sigma": 0.5708,
+        "tau": 0.5816,
+        "minGap": 2.9108,
+        "speedFactor": 0.5368,
+        "lcStrategic": 1.0755,
+        "lcCooperative": 0.3747,
+        "lcAssertive": 1.8451,
+        "lcSpeedGain": 2.7141
+      }
+    },
+    {
+      "sim_index": 90,
+      "phase": "sequential",
+      "lcb_round": 30,
+      "error": 0.572619,
+      "best_so_far": 0.230847,
+      "rf_r2": 0.9777,
+      "params": {
+        "accel": 3.3884,
+        "decel": 2.1545,
+        "sigma": 0.4003,
+        "tau": 1.778,
+        "minGap": 2.3852,
+        "speedFactor": 0.8716,
+        "lcStrategic": 0.8686,
+        "lcCooperative": 0.4593,
+        "lcAssertive": 0.6472,
+        "lcSpeedGain": 1.2377
+      }
+    },
+    {
+      "sim_index": 91,
+      "phase": "sequential",
+      "lcb_round": 31,
+      "error": 0.366996,
+      "best_so_far": 0.230847,
+      "rf_r2": 0.9763,
+      "params": {
+        "accel": 3.0979,
+        "decel": 3.277,
+        "sigma": 0.6409,
+        "tau": 0.9898,
+        "minGap": 1.0174,
+        "speedFactor": 0.6737,
+        "lcStrategic": 2.7666,
+        "lcCooperative": 0.4688,
+        "lcAssertive": 1.6224,
+        "lcSpeedGain": 2.3778
+      }
+    },
+    {
+      "sim_index": 92,
+      "phase": "sequential",
+      "lcb_round": 32,
+      "error": 0.540425,
+      "best_so_far": 0.230847,
+      "rf_r2": 0.9808,
+      "params": {
+        "accel": 3.3255,
+        "decel": 2.6387,
+        "sigma": 0.7289,
+        "tau": 1.2368,
+        "minGap": 3.8793,
+        "speedFactor": 0.5325,
+        "lcStrategic": 2.3742,
+        "lcCooperative": 1.3538,
+        "lcAssertive": 1.1405,
+        "lcSpeedGain": 1.1075
+      }
+    },
+    {
+      "sim_index": 93,
+      "phase": "sequential",
+      "lcb_round": 33,
+      "error": 0.329403,
+      "best_so_far": 0.230847,
+      "rf_r2": 0.9789,
+      "params": {
+        "accel": 3.2836,
+        "decel": 3.4413,
+        "sigma": 0.6644,
+        "tau": 0.5828,
+        "minGap": 1.4278,
+        "speedFactor": 0.6661,
+        "lcStrategic": 2.458,
+        "lcCooperative": 1.4133,
+        "lcAssertive": 1.2441,
+        "lcSpeedGain": 2.5573
+      }
+    },
+    {
+      "sim_index": 94,
+      "phase": "sequential",
+      "lcb_round": 34,
+      "error": 0.281143,
+      "best_so_far": 0.230847,
+      "rf_r2": 0.9851,
+      "params": {
+        "accel": 3.1783,
+        "decel": 2.9254,
+        "sigma": 0.6639,
+        "tau": 0.7439,
+        "minGap": 1.0034,
+        "speedFactor": 0.616,
+        "lcStrategic": 1.7639,
+        "lcCooperative": 1.7384,
+        "lcAssertive": 2.7807,
+        "lcSpeedGain": 2.6817
+      }
+    },
+    {
+      "sim_index": 95,
+      "phase": "sequential",
+      "lcb_round": 35,
+      "error": 0.223517,
+      "best_so_far": 0.223517,
+      "rf_r2": 0.984,
+      "params": {
+        "accel": 3.4174,
+        "decel": 2.9688,
+        "sigma": 0.6245,
+        "tau": 0.5,
+        "minGap": 3.315,
+        "speedFactor": 0.513,
+        "lcStrategic": 0.35,
+        "lcCooperative": 0.5733,
+        "lcAssertive": 1.9395,
+        "lcSpeedGain": 1.582
+      }
+    },
+    {
+      "sim_index": 96,
+      "phase": "sequential",
+      "lcb_round": 36,
+      "error": 0.251235,
+      "best_so_far": 0.223517,
+      "rf_r2": 0.982,
+      "params": {
+        "accel": 3.5,
+        "decel": 3.1052,
+        "sigma": 0.4853,
+        "tau": 0.5,
+        "minGap": 2.9419,
+        "speedFactor": 0.5013,
+        "lcStrategic": 0.35,
+        "lcCooperative": 0.7678,
+        "lcAssertive": 1.7767,
+        "lcSpeedGain": 1.8738
+      }
+    },
+    {
+      "sim_index": 97,
+      "phase": "sequential",
+      "lcb_round": 37,
+      "error": 0.25206,
+      "best_so_far": 0.223517,
+      "rf_r2": 0.9825,
+      "params": {
+        "accel": 3.5,
+        "decel": 3.1904,
+        "sigma": 0.506,
+        "tau": 0.5,
+        "minGap": 3.8278,
+        "speedFactor": 0.5,
+        "lcStrategic": 0.3518,
+        "lcCooperative": 0.35,
+        "lcAssertive": 1.5823,
+        "lcSpeedGain": 1.3435
+      }
+    },
+    {
+      "sim_index": 98,
+      "phase": "sequential",
+      "lcb_round": 38,
+      "error": 0.265776,
+      "best_so_far": 0.223517,
+      "rf_r2": 0.9826,
+      "params": {
+        "accel": 3.5,
+        "decel": 2.2524,
+        "sigma": 0.6009,
+        "tau": 0.5,
+        "minGap": 2.8523,
+        "speedFactor": 0.5,
+        "lcStrategic": 0.666,
+        "lcCooperative": 0.6477,
+        "lcAssertive": 2.2853,
+        "lcSpeedGain": 1.9818
+      }
+    },
+    {
+      "sim_index": 99,
+      "phase": "sequential",
+      "lcb_round": 39,
+      "error": 0.257079,
+      "best_so_far": 0.223517,
+      "rf_r2": 0.985,
+      "params": {
+        "accel": 2.9848,
+        "decel": 2.5758,
+        "sigma": 0.6533,
+        "tau": 0.6316,
+        "minGap": 1.5334,
+        "speedFactor": 0.5084,
+        "lcStrategic": 1.0943,
+        "lcCooperative": 1.7701,
+        "lcAssertive": 0.4868,
+        "lcSpeedGain": 2.1688
+      }
+    },
+    {
+      "sim_index": 100,
+      "phase": "sequential",
+      "lcb_round": 40,
+      "error": 0.319864,
+      "best_so_far": 0.223517,
+      "rf_r2": 0.9831,
+      "params": {
+        "accel": 3.2588,
+        "decel": 2.7986,
+        "sigma": 0.7552,
+        "tau": 0.8335,
+        "minGap": 2.921,
+        "speedFactor": 0.578,
+        "lcStrategic": 0.35,
+        "lcCooperative": 0.7273,
+        "lcAssertive": 1.5087,
+        "lcSpeedGain": 1.1784
+      }
+    },
+    {
+      "sim_index": 101,
+      "phase": "sequential",
+      "lcb_round": 41,
+      "error": 0.268595,
+      "best_so_far": 0.223517,
+      "rf_r2": 0.983,
+      "params": {
+        "accel": 3.5,
+        "decel": 3.6843,
+        "sigma": 0.573,
+        "tau": 0.5,
+        "minGap": 3.2637,
+        "speedFactor": 0.5,
+        "lcStrategic": 0.35,
+        "lcCooperative": 0.7471,
+        "lcAssertive": 2.3697,
+        "lcSpeedGain": 1.1754
+      }
+    }
+  ]
+}
