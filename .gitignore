@@ -1,3 +1,62 @@
-# 数据文件夹（原始/处理后数据不纳入版本控制）
-data/raw_data/
-data/external_data/
+# Local archive (thesis, school docs, duplicate data) — keep on disk, do not push
+_local_archive/
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# Large trajectory / simulation outputs (see docs/DATA.md)
+data/raw_data/**/*.csv
+data/raw_data/**/sumo/*.fcd.xml
+data/raw_data/**/sumo/*.tripinfo.xml
+data/raw_data/**/sumo/*.vehroute.xml
+data/raw_data/**/sumo/tmp.*
+
+# SinD upstream clone (nested .git); obtain separately per docs/DATA.md
+data/external_data/SinD/
+
+# Generated figures (reproducible from scripts)
+outputs/figures/*.png
+outputs/figures/*.jpg
+outputs/figures/*.pdf
+outputs/figures/*.svg
+
+# Release data: DO commit comparison CSVs and *_b100.json cache
+# (not ignored)
+
+# Transient batch run logs (per-job stdout; reproducible)
+outputs/results/_batch_logs/
+
+# Run logs and thesis-era artifacts
+outputs/logs/*
+!outputs/logs/.gitkeep
+outputs/results/comparison_run.log
+outputs/results/*retrofit*
+outputs/results/*shap*
+outputs/results/adaptive_*
+outputs/results/final_similarity*
+outputs/results/fig43_*
+outputs/results/table48_*
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Office temp
+~$*.docx
+
+# Merge backup / local bundles
+heshuo-bf-sac-calibration-main/
+data.zip
+
+# Scene photos (optional local assets)
+data/raw_data/**/*.jpg
+data/raw_data/**/*.png

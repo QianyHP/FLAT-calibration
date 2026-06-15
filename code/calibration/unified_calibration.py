@@ -15,15 +15,8 @@ Behavioral Fingerprint Surrogate-Assisted Calibration (BF-SAC)
   python unified_calibration.py --mlp XAM-N6 # 单场景 + MLP
   BFSAC_SURROGATE=mlp python unified_calibration.py   # 等价环境变量写法
 
-  # MLP 超参可在命令行参数化（仅 MLP 模式有效，RF 不受影响）：
-  python unified_calibration.py --mlp --ensemble=5 XAM-N6                # 平行量改为 5
-  python unified_calibration.py --mlp --hidden=128,128 --alpha=3e-3 XAM-N6  # 改结构/正则
-  python unified_calibration.py --mlp --no-bootstrap --subset=40 XAM-N6  # 无放回 + 40 子集
-  python unified_calibration.py --mlp --subset=none XAM-N6               # 用全部历史数据
-
 代理选择：RF（随机森林，默认）与 MLP（深度集成）二选一，框架/预算/LCB 不变。
-MLP 模式输出文件名追加 ``__mlp_hX-Y_mM`` 后缀并保存网络权重，绝不覆盖 RF 结果；
-被改成非默认的超参会再追加紧凑标记（如 ``_a0.003`` / ``_nob`` / ``_s40``）以区分实验。
+MLP 模式输出文件名追加 ``__mlp_hX-Y_mM`` 后缀并保存网络权重，绝不覆盖 RF 结果。
 """
 
 from __future__ import annotations
@@ -157,6 +150,13 @@ def get_param_bounds(name: str) -> np.ndarray:
     return b
 
 
+BUDGET_SUMO = 100   # 每场景总 SUMO 次数（默认 40 LHS + 60 序贯）
+N_INIT = 40         # 默认阶段 A：LHS 初始设计点数
+N_INIT_MAIN = 40    # 主对比实验固定 n_init
+SWEEP_N_INIT = (20, 40, 60, 80, 100)  # 样本效率消融；100 = 纯 LHS（无序贯）
+N_DOE = N_INIT
+
+
 def lhs_samples_for_scene(n: int, bounds: np.ndarray, seed: int) -> np.ndarray:
     sampler = LatinHypercube(d=len(PARAM_NAMES), seed=seed)
     unit = sampler.random(n=n)
@@ -164,12 +164,70 @@ def lhs_samples_for_scene(n: int, bounds: np.ndarray, seed: int) -> np.ndarray:
     return unit * (hi - lo) + lo
 
 
-BUDGET_SUMO = 101   # 每场景总 SUMO 次数
-N_INIT = 60         # 阶段 A：LHS 初始设计
-N_DOE = N_INIT      # 对比实验 No-RF 等消融的 DoE 样本数
+def lhs_pool_for_scene(
+    name: str,
+    bounds: np.ndarray | None = None,
+    *,
+    run_seed: int = 42,
+) -> np.ndarray:
+    """场景级共用 LHS 池（BUDGET_SUMO 点）：BF-SAC 用前 N_INIT 行，n_init=100（纯 LHS）用全池。"""
+    if bounds is None:
+        bounds = get_param_bounds(name)
+    lhs_seed = _lhs_seed_for_scene(name) + int(run_seed) * 9973
+    return lhs_samples_for_scene(BUDGET_SUMO, bounds, lhs_seed)
 
-# 序贯 LCB 采集
-LC_KAPPA = 1.96
+
+def derive_run_seeds(name: str, run_seed: int) -> tuple[int, np.random.Generator]:
+    """由场景基种子与 run_seed 派生 LHS 种子与序贯 RNG。"""
+    lhs_seed = _lhs_seed_for_scene(name) + int(run_seed) * 9973
+    rng = np.random.default_rng(lhs_seed + 17)
+    return lhs_seed, rng
+
+
+def _env_float(key: str, default: float) -> float:
+    v = os.environ.get(key)
+    return float(v) if v is not None else default
+
+
+def _env_int(key: str, default: int) -> int:
+    v = os.environ.get(key)
+    return int(v) if v is not None else default
+
+
+def _env_bool(key: str, default: bool) -> bool:
+    v = os.environ.get(key)
+    if v is None:
+        return default
+    return v.strip().lower() in ("1", "true", "yes", "on")
+
+
+def _env_hidden(key: str, default: tuple[int, ...]) -> tuple[int, ...]:
+    """解析逗号分隔的隐藏层规格（如 "64,64" / "128"）；为空或非法时回退默认。"""
+    v = os.environ.get(key)
+    if not v:
+        return default
+    try:
+        layers = tuple(int(x) for x in v.split(",") if x.strip())
+    except ValueError:
+        return default
+    return layers or default
+
+
+# 序贯 LCB 采集：κ 线性退火（探索→利用）；BFSAC_LC_KAPPA 设固定值可关闭退火
+LC_KAPPA_START = _env_float("BFSAC_LC_KAPPA_START", 2.0)
+LC_KAPPA_END = _env_float("BFSAC_LC_KAPPA_END", 0.5)
+_LC_KAPPA_FIXED = os.environ.get("BFSAC_LC_KAPPA")
+LC_KAPPA = float(_LC_KAPPA_FIXED) if _LC_KAPPA_FIXED is not None else LC_KAPPA_START
+
+
+def _kappa_at_step(j: int, n_seq: int) -> float:
+    """序贯第 j 轮（0-indexed）的 LCB κ：从 LC_KAPPA_START 线性降至 LC_KAPPA_END。"""
+    if _LC_KAPPA_FIXED is not None:
+        return float(_LC_KAPPA_FIXED)
+    if n_seq <= 1:
+        return LC_KAPPA_END
+    t = j / (n_seq - 1)
+    return LC_KAPPA_START + (LC_KAPPA_END - LC_KAPPA_START) * t
 N_CAND_LOCAL = 2500
 N_CAND_GLOBAL = 2500
 TRUST_FRAC = 0.18   # 信赖域：最优点附近各维 ± 该比例 × 参数跨度
@@ -219,12 +277,15 @@ def _rf_n_jobs(name: str) -> int:
     return 1 if name in ("RML", "Tianjin") else -1
 
 
-def _fit_rf(X: np.ndarray, Y: np.ndarray, name: str) -> RandomForestRegressor | None:
+def _fit_rf(
+    X: np.ndarray, Y: np.ndarray, name: str, *, run_seed: int = 42,
+) -> RandomForestRegressor | None:
     valid = ~np.isnan(Y) & (Y < 10.0)
     if valid.sum() < MIN_VALID_RF:
         return None
     rf = RandomForestRegressor(
-        n_estimators=500, max_depth=20, random_state=42, n_jobs=_rf_n_jobs(name),
+        n_estimators=500, max_depth=20,
+        random_state=42 + int(run_seed), n_jobs=_rf_n_jobs(name),
     )
     rf.fit(X[valid], Y[valid])
     return rf
@@ -259,69 +320,66 @@ def _rf_pick_lcb_point(
 # 输入 10 维参数、输出标量 J_b；σ 取自成员间分歧。对外仅暴露 .predict / .score。
 # 与 RF 不共用任何建模代码，只保持相同的输入/输出接口。
 # ═════════════════════════════════════════════════════════════════════
-# 小数据（每场景 60→100 个评估点、10 维输入、标量输出）下的稳健配置。
-# 该配置由「日志离线交叉验证」(在已评估点上做 RepeatedKFold) 标定得到：
-#   - 集成个数 10：M=5→10 是关键一步，RMSE↓约 6%、σ 校准 cov95 0.85→0.91；
-#     再加到 15 收益递减、成本翻倍，故取 10（训练 10 个小网络成本仍可忽略）
-#   - 2 隐藏层 × 64：容量够拟合 10 维平滑目标，又不至于过拟合 ~100 点
-#     （CV 显示 (64,64) 优于 (32,32)）
-#   - tanh + lbfgs：小样本回归收敛快、曲面平滑；alpha 提供 L2 正则
-#   - bootstrap：成员间用有放回重采样增加分歧，改善 σ（类比 RF 的 bagging）；
-#     CV 证实关掉 bootstrap 会令 σ 塌缩、严重过自信，务必保留
-#   - σ 校准系数 1.2：MLP 集成的成员间 σ 偏过自信（CV 得 c*≈1.2 才达 95% 覆盖），
-#     在 LCB 中按此放大 σ，使探索更充分（见 _mlp_lcb）
-#   - 子采样（subagging）抗过拟合：每轮每个成员只在「固定大小 = N_INIT」的随机子集上训练，
-#     而非全部历史数据。Phase B 数据从 60 增至 100 时，单个网络始终只见 ≤60 个点，
-#     既降低单网络过拟合，又让各成员看到不同子集、进一步增大分歧（详见 MLPEnsemble.fit）。
-#   - warm-start 增量续训：Phase B 首轮从零训练，之后每轮在「上一轮各成员的权重」上继续
-#     训练（lbfgs 从已有权重出发再优化），而非每轮从零重训；新增样本得以增量更新参数。
-#     为使续训在同一目标尺度下进行，输出归一化(y_mean/y_std)在首训时冻结（见 MLPEnsemble.update）。
-MLP_HIDDEN_LAYERS = (64, 64)   # 每个 MLP 的隐藏层 → 神经元数
-MLP_ENSEMBLE_SIZE = 10         # 并行训练的网络个数（集成成员数，即“平行量”）
+# 小数据（每场景约 100 个评估点、10 维输入、标量输出）下的稳健默认配置。
+# 取舍围绕一个核心：集成成员需保持足够分歧，才能给出可信的不确定度 σ 供 LCB 探索。
+#   - 集成个数 10：兼顾 σ 估计的稳定性与训练成本（5 偏少、15 收益递减）。
+#   - 2 隐藏层 × 64、tanh + lbfgs：容量足以拟合 10 维平滑目标，小样本下收敛快、曲面平滑，
+#     alpha 提供 L2 正则。
+#   - bootstrap + 子采样（subagging）：每个成员只在固定大小（= N_INIT）的随机子集上训练，
+#     既抑制单网络过拟合，又让成员看到不同数据以维持分歧——这是 σ 不塌缩的关键（见 MLPEnsemble.fit）。
+#   - σ 校准系数 1.2：成员间 σ 偏过自信，LCB 前按此放大以留足探索余量（见 _mlp_lcb）。
+#   - warm-start 增量续训：Phase B 每轮在上一轮成员权重上继续优化；输出归一化在首训冻结，
+#     以保证续训目标尺度一致（见 MLPEnsemble.update）。
+# 下列默认值与 env / CLI 覆盖无关，仅供 _mlp_tag 判断是否偏离默认、用于追加文件名标记。
+_MLP_TAG_DEFAULTS = {
+    "activation": "tanh",
+    "solver": "lbfgs",
+    "alpha": 1e-3,
+    "max_iter": 2000,
+    "bootstrap": True,
+    "subset": N_INIT,
+    "warm_start": True,
+    "sigma_calib": 1.2,
+}
+
+MLP_HIDDEN_LAYERS = _env_hidden("BFSAC_MLP_HIDDEN", (64, 64))  # 每个 MLP 的隐藏层 → 神经元数
+MLP_ENSEMBLE_SIZE = _env_int("BFSAC_MLP_ENSEMBLE_SIZE", 10)
 MLP_ACTIVATION = "tanh"
 MLP_SOLVER = "lbfgs"
-MLP_ALPHA = 1e-3          # L2 正则化强度（过拟合风险较大，需正则；CV 标定得到 1e-3 既能拟合又不至过拟合）
+MLP_ALPHA = _env_float("BFSAC_MLP_ALPHA", 1e-3)
 MLP_MAX_ITER = 2000
-MLP_BOOTSTRAP = True
-MLP_SIGMA_CALIB = 1.2          # σ 校准放大系数（修正集成 σ 的过自信）
-MLP_TRAIN_SUBSET = N_INIT      # 每个成员训练子集大小（= Phase A 数据量 60）；抗过拟合子采样
-MLP_WARM_START = True          # Phase B 续训：每轮在上一轮成员权重上继续训练，而非从零重训
-
-# 捕获 MLP 数值/字符串超参的「出厂默认值」（在任何命令行覆盖之前），
-# 供 _mlp_tag 判断某项是否被改成非默认，从而只在非默认时追加文件名标记。
-_MLP_DEFAULTS = {
-    "activation": MLP_ACTIVATION,
-    "solver": MLP_SOLVER,
-    "alpha": MLP_ALPHA,
-    "max_iter": MLP_MAX_ITER,
-    "sigma_calib": MLP_SIGMA_CALIB,
-}
+MLP_BOOTSTRAP = _env_bool("BFSAC_MLP_BOOTSTRAP", True)
+MLP_SIGMA_CALIB = _env_float("BFSAC_MLP_SIGMA_CALIB", 1.2)
+MLP_TRAIN_SUBSET = _env_int("BFSAC_MLP_TRAIN_SUBSET", N_INIT)
+MLP_WARM_START = _env_bool("BFSAC_MLP_WARM_START", True)
+MLP_SAVE_MODEL = _env_bool("BFSAC_MLP_SAVE_MODEL", True)  # 批量消融可关，避免并行写同名 joblib
 
 
 def _mlp_tag() -> str:
-    """编码网络超参，用于模型文件名与输出后缀，便于区分不同实验、避免互相覆盖。
+    """编码网络结构与「非默认超参」用于模型文件名/输出后缀，确保不同消融配置互不覆盖。
 
-    主标签 `mlp_h<隐藏层>_m<集成数>` 始终反映网络结构与平行量；其余超参仅当被改成
-    「非默认」时才追加紧凑标记（_ac/_sv/_a/_it/_sc/_nob/_sN/_sfull/_nows），
-    从而保证默认配置文件名不变、向后兼容，同时让参数扫描的每个配置各自落盘、不覆盖。
+    主标签 ``mlp_h<隐藏层>_m<集成数>`` 始终反映结构与平行量；其余超参仅在被改成非默认时
+    追加紧凑标记（``_nob``/``_s40``/``_sfull``/``_nows``/``_a..``/``_it..``/``_sc..`` 等），
+    从而保持默认配置文件名不变、向后兼容，又让参数扫描各自落盘、不相互覆盖。
     """
     h = "-".join(str(x) for x in MLP_HIDDEN_LAYERS)
     tag = f"mlp_h{h}_m{MLP_ENSEMBLE_SIZE}"
-    if MLP_ACTIVATION != _MLP_DEFAULTS["activation"]:
+    d = _MLP_TAG_DEFAULTS
+    if MLP_ACTIVATION != d["activation"]:
         tag += f"_ac{MLP_ACTIVATION}"
-    if MLP_SOLVER != _MLP_DEFAULTS["solver"]:
+    if MLP_SOLVER != d["solver"]:
         tag += f"_sv{MLP_SOLVER}"
-    if MLP_ALPHA != _MLP_DEFAULTS["alpha"]:
+    if MLP_ALPHA != d["alpha"]:
         tag += f"_a{MLP_ALPHA:g}"
-    if MLP_MAX_ITER != _MLP_DEFAULTS["max_iter"]:
+    if MLP_MAX_ITER != d["max_iter"]:
         tag += f"_it{MLP_MAX_ITER}"
     if not MLP_BOOTSTRAP:
-        tag += "_nob"                                   # 关闭自助重采样（非默认）
-    if MLP_TRAIN_SUBSET != N_INIT:
+        tag += "_nob"
+    if MLP_TRAIN_SUBSET != d["subset"]:
         tag += "_sfull" if not MLP_TRAIN_SUBSET else f"_s{MLP_TRAIN_SUBSET}"
     if not MLP_WARM_START:
-        tag += "_nows"                                  # 关闭 warm-start 续训（非默认）
-    if MLP_SIGMA_CALIB != _MLP_DEFAULTS["sigma_calib"]:
+        tag += "_nows"
+    if MLP_SIGMA_CALIB != d["sigma_calib"]:
         tag += f"_sc{MLP_SIGMA_CALIB:g}"
     return tag
 
@@ -370,7 +428,10 @@ class MLPEnsemble:
         self.y_mean = None
         self.y_std = None
 
-    def fit(self, X: np.ndarray, Y: np.ndarray, bounds: np.ndarray) -> "MLPEnsemble":
+    def fit(
+        self, X: np.ndarray, Y: np.ndarray, bounds: np.ndarray,
+        *, ensemble_seed: int | None = None,
+    ) -> "MLPEnsemble":
         X = np.asarray(X, dtype=float)
         Y = np.asarray(Y, dtype=float)
         x_lo = bounds[:, 0]
@@ -388,7 +449,7 @@ class MLPEnsemble:
         self.seeds = []
         # 由操作系统熵源播种，给每个子 MLP 抽取互不相同的随机种子，
         # 使各成员的网络参数初始化（及子采样）真正随机、互相多样。
-        seed_rng = np.random.default_rng()
+        seed_rng = np.random.default_rng(ensemble_seed)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")  # 抑制 lbfgs 偶发未收敛告警
             for m in range(self.ensemble_size):
@@ -418,7 +479,10 @@ class MLPEnsemble:
                     _ScaledMLP(mlp, x_lo, x_span, y_mean, y_std))
         return self
 
-    def update(self, X: np.ndarray, Y: np.ndarray, bounds: np.ndarray) -> "MLPEnsemble":
+    def update(
+        self, X: np.ndarray, Y: np.ndarray, bounds: np.ndarray,
+        *, subset_seed: int | None = None,
+    ) -> "MLPEnsemble":
         """Phase B 增量续训：在「已有成员权重」上继续训练，而非从零重建。
 
         - 复用首训冻结的归一化(x/y)，使续训在同一输入/目标尺度下进行；
@@ -433,7 +497,7 @@ class MLPEnsemble:
         Y = np.asarray(Y, dtype=float)
         n = len(X)
         k = min(self.subset_size, n) if self.subset_size else n
-        sub_rng = np.random.default_rng()  # 每轮重新随机抽子集
+        sub_rng = np.random.default_rng(subset_seed)  # 每轮重新随机抽子集
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")  # 抑制 lbfgs 偶发未收敛告警
             for member in self.members:
@@ -455,7 +519,9 @@ class MLPEnsemble:
         return float(r2_score(np.asarray(Y, dtype=float), self.predict(X)))
 
 
-def _fit_mlp(X: np.ndarray, Y: np.ndarray, name: str) -> MLPEnsemble | None:
+def _fit_mlp(
+    X: np.ndarray, Y: np.ndarray, name: str, *, run_seed: int = 42,
+) -> MLPEnsemble | None:
     valid = ~np.isnan(Y) & (Y < 10.0)
     if valid.sum() < MIN_VALID_RF:
         return None
@@ -470,23 +536,28 @@ def _fit_mlp(X: np.ndarray, Y: np.ndarray, name: str) -> MLPEnsemble | None:
         subset_size=MLP_TRAIN_SUBSET,
         warm_start=MLP_WARM_START,
     )
-    return ens.fit(X[valid], Y[valid], get_param_bounds(name))
+    return ens.fit(
+        X[valid], Y[valid], get_param_bounds(name), ensemble_seed=1000 + int(run_seed),
+    )
 
 
-def _update_mlp(ens: MLPEnsemble, X: np.ndarray, Y: np.ndarray,
-                name: str) -> MLPEnsemble:
+def _update_mlp(
+    ens: MLPEnsemble, X: np.ndarray, Y: np.ndarray, name: str, *, round_idx: int, run_seed: int,
+) -> MLPEnsemble:
     """Phase B 续训：在已有集成上增量更新（warm-start），保留各成员权重。"""
     valid = ~np.isnan(Y) & (Y < 10.0)
     if valid.sum() < MIN_VALID_RF:
         return ens
-    return ens.update(X[valid], Y[valid], get_param_bounds(name))
+    return ens.update(
+        X[valid], Y[valid], get_param_bounds(name),
+        subset_seed=2000 + int(run_seed) * 100 + int(round_idx),
+    )
 
 
 def _mlp_lcb(ens: MLPEnsemble, X: np.ndarray, kappa: float) -> np.ndarray:
     """MLP 下置信界：成员预测均值 − κ×（校准后的）成员间标准差（越小越优）。
 
-    成员间 σ 偏过自信，按 MLP_SIGMA_CALIB 放大后再代入 LCB，使探索更充分
-    （校准系数由日志离线 CV 标定，见配置区注释）。
+    成员间 σ 偏过自信，按 MLP_SIGMA_CALIB 放大后再代入 LCB，使探索更充分（见配置区注释）。
     """
     preds = np.stack([m.predict(X) for m in ens.members], axis=0)
     mu = preds.mean(axis=0)
@@ -523,11 +594,11 @@ def _save_mlp_model(name: str, model: "MLPEnsemble") -> None:
 # 统一接口：让 calibrate_one 与具体代理无关（按类型分派到对应块，两块互不共用）
 # ═════════════════════════════════════════════════════════════════════
 
-def _fit_surrogate(X: np.ndarray, Y: np.ndarray, name: str):
+def _fit_surrogate(X: np.ndarray, Y: np.ndarray, name: str, *, run_seed: int = 42):
     """按 SURROGATE_KIND 选择代理：'mlp' → MLP 集成；其余 → 随机森林。"""
     if SURROGATE_KIND == "mlp":
-        return _fit_mlp(X, Y, name)
-    return _fit_rf(X, Y, name)
+        return _fit_mlp(X, Y, name, run_seed=run_seed)
+    return _fit_rf(X, Y, name, run_seed=run_seed)
 
 
 def _pick_lcb_point(
@@ -572,17 +643,17 @@ def _parse_args(argv: list[str]) -> list[str]:
     """解析命令行；均通过模块级全局变量生效（不改变既有“位置参数=场景”的用法）。
 
     代理选择：--mlp / --rf / --surrogate=<kind>
-    MLP 超参（仅 MLP 模式有意义，RF 一概不受影响）：
-      --ensemble=<M>                 集成成员数（“平行量”，如 5/10） → MLP_ENSEMBLE_SIZE
-      --hidden=<A,B,...>             隐藏层神经元，逗号分隔（如 64,64 或 128） → MLP_HIDDEN_LAYERS
-      --activation=<name>            激活函数（tanh/relu/...） → MLP_ACTIVATION
-      --solver=<name>                求解器（lbfgs/adam/sgd） → MLP_SOLVER
-      --alpha=<x>                    L2 正则强度（如 1e-3） → MLP_ALPHA
-      --max-iter=<N>                 单次拟合最大迭代 → MLP_MAX_ITER
-      --sigma-calib=<x>              σ 校准放大系数 → MLP_SIGMA_CALIB
-      --bootstrap / --no-bootstrap   开/关成员自助重采样（有放回） → MLP_BOOTSTRAP
-      --subset=<N|none>              每个成员训练子集大小；none/all/full/0 表示用全部历史 → MLP_TRAIN_SUBSET
-      --warm-start / --no-warm-start Phase B 是否在上一轮权重上续训 → MLP_WARM_START
+    MLP 超参（仅 MLP 模式有意义，RF 不受影响；CLI 覆盖同名环境变量默认）：
+      --ensemble=<M>                 集成成员数（平行量，如 5/10）       → MLP_ENSEMBLE_SIZE
+      --hidden=<A,B,...>             隐藏层神经元（如 64,64 或 128）       → MLP_HIDDEN_LAYERS
+      --activation=<name>            激活函数（tanh/relu/...）             → MLP_ACTIVATION
+      --solver=<name>                求解器（lbfgs/adam/sgd）              → MLP_SOLVER
+      --alpha=<x>                    L2 正则强度（如 1e-3）                → MLP_ALPHA
+      --max-iter=<N>                 单次拟合最大迭代                      → MLP_MAX_ITER
+      --sigma-calib=<x>              σ 标准放大系数                        → MLP_SIGMA_CALIB
+      --bootstrap / --no-bootstrap   开/关成员自助重采样（有放回）         → MLP_BOOTSTRAP
+      --subset=<N|none>              成员训练子集大小；none/all/full/0=全部 → MLP_TRAIN_SUBSET
+      --warm-start / --no-warm-start Phase B 是否在上一轮权重上续训        → MLP_WARM_START
     其余参数一律视作场景名。
     """
     global SURROGATE_KIND, MLP_BOOTSTRAP, MLP_TRAIN_SUBSET, MLP_WARM_START
@@ -590,7 +661,6 @@ def _parse_args(argv: list[str]) -> list[str]:
     global MLP_ALPHA, MLP_MAX_ITER, MLP_SIGMA_CALIB
 
     def _num(flag, raw, cast, current):
-        """解析数值/结构参数，失败则告警并保留默认。"""
         try:
             return cast(raw)
         except (ValueError, TypeError):
@@ -622,10 +692,8 @@ def _parse_args(argv: list[str]) -> list[str]:
             MLP_WARM_START = False
         elif al.startswith("--subset="):
             v = al.split("=", 1)[1]
-            if v in ("none", "all", "full", "0"):
-                MLP_TRAIN_SUBSET = None          # 用全部历史数据，不做子采样
-            else:
-                MLP_TRAIN_SUBSET = _num("--subset", v, int, MLP_TRAIN_SUBSET)
+            MLP_TRAIN_SUBSET = None if v in ("none", "all", "full", "0") \
+                else _num("--subset", v, int, MLP_TRAIN_SUBSET)
         elif al.startswith("--ensemble="):
             MLP_ENSEMBLE_SIZE = _num("--ensemble", al.split("=", 1)[1], int, MLP_ENSEMBLE_SIZE)
         elif al.startswith("--hidden="):
@@ -785,34 +853,70 @@ def feature_error(
 # 单场景标定
 # ═════════════════════════════════════════════════════════════════════
 
-def calibrate_one(name: str) -> dict:
-    """N_INIT 次 LHS + 序贯 LCB 加点，总预算 BUDGET_SUMO。"""
+def calibrate_one(
+    name: str,
+    *,
+    surrogate_kind: str | None = None,
+    n_init: int | None = None,
+    run_seed: int = 42,
+) -> dict:
+    """n_init 次 LHS + (BUDGET_SUMO - n_init) 次序贯 LCB，总预算 BUDGET_SUMO。
+
+    n_init: 初始 LHS 点数；默认 N_INIT（40）。n_init=100 时退化为纯 LHS（无序贯加点）。
+    surrogate_kind: 覆盖模块级 SURROGATE_KIND（如 run_comparison 指定 MLP 版）。
+    run_seed: 实验重复编号；影响 LHS 池、序贯 RNG 与代理随机种子。
+    """
+    eff_n_init = N_INIT if n_init is None else int(n_init)
+    if eff_n_init < 1 or eff_n_init > BUDGET_SUMO:
+        raise ValueError(f"n_init 须在 [1, {BUDGET_SUMO}]，收到 {eff_n_init}")
+
+    global SURROGATE_KIND
+    prev_kind = SURROGATE_KIND
+    if surrogate_kind is not None:
+        SURROGATE_KIND = surrogate_kind.lower()
+    try:
+        return _calibrate_one_impl(name, n_init=eff_n_init, run_seed=int(run_seed))
+    finally:
+        SURROGATE_KIND = prev_kind
+
+
+def _calibrate_one_impl(name: str, *, n_init: int, run_seed: int = 42) -> dict:
+    n_seq = BUDGET_SUMO - n_init
     print(f"\n{'=' * 64}")
-    print(f"  BF-SAC (sequential LCB): {name}")
-    print(f"  Budget={BUDGET_SUMO}  (init LHS={N_INIT}, sequential={BUDGET_SUMO - N_INIT})")
+    print(f"  BF-SAC (sequential LCB): {name}  surrogate={SURROGATE_KIND}")
+    print(f"  Budget={BUDGET_SUMO}  (init LHS={n_init}, sequential={n_seq})  run_seed={run_seed}")
+    if _LC_KAPPA_FIXED is not None:
+        print(f"  LCB kappa={LC_KAPPA} (fixed)", end="")
+    else:
+        print(f"  LCB kappa={LC_KAPPA_START}→{LC_KAPPA_END} (anneal)", end="")
+    if SURROGATE_KIND == "mlp":
+        print(
+            f"  MLP m={MLP_ENSEMBLE_SIZE} subset={MLP_TRAIN_SUBSET}"
+            f" sigma_calib={MLP_SIGMA_CALIB} warm_start={MLP_WARM_START}",
+            end="",
+        )
+    print()
     print(f"{'=' * 64}")
 
     weights = get_feature_weights(name)
     bounds_arr = get_param_bounds(name)
-    lhs_seed = _lhs_seed_for_scene(name)
-    n_seq = BUDGET_SUMO - N_INIT
-    rng = np.random.default_rng(lhs_seed + 17)
+    lhs_seed, rng = derive_run_seeds(name, run_seed)
 
     print("[1/3] Extracting real behavioral fingerprint …")
     real_feat = extract_real_features(name)
     for fn, val in zip(FEATURE_NAMES, real_feat):
         print(f"       {fn:<14s} = {val:.4f}")
 
-    print(f"[2/3] Phase A: {N_INIT} LHS initial runs …")
+    print(f"[2/3] Phase A: {n_init} LHS initial runs …")
     X = np.zeros((BUDGET_SUMO, len(PARAM_NAMES)))
-    X[:N_INIT] = lhs_samples_for_scene(N_INIT, bounds_arr, lhs_seed)
+    X[:n_init] = lhs_pool_for_scene(name, bounds_arr, run_seed=run_seed)[:n_init]
     Y = np.full(BUDGET_SUMO, np.nan)
     sim_feats = np.zeros((BUDGET_SUMO, len(FEATURE_NAMES)))
     history: list[dict] = []
     t0 = time.time()
     running_best = float("inf")
 
-    for i in range(N_INIT):
+    for i in range(n_init):
         params = dict(zip(PARAM_NAMES, X[i]))
         err, sf = _eval_params(name, params, real_feat, weights)
         Y[i] = err
@@ -825,16 +929,19 @@ def calibrate_one(name: str) -> dict:
             "best_so_far": round(running_best, 6),
             "params": {k: round(float(v), 4) for k, v in params.items()},
         })
-        if (i + 1) % 10 == 0:
+        if (i + 1) % 10 == 0 or (i + 1) == n_init:
             elapsed = time.time() - t0
-            eta = elapsed / (i + 1) * (N_INIT - i - 1)
-            print(f"       {i+1:>3d}/{N_INIT}  best={running_best:.4f}"
+            eta = elapsed / (i + 1) * (n_init - i - 1) if i + 1 < n_init else 0
+            print(f"       {i+1:>3d}/{n_init}  best={running_best:.4f}"
                   f"  elapsed={elapsed:.0f}s  ETA={eta:.0f}s", flush=True)
 
-    doe_best_err = float(np.nanmin(Y[:N_INIT]))
-    n_seen = N_INIT
+    doe_best_err = float(np.nanmin(Y[:n_init]))
+    n_seen = n_init
 
-    print(f"[3/3] Phase B: {n_seq} sequential LCB acquisitions …", flush=True)
+    if n_seq > 0:
+        print(f"[3/3] Phase B: {n_seq} sequential LCB acquisitions …", flush=True)
+    else:
+        print("[3/3] Phase B: skipped (n_init = budget, pure LHS)", flush=True)
     rf_rmse: float | None = None
     rf_r2: float | None = None
     seq_errors: list[float] = []
@@ -844,9 +951,11 @@ def calibrate_one(name: str) -> dict:
         if (SURROGATE_KIND == "mlp" and MLP_WARM_START
                 and isinstance(model, MLPEnsemble)):
             # MLP 续训：在上一轮成员权重上增量更新（首轮 model 仍为 None，走下面从零训练）
-            model = _update_mlp(model, X[:n_seen], Y[:n_seen], name)
+            model = _update_mlp(
+                model, X[:n_seen], Y[:n_seen], name, round_idx=j, run_seed=run_seed,
+            )
         else:
-            model = _fit_surrogate(X[:n_seen], Y[:n_seen], name)
+            model = _fit_surrogate(X[:n_seen], Y[:n_seen], name, run_seed=run_seed)
         if model is None:
             print("       [!] Too few valid runs for surrogate; stopping sequential phase", flush=True)
             break
@@ -858,7 +967,8 @@ def calibrate_one(name: str) -> dict:
 
         best_idx = int(np.nanargmin(Y[:n_seen]))
         x_best = X[best_idx].copy()
-        x_new = _pick_lcb_point(model, bounds_arr, X[:n_seen], x_best, LC_KAPPA, rng)
+        kappa_j = _kappa_at_step(j, n_seq)
+        x_new = _pick_lcb_point(model, bounds_arr, X[:n_seen], x_best, kappa_j, rng)
         params = dict(zip(PARAM_NAMES, x_new))
 
         err, sf = _eval_params(name, params, real_feat, weights)
@@ -882,18 +992,18 @@ def calibrate_one(name: str) -> dict:
             print(f"       seq {j+1:>2d}/{n_seq}  err={err:.4f}  best={running_best:.4f}"
                   f"  R2={rf_r2:.3f}", flush=True)
 
-    if SURROGATE_KIND == "mlp" and model is not None:
+    if SURROGATE_KIND == "mlp" and model is not None and MLP_SAVE_MODEL:
         _save_mlp_model(name, model)
 
     best_idx = int(np.nanargmin(Y[:n_seen]))
     best_params = dict(zip(PARAM_NAMES, X[best_idx]))
     best_feat = sim_feats[best_idx]
     best_err = float(Y[best_idx])
-    init_best_idx = int(np.nanargmin(Y[:N_INIT]))
+    init_best_idx = int(np.nanargmin(Y[:n_init]))
     doe_best_err = float(Y[init_best_idx])
 
     seq_best = float(np.min(seq_errors)) if seq_errors else None
-    proxy_beats_doe = bool(best_idx >= N_INIT and best_err <= doe_best_err - 1e-6)
+    proxy_beats_doe = bool(best_idx >= n_init and best_err <= doe_best_err - 1e-6)
 
     print(f"\n  Calibrated params:")
     for k, v in best_params.items():
@@ -922,6 +1032,8 @@ def calibrate_one(name: str) -> dict:
         "sequential_best_error": round(seq_best, 4) if seq_best is not None else None,
         "surrogate_verified_error": round(seq_best, 4) if seq_best is not None else None,
         "proxy_beats_doe": proxy_beats_doe,
+        "n_init": n_init,
+        "run_seed": int(run_seed),
         "n_sumo_runs": n_seen,
         "rf_r2": round(rf_r2, 4) if rf_r2 is not None else None,
         "rf_rmse": round(rf_rmse, 4) if rf_rmse is not None else None,

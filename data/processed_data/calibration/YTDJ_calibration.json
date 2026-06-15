@@ -1,60 +1,68 @@
 {
   "scenario": "YTDJ",
+  "calibration_mode": "sequential_lcb",
+  "surrogate": "rf",
+  "surrogate_config": null,
   "calibrated_params": {
-    "accel": 3.4996,
-    "decel": 3.6276,
-    "sigma": 0.7111,
-    "tau": 0.685,
-    "minGap": 1.0969,
-    "speedFactor": 0.5617,
-    "lcStrategic": 0.6179,
-    "lcCooperative": 1.1286,
-    "lcAssertive": 0.4626,
-    "lcSpeedGain": 2.7566
+    "accel": 2.9762,
+    "decel": 3.4244,
+    "sigma": 0.543,
+    "tau": 0.7083,
+    "minGap": 1.0,
+    "speedFactor": 0.5131,
+    "lcStrategic": 0.7622,
+    "lcCooperative": 1.0181,
+    "lcAssertive": 1.6761,
+    "lcSpeedGain": 2.3042
   },
-  "feature_error": 0.224,
-  "n_sumo_runs": 61,
-  "rf_r2": 0.9399,
+  "feature_error": 0.2441,
+  "doe_best_error": 0.2584,
+  "sequential_best_error": 0.2441,
+  "surrogate_verified_error": 0.2441,
+  "proxy_beats_doe": true,
+  "n_sumo_runs": 101,
+  "rf_r2": 0.9811,
+  "rf_rmse": 0.0246,
   "feature_comparison": {
     "v_mean": {
       "real": 6.6646,
-      "sim_calibrated": 6.225,
-      "rel_error": 0.066
+      "sim_calibrated": 5.7718,
+      "rel_error": 0.134
     },
     "v_p15": {
       "real": 2.6778,
-      "sim_calibrated": 3.7468,
-      "rel_error": 0.3992
+      "sim_calibrated": 3.5245,
+      "rel_error": 0.3162
     },
     "v_p85": {
       "real": 10.9972,
-      "sim_calibrated": 8.6793,
-      "rel_error": 0.2108
+      "sim_calibrated": 8.0134,
+      "rel_error": 0.2713
     },
     "a_pos_mean": {
       "real": 1.5039,
-      "sim_calibrated": 1.3724,
-      "rel_error": 0.0874
+      "sim_calibrated": 1.1492,
+      "rel_error": 0.2358
     },
     "a_neg_mean": {
       "real": 1.3995,
-      "sim_calibrated": 1.3651,
-      "rel_error": 0.0246
+      "sim_calibrated": 1.0825,
+      "rel_error": 0.2265
     },
     "a_p05": {
       "real": -2.29,
-      "sim_calibrated": -2.826,
-      "rel_error": 0.2341
+      "sim_calibrated": -2.2476,
+      "rel_error": 0.0185
     },
     "a_p95": {
       "real": 2.29,
-      "sim_calibrated": 2.7471,
-      "rel_error": 0.1996
+      "sim_calibrated": 2.3671,
+      "rel_error": 0.0336
     },
     "stop_frac": {
       "real": 0.0135,
-      "sim_calibrated": 0.0235,
-      "rel_error": 0.7349
+      "sim_calibrated": 0.0244,
+      "rel_error": 0.8043
     }
   }
 }

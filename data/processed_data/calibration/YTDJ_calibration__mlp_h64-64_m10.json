@@ -1,0 +1,83 @@
+{
+  "scenario": "YTDJ",
+  "calibration_mode": "sequential_lcb",
+  "surrogate": "mlp",
+  "surrogate_config": {
+    "tag": "mlp_h64-64_m10",
+    "hidden_layers": [
+      64,
+      64
+    ],
+    "ensemble_size": 10,
+    "activation": "tanh",
+    "solver": "lbfgs",
+    "alpha": 0.001,
+    "max_iter": 2000,
+    "bootstrap": true,
+    "sigma_calib": 1.2,
+    "train_subset": 60,
+    "warm_start": true
+  },
+  "calibrated_params": {
+    "accel": 3.4174,
+    "decel": 2.9688,
+    "sigma": 0.6245,
+    "tau": 0.5,
+    "minGap": 3.315,
+    "speedFactor": 0.513,
+    "lcStrategic": 0.35,
+    "lcCooperative": 0.5733,
+    "lcAssertive": 1.9395,
+    "lcSpeedGain": 1.582
+  },
+  "feature_error": 0.2235,
+  "doe_best_error": 0.2554,
+  "sequential_best_error": 0.2235,
+  "surrogate_verified_error": 0.2235,
+  "proxy_beats_doe": true,
+  "n_sumo_runs": 101,
+  "rf_r2": 0.983,
+  "rf_rmse": 0.024,
+  "feature_comparison": {
+    "v_mean": {
+      "real": 6.6646,
+      "sim_calibrated": 5.7493,
+      "rel_error": 0.1373
+    },
+    "v_p15": {
+      "real": 2.6778,
+      "sim_calibrated": 3.5666,
+      "rel_error": 0.3319
+    },
+    "v_p85": {
+      "real": 10.9972,
+      "sim_calibrated": 7.8972,
+      "rel_error": 0.2819
+    },
+    "a_pos_mean": {
+      "real": 1.5039,
+      "sim_calibrated": 1.2653,
+      "rel_error": 0.1587
+    },
+    "a_neg_mean": {
+      "real": 1.3995,
+      "sim_calibrated": 1.1828,
+      "rel_error": 0.1549
+    },
+    "a_p05": {
+      "real": -2.29,
+      "sim_calibrated": -2.4457,
+      "rel_error": 0.068
+    },
+    "a_p95": {
+      "real": 2.29,
+      "sim_calibrated": 2.5782,
+      "rel_error": 0.1259
+    },
+    "stop_frac": {
+      "real": 0.0135,
+      "sim_calibrated": 0.0215,
+      "rel_error": 0.59
+    }
+  }
+}

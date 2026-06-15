@@ -1,5 +1,8 @@
 {
   "scenario": "RML",
+  "calibration_mode": "sequential_lcb",
+  "surrogate": "rf",
+  "surrogate_config": null,
   "calibrated_params": {
     "accel": 2.6804,
     "decel": 2.9909,
@@ -12,53 +15,54 @@
     "lcAssertive": 2.3461,
     "lcSpeedGain": 0.5405
   },
-  "feature_error": 0.4765,
-  "doe_best_error": 0.4765,
-  "surrogate_verified_error": 0.5124,
+  "feature_error": 0.4704,
+  "doe_best_error": 0.4704,
+  "sequential_best_error": 0.4714,
+  "surrogate_verified_error": 0.4714,
   "proxy_beats_doe": false,
-  "n_sumo_runs": 61,
-  "rf_r2": 0.9602,
-  "rf_rmse": 0.0447,
+  "n_sumo_runs": 101,
+  "rf_r2": 0.9757,
+  "rf_rmse": 0.0368,
   "feature_comparison": {
     "v_mean": {
       "real": 4.2547,
-      "sim_calibrated": 4.4775,
-      "rel_error": 0.0524
+      "sim_calibrated": 4.4222,
+      "rel_error": 0.0394
     },
     "v_p15": {
       "real": 2.7067,
-      "sim_calibrated": 1.599,
-      "rel_error": 0.4092
+      "sim_calibrated": 1.573,
+      "rel_error": 0.4189
     },
     "v_p85": {
       "real": 5.8847,
-      "sim_calibrated": 7.194,
-      "rel_error": 0.2225
+      "sim_calibrated": 7.2132,
+      "rel_error": 0.2258
     },
     "a_pos_mean": {
       "real": 0.5192,
-      "sim_calibrated": 0.6372,
-      "rel_error": 0.2275
+      "sim_calibrated": 0.6273,
+      "rel_error": 0.2083
     },
     "a_neg_mean": {
       "real": 0.4726,
-      "sim_calibrated": 0.4625,
-      "rel_error": 0.0213
+      "sim_calibrated": 0.4736,
+      "rel_error": 0.0021
     },
     "a_p05": {
       "real": -0.8289,
-      "sim_calibrated": -0.7148,
-      "rel_error": 0.1376
+      "sim_calibrated": -0.7626,
+      "rel_error": 0.0799
     },
     "a_p95": {
       "real": 0.9442,
-      "sim_calibrated": 1.369,
-      "rel_error": 0.4498
+      "sim_calibrated": 1.4184,
+      "rel_error": 0.5022
     },
     "stop_frac": {
       "real": 0.0046,
-      "sim_calibrated": 0.0648,
-      "rel_error": 6.0238
+      "sim_calibrated": 0.0781,
+      "rel_error": 7.3526
     }
   }
 }

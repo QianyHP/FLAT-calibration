@@ -1,5 +1,8 @@
 {
   "scenario": "RML",
+  "calibration_mode": "sequential_lcb",
+  "surrogate": "rf",
+  "surrogate_config": null,
   "calibrated_params": {
     "accel": 2.6804,
     "decel": 2.9909,
@@ -12,60 +15,62 @@
     "lcAssertive": 2.3461,
     "lcSpeedGain": 0.5405
   },
-  "feature_error": 0.4765,
-  "doe_best_error": 0.4765,
-  "surrogate_verified_error": 0.5124,
+  "feature_error": 0.4704,
+  "doe_best_error": 0.4704,
+  "sequential_best_error": 0.4714,
+  "surrogate_verified_error": 0.4714,
   "proxy_beats_doe": false,
-  "n_sumo_runs": 61,
-  "rf_r2": 0.9602,
-  "rf_rmse": 0.0447,
+  "n_sumo_runs": 101,
+  "rf_r2": 0.9757,
+  "rf_rmse": 0.0368,
   "feature_comparison": {
     "v_mean": {
       "real": 4.2547,
-      "sim_calibrated": 4.4775,
-      "rel_error": 0.0524
+      "sim_calibrated": 4.4222,
+      "rel_error": 0.0394
     },
     "v_p15": {
       "real": 2.7067,
-      "sim_calibrated": 1.599,
-      "rel_error": 0.4092
+      "sim_calibrated": 1.573,
+      "rel_error": 0.4189
     },
     "v_p85": {
       "real": 5.8847,
-      "sim_calibrated": 7.194,
-      "rel_error": 0.2225
+      "sim_calibrated": 7.2132,
+      "rel_error": 0.2258
     },
     "a_pos_mean": {
       "real": 0.5192,
-      "sim_calibrated": 0.6372,
-      "rel_error": 0.2275
+      "sim_calibrated": 0.6273,
+      "rel_error": 0.2083
     },
     "a_neg_mean": {
       "real": 0.4726,
-      "sim_calibrated": 0.4625,
-      "rel_error": 0.0213
+      "sim_calibrated": 0.4736,
+      "rel_error": 0.0021
     },
     "a_p05": {
       "real": -0.8289,
-      "sim_calibrated": -0.7148,
-      "rel_error": 0.1376
+      "sim_calibrated": -0.7626,
+      "rel_error": 0.0799
     },
     "a_p95": {
       "real": 0.9442,
-      "sim_calibrated": 1.369,
-      "rel_error": 0.4498
+      "sim_calibrated": 1.4184,
+      "rel_error": 0.5022
     },
     "stop_frac": {
       "real": 0.0046,
-      "sim_calibrated": 0.0648,
-      "rel_error": 6.0238
+      "sim_calibrated": 0.0781,
+      "rel_error": 7.3526
     }
   },
   "doe_history": [
     {
       "sim_index": 1,
-      "error": 0.750275,
-      "best_so_far": 0.750275,
+      "phase": "init",
+      "error": 0.794297,
+      "best_so_far": 0.794297,
       "params": {
         "accel": 1.0863,
         "decel": 2.2337,
@@ -81,8 +86,9 @@
     },
     {
       "sim_index": 2,
-      "error": 1.014986,
-      "best_so_far": 0.750275,
+      "phase": "init",
+      "error": 0.99896,
+      "best_so_far": 0.794297,
       "params": {
         "accel": 1.6811,
         "decel": 3.3609,
@@ -98,8 +104,9 @@
     },
     {
       "sim_index": 3,
-      "error": 0.733785,
-      "best_so_far": 0.733785,
+      "phase": "init",
+      "error": 0.704923,
+      "best_so_far": 0.704923,
       "params": {
         "accel": 1.4961,
         "decel": 4.5955,
@@ -115,8 +122,9 @@
     },
     {
       "sim_index": 4,
-      "error": 1.056293,
-      "best_so_far": 0.733785,
+      "phase": "init",
+      "error": 1.071617,
+      "best_so_far": 0.704923,
       "params": {
         "accel": 2.4687,
         "decel": 5.7914,
@@ -132,8 +140,9 @@
     },
     {
       "sim_index": 5,
-      "error": 0.938056,
-      "best_so_far": 0.733785,
+      "phase": "init",
+      "error": 0.940019,
+      "best_so_far": 0.704923,
       "params": {
         "accel": 1.6623,
         "decel": 5.5148,
@@ -149,8 +158,9 @@
     },
     {
       "sim_index": 6,
-      "error": 0.763275,
-      "best_so_far": 0.733785,
+      "phase": "init",
+      "error": 0.804639,
+      "best_so_far": 0.704923,
       "params": {
         "accel": 1.9797,
         "decel": 3.046,
@@ -166,8 +176,9 @@
     },
     {
       "sim_index": 7,
-      "error": 1.108911,
-      "best_so_far": 0.733785,
+      "phase": "init",
+      "error": 1.096127,
+      "best_so_far": 0.704923,
       "params": {
         "accel": 2.2863,
         "decel": 4.0522,
@@ -183,8 +194,9 @@
     },
     {
       "sim_index": 8,
-      "error": 0.547552,
-      "best_so_far": 0.547552,
+      "phase": "init",
+      "error": 0.530986,
+      "best_so_far": 0.530986,
       "params": {
         "accel": 2.8715,
         "decel": 3.2149,
@@ -200,8 +212,9 @@
     },
     {
       "sim_index": 9,
-      "error": 0.73153,
-      "best_so_far": 0.547552,
+      "phase": "init",
+      "error": 0.786249,
+      "best_so_far": 0.530986,
       "params": {
         "accel": 2.1437,
         "decel": 2.6979,
@@ -217,8 +230,9 @@
     },
     {
       "sim_index": 10,
-      "error": 0.958761,
-      "best_so_far": 0.547552,
+      "phase": "init",
+      "error": 0.978992,
+      "best_so_far": 0.530986,
       "params": {
         "accel": 2.6304,
         "decel": 5.2612,
@@ -234,8 +248,9 @@
     },
     {
       "sim_index": 11,
-      "error": 0.676319,
-      "best_so_far": 0.547552,
+      "phase": "init",
+      "error": 0.636421,
+      "best_so_far": 0.530986,
       "params": {
         "accel": 1.6079,
         "decel": 4.9288,
@@ -251,8 +266,9 @@
     },
     {
       "sim_index": 12,
-      "error": 0.607224,
-      "best_so_far": 0.547552,
+      "phase": "init",
+      "error": 0.646193,
+      "best_so_far": 0.530986,
       "params": {
         "accel": 1.3137,
         "decel": 2.3348,
@@ -268,8 +284,9 @@
     },
     {
       "sim_index": 13,
-      "error": 1.342864,
-      "best_so_far": 0.547552,
+      "phase": "init",
+      "error": 1.330037,
+      "best_so_far": 0.530986,
       "params": {
         "accel": 2.829,
         "decel": 5.1464,
@@ -285,8 +302,9 @@
     },
     {
       "sim_index": 14,
-      "error": 0.713401,
-      "best_so_far": 0.547552,
+      "phase": "init",
+      "error": 0.683177,
+      "best_so_far": 0.530986,
       "params": {
         "accel": 2.0644,
         "decel": 3.5921,
@@ -302,8 +320,9 @@
     },
     {
       "sim_index": 15,
-      "error": 1.148328,
-      "best_so_far": 0.547552,
+      "phase": "init",
+      "error": 1.120345,
+      "best_so_far": 0.530986,
       "params": {
         "accel": 2.4435,
         "decel": 4.204,
@@ -319,8 +338,9 @@
     },
     {
       "sim_index": 16,
-      "error": 0.938378,
-      "best_so_far": 0.547552,
+      "phase": "init",
+      "error": 0.990544,
+      "best_so_far": 0.530986,
       "params": {
         "accel": 1.4325,
         "decel": 2.1371,
@@ -336,8 +356,9 @@
     },
     {
       "sim_index": 17,
-      "error": 0.623564,
-      "best_so_far": 0.547552,
+      "phase": "init",
+      "error": 0.66647,
+      "best_so_far": 0.530986,
       "params": {
         "accel": 1.4745,
         "decel": 2.9074,
@@ -353,8 +374,9 @@
     },
     {
       "sim_index": 18,
-      "error": 0.921091,
-      "best_so_far": 0.547552,
+      "phase": "init",
+      "error": 0.937539,
+      "best_so_far": 0.530986,
       "params": {
         "accel": 1.7255,
         "decel": 3.661,
@@ -370,8 +392,9 @@
     },
     {
       "sim_index": 19,
-      "error": 0.757238,
-      "best_so_far": 0.547552,
+      "phase": "init",
+      "error": 0.755983,
+      "best_so_far": 0.530986,
       "params": {
         "accel": 1.8008,
         "decel": 3.8027,
@@ -387,8 +410,9 @@
     },
     {
       "sim_index": 20,
-      "error": 0.995191,
-      "best_so_far": 0.547552,
+      "phase": "init",
+      "error": 0.982911,
+      "best_so_far": 0.530986,
       "params": {
         "accel": 1.045,
         "decel": 3.9933,
@@ -404,8 +428,9 @@
     },
     {
       "sim_index": 21,
-      "error": 0.623698,
-      "best_so_far": 0.547552,
+      "phase": "init",
+      "error": 0.568469,
+      "best_so_far": 0.530986,
       "params": {
         "accel": 2.5179,
         "decel": 4.4957,
@@ -421,8 +446,9 @@
     },
     {
       "sim_index": 22,
-      "error": 0.78082,
-      "best_so_far": 0.547552,
+      "phase": "init",
+      "error": 0.801914,
+      "best_so_far": 0.530986,
       "params": {
         "accel": 1.2016,
         "decel": 2.6405,
@@ -438,8 +464,9 @@
     },
     {
       "sim_index": 23,
-      "error": 0.754425,
-      "best_so_far": 0.547552,
+      "phase": "init",
+      "error": 0.751469,
+      "best_so_far": 0.530986,
       "params": {
         "accel": 1.0127,
         "decel": 5.8013,
@@ -455,8 +482,9 @@
     },
     {
       "sim_index": 24,
-      "error": 0.797426,
-      "best_so_far": 0.547552,
+      "phase": "init",
+      "error": 0.914602,
+      "best_so_far": 0.530986,
       "params": {
         "accel": 1.8704,
         "decel": 2.5953,
@@ -472,8 +500,9 @@
     },
     {
       "sim_index": 25,
-      "error": 1.072515,
-      "best_so_far": 0.547552,
+      "phase": "init",
+      "error": 1.012311,
+      "best_so_far": 0.530986,
       "params": {
         "accel": 2.6089,
         "decel": 5.4482,
@@ -489,8 +518,9 @@
     },
     {
       "sim_index": 26,
-      "error": 0.760049,
-      "best_so_far": 0.547552,
+      "phase": "init",
+      "error": 0.784065,
+      "best_so_far": 0.530986,
       "params": {
         "accel": 1.2601,
         "decel": 5.6525,
@@ -506,8 +536,9 @@
     },
     {
       "sim_index": 27,
-      "error": 1.162398,
-      "best_so_far": 0.547552,
+      "phase": "init",
+      "error": 1.099441,
+      "best_so_far": 0.530986,
       "params": {
         "accel": 2.7842,
         "decel": 4.9414,
@@ -523,8 +554,9 @@
     },
     {
       "sim_index": 28,
-      "error": 0.753161,
-      "best_so_far": 0.547552,
+      "phase": "init",
+      "error": 0.750217,
+      "best_so_far": 0.530986,
       "params": {
         "accel": 2.562,
         "decel": 2.298,
@@ -540,8 +572,9 @@
     },
     {
       "sim_index": 29,
-      "error": 0.519272,
-      "best_so_far": 0.519272,
+      "phase": "init",
+      "error": 0.555425,
+      "best_so_far": 0.530986,
       "params": {
         "accel": 2.3196,
         "decel": 2.7588,
@@ -557,8 +590,9 @@
     },
     {
       "sim_index": 30,
-      "error": 1.219428,
-      "best_so_far": 0.519272,
+      "phase": "init",
+      "error": 1.201201,
+      "best_so_far": 0.530986,
       "params": {
         "accel": 2.0012,
         "decel": 4.3418,
@@ -574,8 +608,9 @@
     },
     {
       "sim_index": 31,
-      "error": 0.88315,
-      "best_so_far": 0.519272,
+      "phase": "init",
+      "error": 0.936363,
+      "best_so_far": 0.530986,
       "params": {
         "accel": 1.155,
         "decel": 5.9128,
@@ -591,8 +626,9 @@
     },
     {
       "sim_index": 32,
-      "error": 1.057196,
-      "best_so_far": 0.519272,
+      "phase": "init",
+      "error": 1.031872,
+      "best_so_far": 0.530986,
       "params": {
         "accel": 2.8682,
         "decel": 4.199,
@@ -608,8 +644,9 @@
     },
     {
       "sim_index": 33,
-      "error": 0.686328,
-      "best_so_far": 0.519272,
+      "phase": "init",
+      "error": 0.642441,
+      "best_so_far": 0.530986,
       "params": {
         "accel": 1.5852,
         "decel": 4.6122,
@@ -625,8 +662,9 @@
     },
     {
       "sim_index": 34,
-      "error": 0.973949,
-      "best_so_far": 0.519272,
+      "phase": "init",
+      "error": 1.033399,
+      "best_so_far": 0.530986,
       "params": {
         "accel": 2.2303,
         "decel": 4.7505,
@@ -642,8 +680,9 @@
     },
     {
       "sim_index": 35,
-      "error": 0.4765,
-      "best_so_far": 0.4765,
+      "phase": "init",
+      "error": 0.470379,
+      "best_so_far": 0.470379,
       "params": {
         "accel": 2.6804,
         "decel": 2.9909,
@@ -659,8 +698,9 @@
     },
     {
       "sim_index": 36,
-      "error": 1.191911,
-      "best_so_far": 0.4765,
+      "phase": "init",
+      "error": 1.149944,
+      "best_so_far": 0.470379,
       "params": {
         "accel": 2.524,
         "decel": 4.0951,
@@ -676,8 +716,9 @@
     },
     {
       "sim_index": 37,
-      "error": 0.566119,
-      "best_so_far": 0.4765,
+      "phase": "init",
+      "error": 0.585749,
+      "best_so_far": 0.470379,
       "params": {
         "accel": 1.3746,
         "decel": 3.416,
@@ -693,8 +734,9 @@
     },
     {
       "sim_index": 38,
-      "error": 1.085569,
-      "best_so_far": 0.4765,
+      "phase": "init",
+      "error": 1.251272,
+      "best_so_far": 0.470379,
       "params": {
         "accel": 2.4221,
         "decel": 2.4664,
@@ -710,8 +752,9 @@
     },
     {
       "sim_index": 39,
-      "error": 1.097878,
-      "best_so_far": 0.4765,
+      "phase": "init",
+      "error": 1.080052,
+      "best_so_far": 0.470379,
       "params": {
         "accel": 1.8395,
         "decel": 5.5471,
@@ -727,8 +770,9 @@
     },
     {
       "sim_index": 40,
-      "error": 0.904409,
-      "best_so_far": 0.4765,
+      "phase": "init",
+      "error": 0.971552,
+      "best_so_far": 0.470379,
       "params": {
         "accel": 2.0825,
         "decel": 3.4667,
@@ -744,8 +788,9 @@
     },
     {
       "sim_index": 41,
-      "error": 0.827459,
-      "best_so_far": 0.4765,
+      "phase": "init",
+      "error": 0.896697,
+      "best_so_far": 0.470379,
       "params": {
         "accel": 1.5652,
         "decel": 2.5112,
@@ -761,8 +806,9 @@
     },
     {
       "sim_index": 42,
-      "error": 0.701929,
-      "best_so_far": 0.4765,
+      "phase": "init",
+      "error": 0.687483,
+      "best_so_far": 0.470379,
       "params": {
         "accel": 1.9332,
         "decel": 5.373,
@@ -778,8 +824,9 @@
     },
     {
       "sim_index": 43,
-      "error": 0.905982,
-      "best_so_far": 0.4765,
+      "phase": "init",
+      "error": 0.925019,
+      "best_so_far": 0.470379,
       "params": {
         "accel": 1.9077,
         "decel": 3.7606,
@@ -795,8 +842,9 @@
     },
     {
       "sim_index": 44,
-      "error": 1.365962,
-      "best_so_far": 0.4765,
+      "phase": "init",
+      "error": 1.37172,
+      "best_so_far": 0.470379,
       "params": {
         "accel": 2.3624,
         "decel": 3.7202,
@@ -812,8 +860,9 @@
     },
     {
       "sim_index": 45,
-      "error": 1.272506,
-      "best_so_far": 0.4765,
+      "phase": "init",
+      "error": 1.292291,
+      "best_so_far": 0.470379,
       "params": {
         "accel": 2.6608,
         "decel": 4.291,
@@ -829,8 +878,9 @@
     },
     {
       "sim_index": 46,
-      "error": 0.60905,
-      "best_so_far": 0.4765,
+      "phase": "init",
+      "error": 0.571422,
+      "best_so_far": 0.470379,
       "params": {
         "accel": 1.5195,
         "decel": 4.8358,
@@ -846,8 +896,9 @@
     },
     {
       "sim_index": 47,
-      "error": 0.488869,
-      "best_so_far": 0.4765,
+      "phase": "init",
+      "error": 0.521236,
+      "best_so_far": 0.470379,
       "params": {
         "accel": 1.2221,
         "decel": 2.0022,
@@ -863,8 +914,9 @@
     },
     {
       "sim_index": 48,
-      "error": 0.870461,
-      "best_so_far": 0.4765,
+      "phase": "init",
+      "error": 0.889757,
+      "best_so_far": 0.470379,
       "params": {
         "accel": 1.771,
         "decel": 3.0891,
@@ -880,8 +932,9 @@
     },
     {
       "sim_index": 49,
-      "error": 0.86947,
-      "best_so_far": 0.4765,
+      "phase": "init",
+      "error": 0.852722,
+      "best_so_far": 0.470379,
       "params": {
         "accel": 1.3906,
         "decel": 3.1579,
@@ -897,8 +950,9 @@
     },
     {
       "sim_index": 50,
-      "error": 1.240706,
-      "best_so_far": 0.4765,
+      "phase": "init",
+      "error": 1.25781,
+      "best_so_far": 0.470379,
       "params": {
         "accel": 2.239,
         "decel": 4.7222,
@@ -914,8 +968,9 @@
     },
     {
       "sim_index": 51,
-      "error": 1.280157,
-      "best_so_far": 0.4765,
+      "phase": "init",
+      "error": 1.251339,
+      "best_so_far": 0.470379,
       "params": {
         "accel": 2.1113,
         "decel": 5.0306,
@@ -931,8 +986,9 @@
     },
     {
       "sim_index": 52,
-      "error": 1.169009,
-      "best_so_far": 0.4765,
+      "phase": "init",
+      "error": 1.097984,
+      "best_so_far": 0.470379,
       "params": {
         "accel": 2.7565,
         "decel": 5.9546,
@@ -948,8 +1004,9 @@
     },
     {
       "sim_index": 53,
-      "error": 0.806025,
-      "best_so_far": 0.4765,
+      "phase": "init",
+      "error": 0.825863,
+      "best_so_far": 0.470379,
       "params": {
         "accel": 1.1028,
         "decel": 4.4255,
@@ -965,8 +1022,9 @@
     },
     {
       "sim_index": 54,
-      "error": 1.01943,
-      "best_so_far": 0.4765,
+      "phase": "init",
+      "error": 0.981998,
+      "best_so_far": 0.470379,
       "params": {
         "accel": 1.1645,
         "decel": 3.2771,
@@ -982,8 +1040,9 @@
     },
     {
       "sim_index": 55,
-      "error": 1.060554,
-      "best_so_far": 0.4765,
+      "phase": "init",
+      "error": 1.094055,
+      "best_so_far": 0.470379,
       "params": {
         "accel": 2.1816,
         "decel": 3.8745,
@@ -999,8 +1058,9 @@
     },
     {
       "sim_index": 56,
-      "error": 1.000952,
-      "best_so_far": 0.4765,
+      "phase": "init",
+      "error": 0.943901,
+      "best_so_far": 0.470379,
       "params": {
         "accel": 1.738,
         "decel": 5.0698,
@@ -1016,8 +1076,9 @@
     },
     {
       "sim_index": 57,
-      "error": 0.91735,
-      "best_so_far": 0.4765,
+      "phase": "init",
+      "error": 0.903401,
+      "best_so_far": 0.470379,
       "params": {
         "accel": 2.7171,
         "decel": 5.3111,
@@ -1033,8 +1094,9 @@
     },
     {
       "sim_index": 58,
-      "error": 0.788235,
-      "best_so_far": 0.4765,
+      "phase": "init",
+      "error": 0.779787,
+      "best_so_far": 0.470379,
       "params": {
         "accel": 1.3212,
         "decel": 5.7163,
@@ -1050,8 +1112,9 @@
     },
     {
       "sim_index": 59,
-      "error": 1.073221,
-      "best_so_far": 0.4765,
+      "phase": "init",
+      "error": 1.123357,
+      "best_so_far": 0.470379,
       "params": {
         "accel": 2.027,
         "decel": 2.8066,
@@ -1067,8 +1130,9 @@
     },
     {
       "sim_index": 60,
-      "error": 0.686034,
-      "best_so_far": 0.4765,
+      "phase": "init",
+      "error": 0.709523,
+      "best_so_far": 0.470379,
       "params": {
         "accel": 2.3302,
         "decel": 2.1073,
@@ -1080,6 +1144,826 @@
         "lcCooperative": 0.8298,
         "lcAssertive": 0.5078,
         "lcSpeedGain": 2.0197
+      }
+    },
+    {
+      "sim_index": 61,
+      "phase": "sequential",
+      "lcb_round": 1,
+      "error": 0.471423,
+      "best_so_far": 0.470379,
+      "rf_r2": 0.9692,
+      "params": {
+        "accel": 2.9,
+        "decel": 2.9475,
+        "sigma": 0.3573,
+        "tau": 2.2981,
+        "minGap": 2.7146,
+        "speedFactor": 0.5,
+        "lcStrategic": 0.6143,
+        "lcCooperative": 0.4354,
+        "lcAssertive": 2.5026,
+        "lcSpeedGain": 0.4517
+      }
+    },
+    {
+      "sim_index": 62,
+      "phase": "sequential",
+      "lcb_round": 2,
+      "error": 0.551837,
+      "best_so_far": 0.470379,
+      "rf_r2": 0.9727,
+      "params": {
+        "accel": 2.8986,
+        "decel": 2.5549,
+        "sigma": 0.4877,
+        "tau": 2.1979,
+        "minGap": 2.3347,
+        "speedFactor": 0.5,
+        "lcStrategic": 0.7514,
+        "lcCooperative": 0.5367,
+        "lcAssertive": 2.7139,
+        "lcSpeedGain": 0.35
+      }
+    },
+    {
+      "sim_index": 63,
+      "phase": "sequential",
+      "lcb_round": 3,
+      "error": 0.582583,
+      "best_so_far": 0.470379,
+      "rf_r2": 0.9742,
+      "params": {
+        "accel": 2.7068,
+        "decel": 3.0272,
+        "sigma": 0.2855,
+        "tau": 2.4262,
+        "minGap": 1.9382,
+        "speedFactor": 0.6187,
+        "lcStrategic": 0.8767,
+        "lcCooperative": 0.7174,
+        "lcAssertive": 2.4522,
+        "lcSpeedGain": 0.4675
+      }
+    },
+    {
+      "sim_index": 64,
+      "phase": "sequential",
+      "lcb_round": 4,
+      "error": 0.572296,
+      "best_so_far": 0.470379,
+      "rf_r2": 0.9742,
+      "params": {
+        "accel": 2.8969,
+        "decel": 2.4047,
+        "sigma": 0.3907,
+        "tau": 2.5,
+        "minGap": 2.7045,
+        "speedFactor": 0.6141,
+        "lcStrategic": 0.6465,
+        "lcCooperative": 0.406,
+        "lcAssertive": 2.1808,
+        "lcSpeedGain": 0.6777
+      }
+    },
+    {
+      "sim_index": 65,
+      "phase": "sequential",
+      "lcb_round": 5,
+      "error": 0.494494,
+      "best_so_far": 0.470379,
+      "rf_r2": 0.9745,
+      "params": {
+        "accel": 2.8261,
+        "decel": 4.3851,
+        "sigma": 0.2784,
+        "tau": 1.6923,
+        "minGap": 2.9733,
+        "speedFactor": 0.5081,
+        "lcStrategic": 2.5636,
+        "lcCooperative": 1.2255,
+        "lcAssertive": 2.5476,
+        "lcSpeedGain": 1.338
+      }
+    },
+    {
+      "sim_index": 66,
+      "phase": "sequential",
+      "lcb_round": 6,
+      "error": 0.496962,
+      "best_so_far": 0.470379,
+      "rf_r2": 0.9751,
+      "params": {
+        "accel": 2.7418,
+        "decel": 2.3677,
+        "sigma": 0.1649,
+        "tau": 1.376,
+        "minGap": 2.0009,
+        "speedFactor": 0.5026,
+        "lcStrategic": 1.3455,
+        "lcCooperative": 1.8005,
+        "lcAssertive": 1.6726,
+        "lcSpeedGain": 1.0462
+      }
+    },
+    {
+      "sim_index": 67,
+      "phase": "sequential",
+      "lcb_round": 7,
+      "error": 0.844679,
+      "best_so_far": 0.470379,
+      "rf_r2": 0.9742,
+      "params": {
+        "accel": 2.683,
+        "decel": 5.0508,
+        "sigma": 0.5653,
+        "tau": 0.9836,
+        "minGap": 2.7744,
+        "speedFactor": 0.5081,
+        "lcStrategic": 1.1413,
+        "lcCooperative": 1.2179,
+        "lcAssertive": 0.6481,
+        "lcSpeedGain": 1.1146
+      }
+    },
+    {
+      "sim_index": 68,
+      "phase": "sequential",
+      "lcb_round": 8,
+      "error": 0.574399,
+      "best_so_far": 0.470379,
+      "rf_r2": 0.9724,
+      "params": {
+        "accel": 2.367,
+        "decel": 2.1964,
+        "sigma": 0.1848,
+        "tau": 0.7785,
+        "minGap": 2.7079,
+        "speedFactor": 0.5134,
+        "lcStrategic": 0.9215,
+        "lcCooperative": 0.9527,
+        "lcAssertive": 0.9794,
+        "lcSpeedGain": 0.6718
+      }
+    },
+    {
+      "sim_index": 69,
+      "phase": "sequential",
+      "lcb_round": 9,
+      "error": 0.589924,
+      "best_so_far": 0.470379,
+      "rf_r2": 0.9717,
+      "params": {
+        "accel": 2.4599,
+        "decel": 3.6853,
+        "sigma": 0.2448,
+        "tau": 1.1638,
+        "minGap": 3.0002,
+        "speedFactor": 0.5035,
+        "lcStrategic": 1.0132,
+        "lcCooperative": 1.8832,
+        "lcAssertive": 0.5866,
+        "lcSpeedGain": 1.2066
+      }
+    },
+    {
+      "sim_index": 70,
+      "phase": "sequential",
+      "lcb_round": 10,
+      "error": 1.093755,
+      "best_so_far": 0.470379,
+      "rf_r2": 0.9721,
+      "params": {
+        "accel": 2.8957,
+        "decel": 2.7695,
+        "sigma": 0.1243,
+        "tau": 0.6327,
+        "minGap": 2.5937,
+        "speedFactor": 0.6722,
+        "lcStrategic": 0.9845,
+        "lcCooperative": 1.1276,
+        "lcAssertive": 0.984,
+        "lcSpeedGain": 1.7457
+      }
+    },
+    {
+      "sim_index": 71,
+      "phase": "sequential",
+      "lcb_round": 11,
+      "error": 0.915141,
+      "best_so_far": 0.470379,
+      "rf_r2": 0.9705,
+      "params": {
+        "accel": 2.6146,
+        "decel": 3.0304,
+        "sigma": 0.2755,
+        "tau": 1.014,
+        "minGap": 2.0951,
+        "speedFactor": 0.6564,
+        "lcStrategic": 0.9636,
+        "lcCooperative": 1.6712,
+        "lcAssertive": 1.9984,
+        "lcSpeedGain": 2.4353
+      }
+    },
+    {
+      "sim_index": 72,
+      "phase": "sequential",
+      "lcb_round": 12,
+      "error": 0.557286,
+      "best_so_far": 0.470379,
+      "rf_r2": 0.971,
+      "params": {
+        "accel": 2.8553,
+        "decel": 5.8538,
+        "sigma": 0.1428,
+        "tau": 1.406,
+        "minGap": 2.0944,
+        "speedFactor": 0.5102,
+        "lcStrategic": 1.7621,
+        "lcCooperative": 0.4689,
+        "lcAssertive": 2.0911,
+        "lcSpeedGain": 0.7874
+      }
+    },
+    {
+      "sim_index": 73,
+      "phase": "sequential",
+      "lcb_round": 13,
+      "error": 1.003406,
+      "best_so_far": 0.470379,
+      "rf_r2": 0.9715,
+      "params": {
+        "accel": 2.7606,
+        "decel": 2.5628,
+        "sigma": 0.1049,
+        "tau": 0.5328,
+        "minGap": 2.8376,
+        "speedFactor": 0.6087,
+        "lcStrategic": 1.5758,
+        "lcCooperative": 1.723,
+        "lcAssertive": 2.3127,
+        "lcSpeedGain": 1.5887
+      }
+    },
+    {
+      "sim_index": 74,
+      "phase": "sequential",
+      "lcb_round": 14,
+      "error": 0.776923,
+      "best_so_far": 0.470379,
+      "rf_r2": 0.9685,
+      "params": {
+        "accel": 2.7475,
+        "decel": 2.72,
+        "sigma": 0.3493,
+        "tau": 0.6712,
+        "minGap": 1.8677,
+        "speedFactor": 0.509,
+        "lcStrategic": 2.0052,
+        "lcCooperative": 1.2523,
+        "lcAssertive": 0.9645,
+        "lcSpeedGain": 0.4502
+      }
+    },
+    {
+      "sim_index": 75,
+      "phase": "sequential",
+      "lcb_round": 15,
+      "error": 0.503111,
+      "best_so_far": 0.470379,
+      "rf_r2": 0.9685,
+      "params": {
+        "accel": 2.8278,
+        "decel": 2.1788,
+        "sigma": 0.1818,
+        "tau": 0.9632,
+        "minGap": 3.0907,
+        "speedFactor": 0.5045,
+        "lcStrategic": 1.6655,
+        "lcCooperative": 1.1308,
+        "lcAssertive": 1.5008,
+        "lcSpeedGain": 1.0301
+      }
+    },
+    {
+      "sim_index": 76,
+      "phase": "sequential",
+      "lcb_round": 16,
+      "error": 0.693687,
+      "best_so_far": 0.470379,
+      "rf_r2": 0.9665,
+      "params": {
+        "accel": 2.3457,
+        "decel": 3.1239,
+        "sigma": 0.1031,
+        "tau": 1.5387,
+        "minGap": 1.5589,
+        "speedFactor": 0.616,
+        "lcStrategic": 1.5397,
+        "lcCooperative": 0.6354,
+        "lcAssertive": 1.4239,
+        "lcSpeedGain": 1.6807
+      }
+    },
+    {
+      "sim_index": 77,
+      "phase": "sequential",
+      "lcb_round": 17,
+      "error": 0.57686,
+      "best_so_far": 0.470379,
+      "rf_r2": 0.9661,
+      "params": {
+        "accel": 2.6681,
+        "decel": 5.5188,
+        "sigma": 0.2789,
+        "tau": 1.2925,
+        "minGap": 1.6933,
+        "speedFactor": 0.501,
+        "lcStrategic": 1.4783,
+        "lcCooperative": 0.9428,
+        "lcAssertive": 2.7482,
+        "lcSpeedGain": 1.8413
+      }
+    },
+    {
+      "sim_index": 78,
+      "phase": "sequential",
+      "lcb_round": 18,
+      "error": 0.557368,
+      "best_so_far": 0.470379,
+      "rf_r2": 0.967,
+      "params": {
+        "accel": 2.6654,
+        "decel": 2.1949,
+        "sigma": 0.3209,
+        "tau": 0.9814,
+        "minGap": 2.9277,
+        "speedFactor": 0.5079,
+        "lcStrategic": 2.0678,
+        "lcCooperative": 1.9154,
+        "lcAssertive": 2.6236,
+        "lcSpeedGain": 1.3774
+      }
+    },
+    {
+      "sim_index": 79,
+      "phase": "sequential",
+      "lcb_round": 19,
+      "error": 0.936732,
+      "best_so_far": 0.470379,
+      "rf_r2": 0.9675,
+      "params": {
+        "accel": 2.7503,
+        "decel": 5.7916,
+        "sigma": 0.2767,
+        "tau": 1.0819,
+        "minGap": 3.0175,
+        "speedFactor": 0.6089,
+        "lcStrategic": 2.4656,
+        "lcCooperative": 0.9373,
+        "lcAssertive": 2.6755,
+        "lcSpeedGain": 1.0697
+      }
+    },
+    {
+      "sim_index": 80,
+      "phase": "sequential",
+      "lcb_round": 20,
+      "error": 0.774614,
+      "best_so_far": 0.470379,
+      "rf_r2": 0.9677,
+      "params": {
+        "accel": 2.7692,
+        "decel": 4.6611,
+        "sigma": 0.3095,
+        "tau": 1.2582,
+        "minGap": 2.8347,
+        "speedFactor": 0.5885,
+        "lcStrategic": 2.1967,
+        "lcCooperative": 1.6344,
+        "lcAssertive": 2.0258,
+        "lcSpeedGain": 0.9711
+      }
+    },
+    {
+      "sim_index": 81,
+      "phase": "sequential",
+      "lcb_round": 21,
+      "error": 0.720652,
+      "best_so_far": 0.470379,
+      "rf_r2": 0.97,
+      "params": {
+        "accel": 2.8271,
+        "decel": 3.8884,
+        "sigma": 0.1465,
+        "tau": 0.8814,
+        "minGap": 2.5797,
+        "speedFactor": 0.504,
+        "lcStrategic": 2.6484,
+        "lcCooperative": 1.006,
+        "lcAssertive": 2.3959,
+        "lcSpeedGain": 0.5187
+      }
+    },
+    {
+      "sim_index": 82,
+      "phase": "sequential",
+      "lcb_round": 22,
+      "error": 0.565566,
+      "best_so_far": 0.470379,
+      "rf_r2": 0.9688,
+      "params": {
+        "accel": 2.7259,
+        "decel": 2.8591,
+        "sigma": 0.5365,
+        "tau": 2.4789,
+        "minGap": 3.1974,
+        "speedFactor": 0.5168,
+        "lcStrategic": 0.5865,
+        "lcCooperative": 1.4256,
+        "lcAssertive": 2.2163,
+        "lcSpeedGain": 1.2475
+      }
+    },
+    {
+      "sim_index": 83,
+      "phase": "sequential",
+      "lcb_round": 23,
+      "error": 0.6614,
+      "best_so_far": 0.470379,
+      "rf_r2": 0.9693,
+      "params": {
+        "accel": 2.8081,
+        "decel": 3.1512,
+        "sigma": 0.6628,
+        "tau": 2.4169,
+        "minGap": 2.3438,
+        "speedFactor": 0.5079,
+        "lcStrategic": 1.51,
+        "lcCooperative": 0.566,
+        "lcAssertive": 1.0772,
+        "lcSpeedGain": 1.4559
+      }
+    },
+    {
+      "sim_index": 84,
+      "phase": "sequential",
+      "lcb_round": 24,
+      "error": 0.594737,
+      "best_so_far": 0.470379,
+      "rf_r2": 0.9696,
+      "params": {
+        "accel": 2.8755,
+        "decel": 2.2515,
+        "sigma": 0.1081,
+        "tau": 1.3383,
+        "minGap": 3.1342,
+        "speedFactor": 0.609,
+        "lcStrategic": 1.881,
+        "lcCooperative": 1.7323,
+        "lcAssertive": 1.4906,
+        "lcSpeedGain": 2.132
+      }
+    },
+    {
+      "sim_index": 85,
+      "phase": "sequential",
+      "lcb_round": 25,
+      "error": 0.676452,
+      "best_so_far": 0.470379,
+      "rf_r2": 0.9692,
+      "params": {
+        "accel": 2.8342,
+        "decel": 2.8215,
+        "sigma": 0.1585,
+        "tau": 0.8314,
+        "minGap": 1.9411,
+        "speedFactor": 0.5112,
+        "lcStrategic": 0.7636,
+        "lcCooperative": 1.4306,
+        "lcAssertive": 2.1257,
+        "lcSpeedGain": 1.8103
+      }
+    },
+    {
+      "sim_index": 86,
+      "phase": "sequential",
+      "lcb_round": 26,
+      "error": 0.614597,
+      "best_so_far": 0.470379,
+      "rf_r2": 0.9701,
+      "params": {
+        "accel": 2.7091,
+        "decel": 5.3076,
+        "sigma": 0.5807,
+        "tau": 2.3817,
+        "minGap": 2.717,
+        "speedFactor": 0.5068,
+        "lcStrategic": 1.2031,
+        "lcCooperative": 0.9761,
+        "lcAssertive": 1.7168,
+        "lcSpeedGain": 2.7954
+      }
+    },
+    {
+      "sim_index": 87,
+      "phase": "sequential",
+      "lcb_round": 27,
+      "error": 0.552052,
+      "best_so_far": 0.470379,
+      "rf_r2": 0.9709,
+      "params": {
+        "accel": 2.9,
+        "decel": 2.3034,
+        "sigma": 0.3279,
+        "tau": 2.3696,
+        "minGap": 2.1328,
+        "speedFactor": 0.6243,
+        "lcStrategic": 0.8792,
+        "lcCooperative": 0.8106,
+        "lcAssertive": 2.7697,
+        "lcSpeedGain": 0.4464
+      }
+    },
+    {
+      "sim_index": 88,
+      "phase": "sequential",
+      "lcb_round": 28,
+      "error": 0.733764,
+      "best_so_far": 0.470379,
+      "rf_r2": 0.9705,
+      "params": {
+        "accel": 2.9,
+        "decel": 2.9481,
+        "sigma": 0.4675,
+        "tau": 1.9727,
+        "minGap": 2.4796,
+        "speedFactor": 0.6291,
+        "lcStrategic": 1.2361,
+        "lcCooperative": 0.5432,
+        "lcAssertive": 2.4658,
+        "lcSpeedGain": 0.72
+      }
+    },
+    {
+      "sim_index": 89,
+      "phase": "sequential",
+      "lcb_round": 29,
+      "error": 0.59387,
+      "best_so_far": 0.470379,
+      "rf_r2": 0.9705,
+      "params": {
+        "accel": 2.5242,
+        "decel": 2.014,
+        "sigma": 0.1701,
+        "tau": 1.1285,
+        "minGap": 2.5179,
+        "speedFactor": 0.5853,
+        "lcStrategic": 1.6022,
+        "lcCooperative": 0.6265,
+        "lcAssertive": 2.6007,
+        "lcSpeedGain": 1.6644
+      }
+    },
+    {
+      "sim_index": 90,
+      "phase": "sequential",
+      "lcb_round": 30,
+      "error": 0.486832,
+      "best_so_far": 0.470379,
+      "rf_r2": 0.9706,
+      "params": {
+        "accel": 2.8119,
+        "decel": 5.1058,
+        "sigma": 0.315,
+        "tau": 1.8653,
+        "minGap": 2.9162,
+        "speedFactor": 0.5071,
+        "lcStrategic": 1.1579,
+        "lcCooperative": 0.764,
+        "lcAssertive": 1.7904,
+        "lcSpeedGain": 0.7028
+      }
+    },
+    {
+      "sim_index": 91,
+      "phase": "sequential",
+      "lcb_round": 31,
+      "error": 0.518199,
+      "best_so_far": 0.470379,
+      "rf_r2": 0.9709,
+      "params": {
+        "accel": 1.0865,
+        "decel": 5.8208,
+        "sigma": 0.1176,
+        "tau": 2.3372,
+        "minGap": 1.9837,
+        "speedFactor": 0.5089,
+        "lcStrategic": 1.785,
+        "lcCooperative": 1.7357,
+        "lcAssertive": 2.5466,
+        "lcSpeedGain": 0.4101
+      }
+    },
+    {
+      "sim_index": 92,
+      "phase": "sequential",
+      "lcb_round": 32,
+      "error": 0.534797,
+      "best_so_far": 0.470379,
+      "rf_r2": 0.972,
+      "params": {
+        "accel": 2.0743,
+        "decel": 5.2351,
+        "sigma": 0.3476,
+        "tau": 1.4078,
+        "minGap": 1.3045,
+        "speedFactor": 0.5039,
+        "lcStrategic": 2.7804,
+        "lcCooperative": 1.8512,
+        "lcAssertive": 1.9863,
+        "lcSpeedGain": 0.4924
+      }
+    },
+    {
+      "sim_index": 93,
+      "phase": "sequential",
+      "lcb_round": 33,
+      "error": 0.500874,
+      "best_so_far": 0.470379,
+      "rf_r2": 0.9727,
+      "params": {
+        "accel": 2.2171,
+        "decel": 2.9661,
+        "sigma": 0.3538,
+        "tau": 1.6646,
+        "minGap": 3.1139,
+        "speedFactor": 0.5015,
+        "lcStrategic": 2.4987,
+        "lcCooperative": 1.6382,
+        "lcAssertive": 0.6293,
+        "lcSpeedGain": 0.8486
+      }
+    },
+    {
+      "sim_index": 94,
+      "phase": "sequential",
+      "lcb_round": 34,
+      "error": 0.580254,
+      "best_so_far": 0.470379,
+      "rf_r2": 0.9738,
+      "params": {
+        "accel": 2.8297,
+        "decel": 5.6668,
+        "sigma": 0.1093,
+        "tau": 1.3363,
+        "minGap": 2.5531,
+        "speedFactor": 0.5085,
+        "lcStrategic": 0.6762,
+        "lcCooperative": 0.852,
+        "lcAssertive": 0.4865,
+        "lcSpeedGain": 1.1446
+      }
+    },
+    {
+      "sim_index": 95,
+      "phase": "sequential",
+      "lcb_round": 35,
+      "error": 0.526209,
+      "best_so_far": 0.470379,
+      "rf_r2": 0.9742,
+      "params": {
+        "accel": 1.7911,
+        "decel": 5.0224,
+        "sigma": 0.583,
+        "tau": 1.8847,
+        "minGap": 2.5573,
+        "speedFactor": 0.5068,
+        "lcStrategic": 1.0778,
+        "lcCooperative": 1.4936,
+        "lcAssertive": 0.4478,
+        "lcSpeedGain": 0.9179
+      }
+    },
+    {
+      "sim_index": 96,
+      "phase": "sequential",
+      "lcb_round": 36,
+      "error": 0.58002,
+      "best_so_far": 0.470379,
+      "rf_r2": 0.9747,
+      "params": {
+        "accel": 2.4424,
+        "decel": 5.3917,
+        "sigma": 0.1574,
+        "tau": 1.2131,
+        "minGap": 3.0439,
+        "speedFactor": 0.5038,
+        "lcStrategic": 2.3033,
+        "lcCooperative": 1.6976,
+        "lcAssertive": 2.2381,
+        "lcSpeedGain": 1.0836
+      }
+    },
+    {
+      "sim_index": 97,
+      "phase": "sequential",
+      "lcb_round": 37,
+      "error": 0.652771,
+      "best_so_far": 0.470379,
+      "rf_r2": 0.9743,
+      "params": {
+        "accel": 2.6241,
+        "decel": 2.7085,
+        "sigma": 0.1114,
+        "tau": 1.0487,
+        "minGap": 3.3472,
+        "speedFactor": 0.5355,
+        "lcStrategic": 1.8559,
+        "lcCooperative": 0.5034,
+        "lcAssertive": 0.4307,
+        "lcSpeedGain": 0.8346
+      }
+    },
+    {
+      "sim_index": 98,
+      "phase": "sequential",
+      "lcb_round": 38,
+      "error": 0.506818,
+      "best_so_far": 0.470379,
+      "rf_r2": 0.9745,
+      "params": {
+        "accel": 1.5653,
+        "decel": 3.3139,
+        "sigma": 0.6095,
+        "tau": 1.7682,
+        "minGap": 2.836,
+        "speedFactor": 0.5059,
+        "lcStrategic": 1.1335,
+        "lcCooperative": 0.9103,
+        "lcAssertive": 1.7767,
+        "lcSpeedGain": 0.5912
+      }
+    },
+    {
+      "sim_index": 99,
+      "phase": "sequential",
+      "lcb_round": 39,
+      "error": 0.484471,
+      "best_so_far": 0.470379,
+      "rf_r2": 0.9755,
+      "params": {
+        "accel": 1.1373,
+        "decel": 5.9371,
+        "sigma": 0.6098,
+        "tau": 1.5378,
+        "minGap": 3.1593,
+        "speedFactor": 0.5014,
+        "lcStrategic": 2.5998,
+        "lcCooperative": 1.2624,
+        "lcAssertive": 2.71,
+        "lcSpeedGain": 0.5235
+      }
+    },
+    {
+      "sim_index": 100,
+      "phase": "sequential",
+      "lcb_round": 40,
+      "error": 0.692282,
+      "best_so_far": 0.470379,
+      "rf_r2": 0.9757,
+      "params": {
+        "accel": 2.5613,
+        "decel": 5.1413,
+        "sigma": 0.1464,
+        "tau": 2.4917,
+        "minGap": 3.0006,
+        "speedFactor": 0.6694,
+        "lcStrategic": 1.2329,
+        "lcCooperative": 1.7948,
+        "lcAssertive": 0.612,
+        "lcSpeedGain": 1.5905
+      }
+    },
+    {
+      "sim_index": 101,
+      "phase": "sequential",
+      "lcb_round": 41,
+      "error": 0.615726,
+      "best_so_far": 0.470379,
+      "rf_r2": 0.9757,
+      "params": {
+        "accel": 1.9168,
+        "decel": 2.0411,
+        "sigma": 0.175,
+        "tau": 0.8225,
+        "minGap": 3.0351,
+        "speedFactor": 0.5882,
+        "lcStrategic": 1.7985,
+        "lcCooperative": 0.5035,
+        "lcAssertive": 2.4914,
+        "lcSpeedGain": 2.3135
       }
     }
   ]
