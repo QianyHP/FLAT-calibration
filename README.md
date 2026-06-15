@@ -50,15 +50,16 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-## 快速开始：一键出图（无需 SUMO）
+## 快速开始（无需 SUMO）
 
-仓库已提交处理后的对比结果，克隆后可直接复现全部 release 图表：
+仓库已提交 **对比 cache**（`outputs/results/comparison_cache/`）与 **四张 release 图**（`outputs/figures/`），克隆即可查看实验结果。需要重绘或更新显著性表时：
 
 ```bash
+pip install -r requirements.txt
 python code/experiments/plot_all_figures.py
 ```
 
-输出至 `outputs/figures/`：四张主图（PNG / PDF / SVG）及 `comparison_significance.csv`。
+输出：四张主图（PNG / PDF / SVG）及 `comparison_significance.csv`。
 
 ## 完整复现（需要 SUMO）
 

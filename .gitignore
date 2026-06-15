@@ -20,11 +20,8 @@ data/raw_data/**/sumo/tmp.*
 # SinD upstream clone (nested .git); obtain separately per docs/DATA.md
 data/external_data/SinD/
 
-# Generated figures (reproducible from scripts)
-outputs/figures/*.png
-outputs/figures/*.jpg
-outputs/figures/*.pdf
-outputs/figures/*.svg
+# Release figures are committed (clone → view without running SUMO).
+# Re-run: python code/experiments/plot_all_figures.py
 
 # Release data: DO commit comparison CSVs and *_b100.json cache
 # (not ignored)

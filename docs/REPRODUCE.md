@@ -19,9 +19,9 @@ pip install -r requirements.txt
 
 ---
 
-## 2. 无需 SUMO：一键出图
+## 2. 无需 SUMO：查看或重绘图表
 
-仓库已提交处理后的对比结果，克隆后可直接复现全部 release 图表：
+仓库已提交 **对比 cache** 与 **四张 release 图**（PNG / PDF / SVG），合作者克隆即可查看你本地的实验结果，无需重跑 SUMO。需要重绘时：
 
 ```bash
 python code/experiments/plot_all_figures.py
@@ -148,4 +148,4 @@ MLP 结果文件追加 `__mlp_h64-64_m10` 后缀、与 RF 并存。默认开启 
 | MLP 模型 | `data/processed_data/calibration/mlp_models/*.joblib` |
 | 对比缓存 | `outputs/results/comparison_cache/{场景}_{方法}_b100[_s{seed}].json` |
 | 对比汇总 | `outputs/results/comparison_summary[_sweep].csv`、`comparison_convergence[_sweep].csv`、`comparison_multiseed_stats.csv`、`comparison_significance.csv` |
-| 图表 | `outputs/figures/*.{png,pdf,svg}`（默认 gitignore，由 `plot_all_figures.py` 重建） |
+| 图表 | `outputs/figures/*.{png,pdf,svg}`（已提交 release 图；亦可 `plot_all_figures.py` 重绘） |
