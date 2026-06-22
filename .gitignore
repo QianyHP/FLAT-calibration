@@ -1,6 +1,11 @@
 # Local archive (thesis, school docs, duplicate data) — keep on disk, do not push
 _local_archive/
 
+# Redirected run outputs from scripts/run_all_to.sh (kept in-repo, not pushed)
+/runs/
+# Transient backup dirs created while run_all_to.sh redirects outputs (auto-restored)
+*.__orig__
+
 # Python
 .venv/
 venv/

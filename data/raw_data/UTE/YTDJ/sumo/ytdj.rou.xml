@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <routes>
-    <vType id="car" accel="2.98" decel="3.42" sigma="0.54" length="5.0" maxSpeed="22.22" tau="0.71" minGap="1.00" speedFactor="0.51" lcStrategic="0.76" lcCooperative="1.02" lcAssertive="1.68" lcSpeedGain="2.30" />
-    <vType id="car_ramp" accel="2.98" decel="3.42" sigma="0.54" length="5.0" maxSpeed="11.11" tau="0.71" minGap="1.00" speedFactor="0.51" lcStrategic="0.76" lcCooperative="1.02" lcAssertive="1.68" lcSpeedGain="2.30" />
+    <vType id="car" accel="3.50" decel="2.00" sigma="0.79" length="5.0" maxSpeed="22.22" tau="2.00" minGap="3.25" speedFactor="0.93" lcStrategic="0.35" lcCooperative="1.00" lcAssertive="0.81" lcSpeedGain="1.58" />
+    <vType id="car_ramp" accel="3.50" decel="2.00" sigma="0.79" length="5.0" maxSpeed="11.11" tau="2.00" minGap="3.25" speedFactor="0.93" lcStrategic="0.35" lcCooperative="1.00" lcAssertive="0.81" lcSpeedGain="1.58" />
 
     
     <route id="r_N_main" edges="ew_main_in ew_parallel ew_main_out" />

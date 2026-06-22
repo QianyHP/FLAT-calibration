@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <routes>
-    <vType id="car" accel="2.16" decel="5.23" sigma="0.50" length="5.0" maxSpeed="13.89" tau="0.91" minGap="1.05" speedFactor="0.64" lcStrategic="1.33" lcCooperative="1.36" lcAssertive="0.64" lcSpeedGain="0.55" />
-    <vType id="motorcycle" accel="2.16" decel="5.23" sigma="0.50" length="1.5" width="0.7" maxSpeed="11.11" tau="0.91" minGap="1.05" speedFactor="0.64" lcStrategic="1.33" lcCooperative="1.36" lcAssertive="0.64" lcSpeedGain="0.55" />
+    <vType id="car" accel="2.17" decel="3.85" sigma="0.71" length="5.0" maxSpeed="13.89" tau="0.86" minGap="3.86" speedFactor="0.56" lcStrategic="0.81" lcCooperative="1.43" lcAssertive="2.38" lcSpeedGain="1.25" />
+    <vType id="motorcycle" accel="2.17" decel="3.85" sigma="0.71" length="1.5" width="0.7" maxSpeed="11.11" tau="0.86" minGap="3.86" speedFactor="0.56" lcStrategic="0.81" lcCooperative="1.43" lcAssertive="2.38" lcSpeedGain="1.25" />
 
     <flow id="f_E_left" type="car" from="EC" to="CN" begin="0" end="600" vehsPerHour="114" departLane="best" />
     <flow id="f_E_straight" type="car" from="EC" to="CW" begin="0" end="600" vehsPerHour="500" departLane="best" />
