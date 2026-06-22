@@ -1,0 +1,167 @@
+========================================================================
+BF-SAC ICTAI 对比实验
+  mode: main
+  场景: Xian
+  方法: BF-SAC-RF
+  seeds: [42]
+  预算: 100 次 SUMO / 方法 / seed
+========================================================================
+
+========================================================================
+  Scene: Xian
+========================================================================
+  [BF-SAC-RF s=42] running …
+       [BF-SAC-RF] n_init=40 seed=42 …
+
+================================================================
+  BF-SAC (sequential LCB): Xian  surrogate=rf
+  Budget=100  (init LHS=40, sequential=60)  run_seed=42
+  LCB kappa=2.0→0.5 (anneal)
+================================================================
+[1/3] Extracting real behavioral fingerprint …
+       v_mean         = 3.8522
+       v_p15          = 0.0254
+       v_p85          = 8.8662
+       a_pos_mean     = 0.7103
+       a_neg_mean     = 0.8046
+       a_p05          = -1.1830
+       a_p95          = 1.1834
+       stop_frac      = 0.4465
+[2/3] Phase A: 40 LHS initial runs …
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+        10/40  best=0.4915  elapsed=26s  ETA=79s
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+        20/40  best=0.4915  elapsed=53s  ETA=53s
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+        30/40  best=0.4749  elapsed=77s  ETA=26s
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+        40/40  best=0.4749  elapsed=103s  ETA=0s
+[3/3] Phase B: 60 sequential LCB acquisitions …
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+       seq  5/60  err=0.4941  best=0.4749  R2=0.956
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+       seq 10/60  err=0.4837  best=0.4650  R2=0.831
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+       seq 15/60  err=0.4578  best=0.4578  R2=0.897
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+       seq 20/60  err=0.4825  best=0.4578  R2=0.881
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+       seq 25/60  err=0.4589  best=0.4578  R2=0.852
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+       seq 30/60  err=0.4897  best=0.4578  R2=0.862
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+       seq 35/60  err=0.4794  best=0.4542  R2=0.885
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+       seq 40/60  err=0.4792  best=0.4542  R2=0.891
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+       seq 45/60  err=0.4816  best=0.4526  R2=0.900
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+       seq 50/60  err=0.4688  best=0.4526  R2=0.902
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+       seq 55/60  err=0.4527  best=0.4526  R2=0.903
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+ Retrying in 1 seconds
+       seq 60/60  err=0.4686  best=0.4526  R2=0.907
+
+  Calibrated params:
+       accel          = 1.8072
+       decel          = 6.0000
+       sigma          = 0.1006
+       tau            = 1.1000
+       minGap         = 2.6649
+       speedFactor    = 0.5838
+       lcStrategic    = 1.2547
+       lcCooperative  = 0.3500
+       lcAssertive    = 2.8000
+       lcSpeedGain    = 2.7961
+  Feature error: 0.4526  (init best=0.4749)
+  Total SUMO runs: 100  |  sequential improved: True
+  [BF-SAC-RF s=42] done in 304s
+       BF-SAC-RF                         err@100=0.4526  sims=100  seed=42
+
+Saved: /Users/shuohe/Desktop/Codes/bf-sac-calibration/outputs/results/comparison_summary.csv (41 rows)
+Saved: /Users/shuohe/Desktop/Codes/bf-sac-calibration/outputs/results/comparison_convergence.csv (4100 rows)
+Multiseed: comparison_per_run.csv, comparison_multiseed_stats.csv, comparison_multiseed_global.csv

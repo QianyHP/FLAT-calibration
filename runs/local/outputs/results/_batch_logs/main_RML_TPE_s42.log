@@ -1,0 +1,23 @@
+========================================================================
+BF-SAC ICTAI 对比实验
+  mode: main
+  场景: RML
+  方法: TPE
+  seeds: [42]
+  预算: 100 次 SUMO / 方法 / seed
+========================================================================
+
+========================================================================
+  Scene: RML
+========================================================================
+  [TPE s=42] running …
+Traceback (most recent call last):
+  File "/Users/shuohe/Desktop/Codes/bf-sac-calibration/code/experiments/run_comparison.py", line 635, in <module>
+    main()
+  File "/Users/shuohe/Desktop/Codes/bf-sac-calibration/code/experiments/run_comparison.py", line 558, in main
+    res = run_one(scene, mkey, run_seed)
+  File "/Users/shuohe/Desktop/Codes/bf-sac-calibration/code/experiments/run_comparison.py", line 407, in run_one
+    return method_tpe(scene, seed)
+  File "/Users/shuohe/Desktop/Codes/bf-sac-calibration/code/experiments/run_comparison.py", line 377, in method_tpe
+    import optuna  # 延迟导入
+ModuleNotFoundError: No module named 'optuna'

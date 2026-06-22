@@ -1,0 +1,70 @@
+{
+  "scenario": "Xian",
+  "calibration_mode": "sequential_lcb",
+  "surrogate": "rf",
+  "surrogate_config": null,
+  "calibrated_params": {
+    "accel": 1.7548,
+    "decel": 4.6368,
+    "sigma": 0.1742,
+    "tau": 1.4467,
+    "minGap": 2.2788,
+    "speedFactor": 0.6198,
+    "lcStrategic": 2.4929,
+    "lcCooperative": 1.3388,
+    "lcAssertive": 0.4383,
+    "lcSpeedGain": 2.7449
+  },
+  "feature_error": 0.4486,
+  "doe_best_error": 0.4665,
+  "sequential_best_error": 0.4486,
+  "surrogate_verified_error": 0.4486,
+  "proxy_beats_doe": true,
+  "n_init": 40,
+  "run_seed": 42,
+  "n_sumo_runs": 100,
+  "rf_r2": 0.9234,
+  "rf_rmse": 0.0197,
+  "feature_comparison": {
+    "v_mean": {
+      "real": 3.8522,
+      "sim_calibrated": 2.2055,
+      "rel_error": 0.4275
+    },
+    "v_p15": {
+      "real": 0.0254,
+      "sim_calibrated": 0.0,
+      "rel_error": 1.0
+    },
+    "v_p85": {
+      "real": 8.8662,
+      "sim_calibrated": 7.2972,
+      "rel_error": 0.177
+    },
+    "a_pos_mean": {
+      "real": 0.7103,
+      "sim_calibrated": 0.7408,
+      "rel_error": 0.043
+    },
+    "a_neg_mean": {
+      "real": 0.8046,
+      "sim_calibrated": 0.5765,
+      "rel_error": 0.2836
+    },
+    "a_p05": {
+      "real": -1.183,
+      "sim_calibrated": -0.4843,
+      "rel_error": 0.5906
+    },
+    "a_p95": {
+      "real": 1.1834,
+      "sim_calibrated": 1.5136,
+      "rel_error": 0.2791
+    },
+    "stop_frac": {
+      "real": 0.4465,
+      "sim_calibrated": 0.6394,
+      "rel_error": 0.432
+    }
+  }
+}

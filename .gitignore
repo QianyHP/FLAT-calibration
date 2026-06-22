@@ -2,7 +2,7 @@
 _local_archive/
 
 # Redirected run outputs from scripts/run_all_to.sh (kept in-repo, not pushed)
-/runs/
+# /runs/
 # Transient backup dirs created while run_all_to.sh redirects outputs (auto-restored)
 *.__orig__
 
