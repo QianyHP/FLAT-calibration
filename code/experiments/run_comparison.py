@@ -1,13 +1,13 @@
 """统一对比实验：主对比 + N_init 样本效率消融。
 
-主对比（--mode main，默认）：BF-SAC-RF / BF-SAC-MLP（n_init=40，κ 2→0.5 退火）
-对四个异构基线 SPSA / GA / CMA-ES / TPE，统一 100 次 SUMO 预算。
+主对比（--mode main，默认）：FLAT-RF / FLAT-MLP（cache 键 BF-SAC-RF / BF-SAC-MLP；
+n_init=40，κ 2→0.5 退火）对四个异构基线 SPSA / GA / CMA-ES / TPE，统一 100 次 SUMO 预算。
 
-样本效率消融（--mode sweep）：BF-SAC-RF / BF-SAC-MLP 在 n_init ∈ {20,40,60,80,100}
+样本效率消融（--mode sweep）：FLAT-RF / FLAT-MLP 在 n_init ∈ {20,40,60,80,100}
 下扫描（总预算恒为 100，n_init=100 即纯 LHS、无序贯加点）。
 
 多 seed：seed=42 写入无后缀 cache，其余 seed 为 *_s{seed}.json；所有方法共用同一
---seed / --seeds 列表，BF-SAC 的 LHS/序贯/代理随机源均随 run_seed 变化。各方法的
+--seed / --seeds 列表，FLAT 的 LHS/序贯/代理随机源均随 run_seed 变化。各方法的
 cache 路径互不重叠，可在多终端按 --methods 拆分并行。
 
 示例：
@@ -316,13 +316,13 @@ def method_ga(scene: str, seed: int) -> dict:
             for i in range(GA_POP):
                 fitness[i] = ev.evaluate_vector(pop[i])
         else:
-            new_pop = np.zeros_like(pop)
+        new_pop = np.zeros_like(pop)
             for i in range(GA_POP):
                 p1 = _tournament(pop, fitness, rng)
                 p2 = _tournament(pop, fitness, rng)
-                mask = rng.random(dim) < 0.5
+            mask = rng.random(dim) < 0.5
                 child = np.where(mask, p1, p2) + rng.normal(0, (hi - lo) * 0.05)
-                new_pop[i] = np.clip(child, lo, hi)
+            new_pop[i] = np.clip(child, lo, hi)
                 fitness[i] = ev.evaluate_vector(new_pop[i])
             pop = new_pop
         if (wave + 1) % 3 == 0:

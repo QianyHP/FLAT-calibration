@@ -1,0 +1,5 @@
+﻿baseline,n_pairs,n_reached,n_unreached,budget_mean,budget_std,ratio
+SPSA,30,7,23,423.9,154.2,4.24
+GA,30,20,10,305.2,170.5,3.05
+CMA-ES,30,28,2,276.0,107.9,2.76
+TPE,30,27,3,146.6,139.6,1.47

@@ -1,4 +1,16 @@
-"""plot_all_figures.py — Generate all release figures (no SUMO required)."""
+"""plot_all_figures.py — 一键生成 FLAT release 主对比图
+
+顺序调用作图脚本的 main()，无需 SUMO。
+输出（outputs/figures/）:
+  bfsac_calibration_convergence.*   — 六场景标定收敛总览（历史文件名前缀）
+  method_comparison_panel.*
+  multiscene_method_convergence.*
+  n_init_sample_efficiency.*        — 若存在 sweep CSV
+  comparison_significance.csv         — Wilcoxon 显著性
+
+论文子图（calib_conv_*, n_init_*, speed_distribution_violin 等）请单独运行
+code/experiments/README.md 中列出的脚本 → paper/Figures/
+"""
 from __future__ import annotations
 
 from pathlib import Path
@@ -13,7 +25,7 @@ SWEEP_CSV = PROJ / "outputs" / "results" / "comparison_summary_sweep.csv"
 
 def main() -> None:
     print("=" * 72)
-    print("BF-SAC release figures")
+    print("FLAT release figures")
     print("=" * 72)
 
     print("\n[1/6] Multiseed aggregate …")

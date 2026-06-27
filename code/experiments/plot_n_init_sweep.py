@@ -1,4 +1,8 @@
-"""plot_n_init_sweep.py — N_init sample-efficiency ablation."""
+"""plot_n_init_sweep.py — N_init 样本效率消融图
+
+读取 comparison_summary_sweep.csv 或 sweep 缓存重建结果。
+输出: outputs/figures/n_init_sample_efficiency.png
+"""
 from __future__ import annotations
 
 import json
@@ -21,14 +25,26 @@ for p in (CAL_ROOT, EXP_ROOT):
 from unified_calibration import BUDGET_SUMO, N_INIT_MAIN, SWEEP_N_INIT  # noqa: E402
 from plot_convergence_utils import draw_mean_with_band  # noqa: E402
 from plot_style import (  # noqa: E402
-    SCENE_ORDER, SCENE_TITLES, METHOD_COLORS, apply_style, save_figure,
-    XLABEL_NINIT, YLABEL_JB, CI_BAND_LABEL,
+    SCENE_ORDER, METHOD_COLORS, METHOD_LABELS, apply_style, apply_paper_style, save_figure,
+    save_paper_panel, add_paper_panel_axes, PAPER_HALF_SIZE, XLABEL_NINIT, YLABEL_JB_SHORT,
+    CI_BAND_LABEL,
 )
 
 apply_style()
 RES = PROJ / "outputs" / "results"
 CACHE = RES / "comparison_cache"
 _CACHE_TAIL_RE = re.compile(r"_b(\d+)(?:_s(\d+))?\.json$")
+
+# SIND left column / UTE right column (same order as Fig. 1).
+# (scene, show_ylabel, show_xlabel, show_legend) — every panel shows the x-axis label.
+PAPER_SCENE_LAYOUT = [
+    ("Tianjin", True, True, True),
+    ("YTDJ", True, True, False),
+    ("Changchun", True, True, False),
+    ("RML", True, True, False),
+    ("Xian", True, True, False),
+    ("XAM-N6", True, True, False),
+]
 
 
 def _surrogate_key(method_key: str) -> str | None:
@@ -88,52 +104,104 @@ def _load_sweep_df() -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def _draw_scene_sweep(
+    ax: plt.Axes,
+    agg: pd.DataFrame,
+    scene: str,
+    *,
+    show_ylabel: bool,
+    show_xlabel: bool,
+    show_legend: bool,
+    paper: bool = False,
+) -> None:
+    sub = agg[agg["scene"] == scene]
+    ms = 4.0 if paper else 7
+    lw = 1.0 if paper else 2.2
+    band_alpha = 0.10 if paper else 0.22
+    for surr, marker in (("BF-SAC-RF", "o"), ("BF-SAC-MLP", "s")):
+        ssub = sub[sub["surr"] == surr].sort_values("n_init")
+        if ssub.empty:
+            continue
+        x = ssub["n_init"].to_numpy(dtype=float)
+        y = ssub["error_mean"].to_numpy(dtype=float)
+        y_std = ssub["error_std"].fillna(0.0).to_numpy(dtype=float)
+        color = METHOD_COLORS[surr]
+        draw_mean_with_band(ax, x, y, y_std, color=color, step=False,
+                            linewidth=lw, zorder=4, label=METHOD_LABELS[surr], alpha=band_alpha)
+        ax.plot(x, y, linestyle="None", marker=marker, color=color,
+                markersize=ms, zorder=5, markeredgewidth=0.75, markeredgecolor="white")
+    ax.axvline(N_INIT_MAIN, color="#94A3B8", linestyle="--", alpha=0.7, linewidth=0.6)
+    ax.set_ylabel(YLABEL_JB_SHORT)
+    if show_xlabel:
+        ax.set_xlabel(XLABEL_NINIT)
+    else:
+        ax.set_xlabel("")
+        if paper:
+            ax.tick_params(labelbottom=False)
+    ax.set_xticks(list(SWEEP_N_INIT))
+    ax.set_xlim(15, 105)
+    if show_legend:
+        ax.legend(
+            fontsize=4.6 if paper else 8, loc="upper left",
+            handlelength=0.9, columnspacing=0.4, borderpad=0.25, labelspacing=0.22,
+        )
+
+
+def _scene_stem(scene: str) -> str:
+    if scene == "XAM-N6":
+        return "n_init_xam"
+    return f"n_init_{scene.lower().replace('-', '_')}"
+
+
+def _export_paper_panels(agg: pd.DataFrame) -> None:
+    apply_paper_style(base_font=6.0)
+    for scene, show_ylabel, show_xlabel, show_legend in PAPER_SCENE_LAYOUT:
+        if scene not in agg["scene"].unique():
+            continue
+        fig = plt.figure(figsize=PAPER_HALF_SIZE, facecolor="#FFFFFF")
+        ax = add_paper_panel_axes(fig)
+        _draw_scene_sweep(
+            ax, agg, scene,
+            show_ylabel=show_ylabel, show_xlabel=show_xlabel,
+            show_legend=show_legend, paper=True,
+        )
+        save_paper_panel(fig, _scene_stem(scene))
+        plt.close(fig)
+    apply_style()
+
+
 def plot_sweep(df: pd.DataFrame) -> Path:
     agg = _prepare_sweep_df(df)
     scenes = [s for s in SCENE_ORDER if s in agg["scene"].unique()]
     if not scenes:
         raise FileNotFoundError("No sweep data — run: run_comparison.py --mode sweep")
 
-    ncols = min(3, len(scenes))
-    nrows = (len(scenes) + ncols - 1) // ncols
-    fig, axes = plt.subplots(nrows, ncols, figsize=(5.2 * ncols, 4.2 * nrows))
-    axes = np.atleast_1d(axes).flatten()
+    _export_paper_panels(agg)
 
+    ncols, nrows = 2, 3
+    fig, axes = plt.subplots(nrows, ncols, figsize=(5.2 * ncols, 3.5 * nrows))
+    axes = np.atleast_1d(axes).flatten()
     for ax, scene in zip(axes, scenes):
-        sub = agg[agg["scene"] == scene]
-        for surr, marker in (("BF-SAC-RF", "o"), ("BF-SAC-MLP", "s")):
-            ssub = sub[sub["surr"] == surr].sort_values("n_init")
-            if ssub.empty:
-                continue
-            x = ssub["n_init"].to_numpy(dtype=float)
-            y = ssub["error_mean"].to_numpy(dtype=float)
-            y_std = ssub["error_std"].fillna(0.0).to_numpy(dtype=float)
-            color = METHOD_COLORS[surr]
-            draw_mean_with_band(ax, x, y, y_std, color=color, step=False,
-                                linewidth=2.2, zorder=4, label=surr)
-            ax.plot(x, y, linestyle="None", marker=marker, color=color, markersize=7, zorder=5)
-        ax.axvline(N_INIT_MAIN, color="#94A3B8", linestyle="--", alpha=0.7, linewidth=1)
-        ax.set_title(SCENE_TITLES[scene], fontweight="bold")
-        ax.set_xlabel(XLABEL_NINIT)
-        ax.set_ylabel(rf"$J_b$ @ {BUDGET_SUMO}")
-        ax.set_xticks(list(SWEEP_N_INIT))
-        ax.set_xlim(15, 105)
-        ax.legend(fontsize=9)
+        _draw_scene_sweep(
+            ax, agg, scene,
+            show_ylabel=True, show_xlabel=True, show_legend=False,
+        )
 
     for ax in axes[len(scenes):]:
         ax.set_visible(False)
 
     band_patch = mpatches.Patch(facecolor="#94A3B8", alpha=0.22, edgecolor="none", label=CI_BAND_LABEL)
     handles, _ = axes[0].get_legend_handles_labels()
-    handles.append(band_patch)
-    fig.legend(handles=handles, loc="upper center", ncol=3, framealpha=0.97, bbox_to_anchor=(0.5, 1.03))
-    fig.suptitle(
-        rf"Sample efficiency: $N_{{init}}$ + sequential LCB (budget {BUDGET_SUMO})",
-        fontweight="bold", y=1.08,
-    )
-    plt.tight_layout(rect=[0, 0, 1, 0.96])
+    handles.extend([
+        plt.Line2D([0], [0], color=METHOD_COLORS["BF-SAC-RF"], marker="o", linestyle="-", label="FLAT-RF"),
+        plt.Line2D([0], [0], color=METHOD_COLORS["BF-SAC-MLP"], marker="s", linestyle="-", label="FLAT-MLP"),
+        band_patch,
+    ])
+    fig.legend(handles=handles, loc="upper center", ncol=3, framealpha=0.97, bbox_to_anchor=(0.5, 1.02))
+    plt.tight_layout(rect=[0, 0, 1, 0.98])
     out = save_figure(fig, "n_init_sample_efficiency")
     plt.close(fig)
+    print("  Saved paper panels to paper/Figures/")
     print(f"  Saved: {out}")
     return out
 

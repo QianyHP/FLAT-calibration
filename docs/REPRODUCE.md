@@ -29,6 +29,12 @@ python code/experiments/plot_all_figures.py
 
 生成 `outputs/figures/` 下四张主图：标定收敛（图 1）、方法对比组合（图 2）、六场景多方法收敛（图 3）、N_init 样本效率（图 4）。
 
+若仓库已含 `outputs/results/landscape_dual_XAM-N6.json`，可单独重绘目标地形图（论文方法节 rugged/smoothed 对比）：
+
+```bash
+python code/experiments/plot_landscape_dual.py
+```
+
 ---
 
 ## 3. 完整复现（需要 SUMO）
@@ -42,9 +48,10 @@ python code/experiments/plot_all_figures.py
 | 标定 | `unified_calibration.py`（RF + `--mlp`） | 6 场景 × 2 代理 × 100 ≈ **1,200** 次 SUMO | 图 1、表 1、`calibration_summary.csv` |
 | 主对比 | `run_batch_parallel.py --phases main` | 6 方法 × 6 场景 × 5 seed × 100 = **18,000** 次 | 图 2 / 3、表 2 / 3 |
 | N_init 消融 | `run_batch_parallel.py --phases sweep` | RF/MLP × {20,60,80,100}（n=40 复用主对比）× 6 场景 × 5 seed × 100 = **24,000** 次 | 图 4 |
+| 目标地形（可选） | `run_landscape_dual.py` → `plot_landscape_dual.py` | 1 场景 × $20^2$ = **400** 次 | `landscape_dual_*.json`、地形 PDF/PNG |
 
-合计约 **4.3 万次 SUMO 仿真**。三阶段均 **断点续跑**（已有 cache 自动跳过），可 12 路并行。
-主对比六方法：`BF-SAC-RF`、`BF-SAC-MLP`、`SPSA`、`GA`、`CMA-ES`、`TPE`，覆盖代理序贯、局部梯度、种群进化、演化策略、贝叶斯密度五类机制。
+合计约 **4.3 万次 SUMO 仿真**（不含可选地形 400 次）。三阶段均 **断点续跑**（已有 cache 自动跳过），可 12 路并行。
+主对比六方法：**FLAT-RF**、**FLAT-MLP**、SPSA、GA、CMA-ES、TPE（cache 文件名仍用历史键 `BF-SAC-RF` / `BF-SAC-MLP`），覆盖代理序贯、局部梯度、种群进化、演化策略、贝叶斯密度五类机制。
 
 ### 3.2 一键脚本（算力机依次运行）
 
@@ -52,7 +59,7 @@ python code/experiments/plot_all_figures.py
 # 0) 环境自检
 python code/experiments/check_sumo_scenes.py
 
-# 1) BF-SAC 标定（图 1 + 表 1）：6 场景 × RF / MLP
+# 1) FLAT 标定（图 1 + 表 1）：6 场景 × RF / MLP
 python code/calibration/unified_calibration.py            # 全场景，RF
 python code/calibration/unified_calibration.py --mlp      # 全场景，MLP 代理
 
@@ -89,13 +96,31 @@ python code/experiments/run_comparison.py --scenes Tianjin --mode sweep --seeds 
 
 缓存：`{场景}_{方法}_b100.json`（seed=42）、`{场景}_{方法}_b100_s{seed}.json`（其余 seed）。
 
+### 3.4 目标地形可视化（可选，需 SUMO + 已标定 XAM-N6）
+
+用于论文/文档中的 rugged-vs-smoothed 曲面对比；与主对比 cache 无关。
+
+```bash
+# 1) 网格扫描（400 次 SUMO，默认 6 workers）
+python code/experiments/run_landscape_dual.py
+
+# 2) 出图（无需 SUMO；PDF + PNG）
+python code/experiments/plot_landscape_dual.py
+
+# 可选：围绕 z 轴旋转 GIF
+python code/experiments/plot_landscape_dual.py --gif
+```
+
+前提：`data/processed_data/calibration/XAM-N6_calibration_with_history.json` 已存在（先跑 §3.2 标定）。  
+产物：`outputs/results/landscape_dual_XAM-N6.json`，`outputs/figures/landscape_dual_XAM-N6.{pdf,png}`。
+
 ---
 
 ## 4. 脚本一览
 
 | 脚本 | 需要 SUMO | 作用 |
 |------|-----------|------|
-| `code/calibration/unified_calibration.py` | 是 | BF-SAC 标定主程序（RF / MLP 代理） |
+| `code/calibration/unified_calibration.py` | 是 | FLAT 标定主程序（RF / MLP 代理；内部 cache 键 `BF-SAC-*`） |
 | `code/experiments/run_comparison.py` | 是 | 主对比（6 方法）+ N_init 消融（`--mode main/sweep`），支持 `--seeds` |
 | `code/experiments/run_batch_parallel.py` | 是 | 并行补跑缺失 cache（`--workers N --phases main,sweep`） |
 | `code/experiments/check_sumo_scenes.py` | 是 | 数据 + 单次 SUMO 自检 |
@@ -108,6 +133,12 @@ python code/experiments/run_comparison.py --scenes Tianjin --mode sweep --seeds 
 | `code/experiments/plot_multiscene_convergence.py` | 否 | 图 3 |
 | `code/experiments/plot_n_init_sweep.py` | 否 | 图 4 |
 | `code/experiments/plot_convergence_utils.py` | 否 | 作图公用：多 seed 均值 ± std 置信带 |
+| `code/experiments/run_landscape_dual.py` | 是 | 目标地形网格扫描（accel×tau，raw + $J_b$） |
+| `code/experiments/plot_landscape_dual.py` | 否 | 目标地形双曲面对比图（+ 可选旋转 GIF） |
+| `code/experiments/plot_speed_distribution_violin.py` | 否 | 速度分布行为验证（论文 Fig. speeddist） |
+| `code/experiments/plot_lcb_contour.py` | 否 | LCB 采集等高线示意 |
+| `code/experiments/run_efficiency_batch.py` | 是 | 扩展预算追平实验（B=500） |
+| `code/experiments/analyze_efficiency.py` | 否 | 追平成本 / 效率比汇总 |
 
 预处理脚本见 [DATA.md](DATA.md)。
 
@@ -115,7 +146,7 @@ python code/experiments/run_comparison.py --scenes Tianjin --mode sweep --seeds 
 
 ## 5. 标定主程序与代理配置
 
-`unified_calibration.py` 实现 BF-SAC（行为指纹 + 代理 + 序贯 LCB），代理二选一、接口一致：
+`unified_calibration.py` 实现 **FLAT**（行为指纹 + 可插拔代理 + 序贯 LCB），代理二选一、接口一致。代码与 cache 中历史缩写 **BF-SAC** 与 FLAT-RF / FLAT-MLP 一一对应，改名 cache 会破坏已提交结果。
 
 | 代理 | 启用方式 | 特点 |
 |------|----------|------|
@@ -148,4 +179,5 @@ MLP 结果文件追加 `__mlp_h64-64_m10` 后缀、与 RF 并存。默认开启 
 | MLP 模型 | `data/processed_data/calibration/mlp_models/*.joblib` |
 | 对比缓存 | `outputs/results/comparison_cache/{场景}_{方法}_b100[_s{seed}].json` |
 | 对比汇总 | `outputs/results/comparison_summary[_sweep].csv`、`comparison_convergence[_sweep].csv`、`comparison_multiseed_stats.csv`、`comparison_significance.csv` |
+| 目标地形 | `outputs/results/landscape_dual_<场景>.json` |
 | 图表 | `outputs/figures/*.{png,pdf,svg}`（已提交 release 图；亦可 `plot_all_figures.py` 重绘） |

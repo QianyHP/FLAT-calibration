@@ -1,6 +1,13 @@
 # Local archive (thesis, school docs, duplicate data) — keep on disk, do not push
 _local_archive/
 
+# Cursor / agent skills (local writing aids; not part of the FLAT release)
+.cursor/
+skills/
+
+# Stray local checks
+_encoding_verify.txt
+
 # Python
 .venv/
 venv/
@@ -23,12 +30,23 @@ data/external_data/SinD/
 # Release figures are committed (clone → view without running SUMO).
 # Re-run: python code/experiments/plot_all_figures.py
 
+# Paper-writing agent skills (upstream clones; see skills/README.md)
+# skills/_vendor/ — covered by skills/ ignore above
+
 # Release data: DO commit comparison CSVs and *_b100.json cache
 # (not ignored)
 
 # Transient batch run logs (per-job stdout; reproducible)
 outputs/results/_batch_logs/
+outputs/results/_batch_logs_ext/
 outputs/results/_mlp_ablation_logs/
+outputs/results/_test_tpe.log
+
+# Extended-budget efficiency runs (regenerate via run_efficiency_batch.py)
+outputs/results/comparison_cache_ext/
+
+# Raw speed samples for violin plot (~106 MB; regenerate: plot_speed_distribution_violin.py --refresh)
+outputs/results/speed_distribution_violin.json
 
 # Run logs and thesis-era artifacts
 outputs/logs/*
@@ -50,6 +68,31 @@ Thumbs.db
 
 # Office temp
 ~$*.docx
+
+# LaTeX build artifacts (paper/)
+paper/build_tmp/
+build_tmp/
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.fdb_latexmk
+paper/*.fls
+paper/*.log
+paper/*.out
+paper/*.synctex.gz
+paper/*.synctex(busy)
+paper/FLAT.pdf
+paper/*.pdf
+!paper/Figures/**/*.pdf
+
+# Paper panel PNG previews (LaTeX uses PDFs under paper/Figures/)
+paper/Figures/calib_conv_*.png
+paper/Figures/n_init_*.png
+paper/Figures/method_comparison_*.png
+paper/Figures/speed_distribution_violin.png
+
+# Optional poster/teaser exports (not in ICTAI draft)
+outputs/figures/fig1_teaser_assets/
 
 # Merge backup / local bundles
 heshuo-bf-sac-calibration-main/

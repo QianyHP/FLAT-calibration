@@ -1,10 +1,10 @@
-# BF-SAC：昂贵交通仿真的代理辅助标定
+# FLAT：昂贵交通仿真的代理辅助标定
 
-行为指纹代理辅助标定（**B**ehavioral **F**ingerprint **S**urrogate-**A**ssisted **C**alibration）的开源实现，在 **固定 100 次 SUMO 仿真预算** 下标定微观交通数字孪生的跟驰 / 换道参数。
+行为指纹可学习采集标定（**F**ingerprint-guided **L**earnable **A**cquisition for **T**raffic Calibration，**FLAT**）的开源实现，在 **固定 100 次 SUMO 仿真预算** 下标定微观交通数字孪生的跟驰 / 换道参数。
 
 ## 核心思想
 
-单次参数评估需一次完整 SUMO–TraCI 仿真，成本高昂。BF-SAC 用三步把有限预算花在刀刃上：
+单次参数评估需一次完整 SUMO–TraCI 仿真，成本高昂。FLAT 用三步把有限预算花在刀刃上：
 
 1. **行为指纹**：从真实轨迹提取 8 维统计指纹（速度水平 / 分位、加减速强度、停车占比…），以加权相对误差 $J_b$ 度量仿真与真实的差距——把崎岖的「参数 → 误差」关系压平到代理可学。
 2. **LHS 初始设计**：拉丁超立方在 10 维参数空间采 40 个空间填充点，各触发一次仿真。
@@ -16,11 +16,12 @@
 
 | 路径 | 说明 |
 |------|------|
-| [`code/calibration/`](code/calibration/) | BF-SAC 标定主程序 `unified_calibration.py` |
+| [`code/calibration/`](code/calibration/) | FLAT 标定主程序 `unified_calibration.py` |
 | [`code/preprocessing/`](code/preprocessing/) | 由 SIND / UTE 原始轨迹构建 SUMO 场景 |
-| [`code/experiments/`](code/experiments/) | 公平对比、N_init 消融、基线与作图 |
+| [`code/experiments/`](code/experiments/) | 公平对比、N_init 消融、目标地形扫描与作图（见 [`code/experiments/README.md`](code/experiments/README.md)） |
 | [`data/`](data/) | 原始 / 处理后数据 |
 | [`outputs/results/`](outputs/results/) | 对比 CSV 与 `comparison_cache/*_b100.json` |
+| [`paper/`](paper/) | ICTAI 短文 LaTeX 源稿与 `Figures/` 论文插图 |
 | [`docs/`](docs/) | 文档（见下） |
 
 ## 文档
@@ -31,7 +32,8 @@
 | [`docs/REPRODUCE.md`](docs/REPRODUCE.md) | 完整复现：实验矩阵与规模、一键脚本、代理超参、输出位置 |
 | [`docs/EXPERIMENT.md`](docs/EXPERIMENT.md) | 实验设计、结果与解读（含图表） |
 | [`docs/DATA.md`](docs/DATA.md) | 数据获取、目录结构与预处理 |
-| [`docs/ACADEMIC_NARRATIVE.md`](docs/ACADEMIC_NARRATIVE.md) | 论文写作大纲 |
+| [`docs/ACADEMIC_NARRATIVE.md`](docs/ACADEMIC_NARRATIVE.md) | 论文叙事骨架 |
+| [`docs/PAPER_OUTLINE_ICTAI.md`](docs/PAPER_OUTLINE_ICTAI.md) | ICTAI 短文写作大纲 |
 
 ## 研究场景
 
@@ -52,14 +54,29 @@ pip install -r requirements.txt
 
 ## 快速开始（无需 SUMO）
 
-仓库已提交 **对比 cache**（`outputs/results/comparison_cache/`）与 **四张 release 图**（`outputs/figures/`），克隆即可查看实验结果。需要重绘或更新显著性表时：
+仓库已提交 **对比 cache**（`outputs/results/comparison_cache/`）与 **release 主图**（`outputs/figures/`），克隆即可查看实验结果。需要重绘或更新显著性表时：
 
 ```bash
 pip install -r requirements.txt
 python code/experiments/plot_all_figures.py
 ```
 
-输出：四张主图（PNG / PDF / SVG）及 `comparison_significance.csv`。
+输出：四张主对比图（PNG / PDF / SVG）及 `comparison_significance.csv`。论文专用子图（标定收敛、N_init 消融、速度分布小提琴等）由各自脚本写入 `paper/Figures/` 与 `outputs/figures/`。若已有 `outputs/results/landscape_dual_XAM-N6.json`，可单独重绘目标地形图：
+
+```bash
+python code/experiments/plot_landscape_dual.py
+```
+
+补充论文图（无需 SUMO，依赖已提交的标定 JSON / cache）：
+
+```bash
+python code/experiments/plot_calibration_convergence.py   # paper/Figures/calib_conv_*.pdf
+python code/experiments/plot_n_init_sweep.py              # paper/Figures/n_init_*.pdf
+python code/experiments/plot_speed_distribution_violin.py # 行为验证：速度分布 + ρ
+python code/experiments/plot_lcb_contour.py               # LCB 采集示意
+```
+
+LaTeX 编译：`cd paper && pdflatex root && bibtex root && pdflatex root && pdflatex root`（见 [`paper/root.tex`](paper/root.tex)）。
 
 ## 完整复现（需要 SUMO）
 
@@ -71,7 +88,7 @@ python code/preprocessing/build_ytdj_sumo.py
 python code/preprocessing/build_rml_sumo.py
 python code/preprocessing/build_xam_sumo.py
 
-# 2. BF-SAC 标定（每场景 100 次 SUMO）
+# 2. FLAT 标定（每场景 100 次 SUMO）
 python code/calibration/unified_calibration.py               # 全场景，RF
 python code/calibration/unified_calibration.py --mlp XAM-N6  # 单场景 + MLP 代理
 
@@ -89,13 +106,13 @@ python code/experiments/plot_all_figures.py
 
 ## 方法对比
 
-主对比把 BF-SAC（RF / MLP）放在四个机制各异的基线面前：**SPSA**（局部梯度估计）、
+主对比把 FLAT（RF / MLP）放在四个机制各异的基线面前：**SPSA**（局部梯度估计）、
 **GA**（种群进化）、**CMA-ES**（演化策略）、**TPE**（贝叶斯密度估计，Optuna）。
-六场景 × 5 seed、统一 100 次预算下，BF-SAC 跨四种范式一致领先。详见 [`docs/EXPERIMENT.md`](docs/EXPERIMENT.md)。
+六场景 × 5 seed、统一 100 次预算下，FLAT 跨四种范式一致领先。详见 [`docs/EXPERIMENT.md`](docs/EXPERIMENT.md)。
 
 ## 学习型代理：RF 与 MLP（二选一）
 
-BF-SAC 的学习型组件是回归 **代理**，学习「10 维参数 → 标定误差 $J_b$」，在固定预算下用廉价预测指导序贯采点。两种实现接口一致、可直接互换（GA / SPSA 是优化器、8 维指纹是人工特征，二者均非学习模型）。
+FLAT 的学习型组件是回归 **代理**，学习「10 维参数 → 标定误差 $J_b$」，在固定预算下用廉价预测指导序贯采点。两种实现接口一致、可直接互换（GA / SPSA 是优化器、8 维指纹是人工特征，二者均非学习模型）。
 
 | | 随机森林（默认） | MLP 深度集成（`--mlp`） |
 |---|---|---|

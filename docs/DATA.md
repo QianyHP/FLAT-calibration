@@ -1,6 +1,6 @@
 # 数据准备说明
 
-BF-SAC 标定与对比实验所需的原始轨迹、SUMO 场景配置及标定结果均存于 `data/`。大体积原始 CSV / 仿真输出默认由 `.gitignore` 排除，请按下列步骤在本地准备。复现流程见 [REPRODUCE.md](REPRODUCE.md)。
+FLAT 标定与对比实验所需的原始轨迹、SUMO 场景配置及标定结果均存于 `data/`。大体积原始 CSV / 仿真输出默认由 `.gitignore` 排除，请按下列步骤在本地准备。复现流程见 [REPRODUCE.md](REPRODUCE.md)。
 
 ## 目录结构
 
@@ -8,7 +8,7 @@ BF-SAC 标定与对比实验所需的原始轨迹、SUMO 场景配置及标定�
 |------|------|
 | `data/raw_data/SIND/{城市}/` | 交叉口轨迹、`map.osm`、`sumo/*.xml`（天津、长春、西安） |
 | `data/raw_data/UTE/{场景}/` | 快速路 `frenet.csv`、`sumo/*.xml`（YTDJ、RML、XAM-N6） |
-| `data/processed_data/calibration/` | BF-SAC 标定 JSON、`calibration_summary.csv` |
+| `data/processed_data/calibration/` | FLAT 标定 JSON、`calibration_summary.csv` |
 | `data/processed_data/all_cities_od_stats.csv` | 预处理附属统计（可选） |
 | `data/external_data/SinD/` | SinD 仓库克隆（含西安等发布包） |
 

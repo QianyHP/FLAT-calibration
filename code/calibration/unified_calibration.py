@@ -1,8 +1,10 @@
-"""unified_calibration.py  ──  BF-SAC（序贯代理标定）
+"""unified_calibration.py  ──  FLAT 标定主程序（序贯代理 + LCB）
 
-Behavioral Fingerprint Surrogate-Assisted Calibration (BF-SAC)
-==============================================================
-8 维行为指纹 + 固定 SUMO 预算下的序贯 RF 代理标定（LCB 采集）。
+**FLAT** = Fingerprint-guided Learnable Acquisition for Traffic Calibration
+（对外论文名）。代码与 cache 中历史缩写 **BF-SAC**（Behavioral Fingerprint
+Surrogate-Assisted Calibration）与之等价，保留以免破坏已提交结果。
+
+8 维行为指纹 + 固定 SUMO 预算下的序贯 RF/MLP 代理标定（LCB 采集）。
 
   - 阶段 A：``N_INIT`` 次 LHS 初始设计
   - 阶段 B：``BUDGET_SUMO - N_INIT`` 次序贯加点：重训 RF → 信赖域 + 全局候选

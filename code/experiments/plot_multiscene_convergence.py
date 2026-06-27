@@ -1,4 +1,8 @@
-"""plot_multiscene_convergence.py — Six-scene × multi-method convergence (2×3 panel)."""
+"""plot_multiscene_convergence.py — 六场景 × 多方法收敛对比图（2×3 子图）
+
+读取 comparison_convergence.csv；多 seed 时绘制均值曲线 + 半透明 ±1 std 带。
+输出: outputs/figures/multiscene_method_convergence.png
+"""
 from __future__ import annotations
 
 from pathlib import Path
