@@ -1,0 +1,2 @@
+﻿scenario,feature_error,accel,decel,sigma,tau,minGap,speedFactor,lcStrategic,lcCooperative,lcAssertive,lcSpeedGain
+XAM-N6,0.133,1.1047,2.7166,0.1982,1.5268,1.4332,1.0763,2.2865,1.8164,0.5427,1.0654
