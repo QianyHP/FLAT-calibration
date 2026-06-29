@@ -71,7 +71,7 @@ dayuan.wang@ufl.edu}}
 \maketitle
 
 \begin{abstract}
-Calibrating microscopic traffic simulators is an expensive black-box problem with a rugged landscape: tuning car-following and lane-changing parameters requires a full SUMO--TraCI run, affording only a tight budget per scene. Matching raw trajectories yields a rugged, scene-dependent objective that sparse surrogates cannot learn, reducing sequential acquisition to near-random probing. We present FLAT to couple two decisions: \emph{what} to optimize and \emph{where} to sample next. An eight-dimensional behavioral fingerprint smooths the parameter--error landscape, making a cheap surrogate learnable from a few dozen samples; annealed lower-confidence-bound (LCB) acquisition then spends each remaining run where it most reduces error. The surrogate, a random forest or a multi-layer-perceptron (MLP) ensemble, is interchangeable. Across six heterogeneous SIND/UTE scenes and five seeds, FLAT significantly outperforms four optimizer families (SPSA, GA, CMA-ES, TPE) under matched budgets (Wilcoxon $p<0.05$), cutting the simulation cost of reaching equivalent quality by up to $4\times$. Ablations trace the gain to objective geometry and sequential allocation rather than surrogate capacity.
+Calibrating microscopic traffic simulators is an expensive black-box problem with a rugged landscape: tuning car-following and lane-changing parameters requires a full SUMO--TraCI run, affording only a tight budget per scene. Matching raw trajectories yields a rugged, scene-dependent objective that sparse surrogates cannot learn, reducing sequential acquisition to near-random probing. We present FLAT to couple two decisions: \emph{what} to optimize and \emph{where} to sample next. An eight-dimensional behavioral fingerprint smooths the parameter--error landscape, making a surrogate learnable from a few dozen samples; annealed lower-confidence-bound (LCB) acquisition then spends each remaining run where it most reduces error. The surrogate, a random forest or a multi-layer-perceptron (MLP) ensemble, is interchangeable. Across six heterogeneous SIND/UTE scenes and five seeds, FLAT significantly outperforms four optimizer families (SPSA, GA, CMA-ES, TPE) under matched budgets (Wilcoxon $p<0.05$), cutting the simulation cost of reaching equivalent quality by up to $4\times$. Ablations trace the gain to objective geometry and sequential allocation rather than surrogate capacity.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -83,13 +83,13 @@ Surrogate-assisted optimization; traffic simulation calibration; behavioral fing
 \label{sec:introduction}
 % See docs/PAPER_OUTLINE_ICTAI.md §II for full narrative
 
-Operational decisions in urban traffic increasingly rely on real-time digital twins~\cite{ref_dt}. Their credibility, however, rests on a microscopic simulator such as SUMO~\cite{ref_sumo} reproducing \emph{how} vehicles actually move, not merely average flow. That fidelity is only as good as the car-following~\cite{ref_krauss} and lane-changing~\cite{ref_lc2013} parameters governing each vehicle, which must be calibrated per location from observed trajectories. Because each candidate vector is scored only by rerunning the full network, calibration is an expensive, stochastic, black-box problem in which only about $10^2$ runs are affordable per scene.
+Operational decisions in urban traffic increasingly rely on real-time digital twins~\cite{ref_dt}. Their credibility, however, rests on a microscopic simulator such as SUMO~\cite{ref_sumo} reproducing \emph{how} vehicles actually move, not merely average flow. That fidelity is only as good as the car-following~\cite{ref_krauss} and lane-changing~\cite{ref_lc2013} parameters governing each vehicle, which must be calibrated per location from observed trajectories. Because each candidate vector is scored only by rerunning the full network, calibration is an expensive, stochastic, black-box optimization problem in which only about $10^2$ runs are affordable per scene.
 
 Two schools address it. The first searches the raw objective directly with general-purpose optimizers---genetic algorithms (GA)~\cite{ref_ga}, simultaneous perturbation stochastic approximation (SPSA)~\cite{ref_spsa}, and the covariance matrix adaptation evolution strategy (CMA-ES)~\cite{ref_cmaes}---which are derivative-free but sample-hungry: in ten dimensions an evolution strategy completes only a handful of generations within a hundred runs, and none remembers where expensive evaluations have already probed. The second school is surrogate-assisted, or Bayesian, optimization, which fits a cheap model of the response surface to decide where to evaluate next; the idea was formalized by Jones~\textit{et~al.}~\cite{ref_surrogate2} and is now standard for costly simulators~\cite{ref_surrogate1}, using tree-structured Parzen estimation (TPE)~\cite{ref_tpe,ref_optuna}, Gaussian-process~\cite{ref_pracbo}, or random-forest (RF)~\cite{ref_rf} surrogates, with recent transport work calibrating large traffic models this way~\cite{ref_bocal,ref_aical,ref_bo4mob}. Yet both schools take the objective and the budget allocation as given, even though no single optimizer consistently outperforms others across diverse calibration setups: parameter sets, goodness-of-fit measures, and case studies all shift which method wins~\cite{ref_calibration}.
 
-That instability reflects a shared assumption: surrogate methods presuppose an objective that is learnable from few samples, yet in microscopic calibration the natural target, per-vehicle trajectory matching, is high-dimensional, rugged, and scene-dependent, so a surrogate trained on so few samples cannot fit it and acquisition degenerates into near-random probing. The literature keeps refining the optimizer or the surrogate family while leaving two upstream choices implicit: the \emph{geometry of the objective} a surrogate must learn, and \emph{how a fixed budget is split} between exploration and refinement. The gap is therefore not low accuracy but a mechanism blind spot: without a learnable objective, sample-efficient acquisition has nothing reliable to exploit, and performance rankings reverse across scenes rather than across methods.
+That instability reflects a shared assumption: surrogate methods presuppose an objective that is learnable from few samples, yet in microscopic calibration the natural target, per-vehicle trajectory matching, is high-dimensional, rugged, and scene-dependent, preventing reliable surrogate learning and reducing acquisition to near-random probing. The literature keeps refining the optimizer or the surrogate family while leaving two upstream choices implicit: the \emph{geometry of the objective} a surrogate must learn, and \emph{how a fixed budget is split} between exploration and exploitation. The gap is therefore not accuracy but mechanism: without a learnable objective, sample-efficient acquisition has nothing to exploit, and performance rankings reverse across scenes rather than methods.
 
-We instantiate this as \textbf{FLAT} (Fingerprint-guided Learnable Acquisition for Traffic Calibration), which makes both choices explicit. For the objective, it replaces trajectory matching with an eight-dimensional \emph{behavioral fingerprint} (interpretable speed, acceleration, and stop statistics) that smooths the parameter-to-error landscape so a cheap surrogate becomes learnable from a few dozen runs. For the budget, an uncertainty-aware sequential rule spends each remaining simulation where the surrogate predicts the largest gain, annealing exploration into exploitation as the budget depletes. The surrogate is a swappable component, which lets us test whether efficiency comes from model capacity or from how the problem is posed; our ablations point to the latter.
+We instantiate this as \textbf{FLAT} (Fingerprint-guided Learnable Acquisition for Traffic Calibration), which makes both choices explicit. For the objective, it replaces trajectory matching with a compact \emph{behavioral fingerprint} that smooths the parameter-to-error landscape, enabling reliable surrogate learning from a few dozen runs. For the budget, an uncertainty-aware acquisition policy allocates the remaining simulation sequentially, annealing exploration into exploitation as the budget depletes. The framework is surrogate-agnostic, which lets us test whether efficiency comes from model capacity or from how the problem is posed; our ablations point to the latter.
 
 \begin{figure*}[t]
   \centering
@@ -102,7 +102,7 @@ We instantiate this as \textbf{FLAT} (Fingerprint-guided Learnable Acquisition f
 
 \textbf{Contributions.}
 \begin{enumerate}
-  \item We propose FLAT, a surrogate-acquisition framework that converts the rugged objective into a learnable surface via behavioral fingerprint smoothing, enabling sample-efficient calibration within ${\sim}10^2$ evaluations per scene.
+  \item We propose FLAT, a surrogate-acquisition framework that converts the rugged objective into a learnable surface via behavioral representation reshaping, enabling sample-efficient calibration within ${\sim}10^2$ evaluations per scene.
   \item We establish a consistent, significant advantage over four mechanistically diverse optimizer families across six real-world scenes, with competitors requiring up to $4\times$ more simulations to reach equivalent quality.
   \item We trace the gain to objective geometry and sequential allocation, not surrogate capacity, establishing objective learnability as a prerequisite for surrogate guidance; code and cache are openly released for reproducibility.
 \end{enumerate}
@@ -120,7 +120,6 @@ where $\Theta\subset\mathbb{R}^{10}$ collects the per-scene parameter bounds and
 
 \section{FLAT Method}
 \label{sec:method}
-
 
 Fig.~\ref{fig:arch} overviews the framework. FLAT follows one principle: \emph{spend each simulation where it carries the most information}. Two coupled decisions realize it---\emph{what} to optimize and \emph{where} to sample next---via a behavioral-fingerprint objective (\S\ref{sec:objective}) and a sequential acquisition loop with a pluggable surrogate (\S\ref{sec:acq}--\S\ref{sec:surrogate}). Algorithm~\ref{alg:bfsac} details the steps.
 
@@ -145,12 +144,12 @@ Fig.~\ref{fig:arch} overviews the framework. FLAT follows one principle: \emph{s
 
 \subsection{Behavioral Fingerprint Objective}
 \label{sec:objective}
-Matching raw per-vehicle trajectories yields an objective that is rugged, high-variance, and scene-dependent; under ${\sim}10^2$ samples no cheap surrogate can learn it, so the search degenerates into near-random probing. We instead compress each trajectory set into an eight-dimensional \emph{behavioral fingerprint} $\mathbf{f}=(v_{\mathrm{mean}},\,v_{15},\,v_{85},\,\bar{a}^{+},\,\bar{a}^{-},\,a_{5},\,a_{95},\,s_{\mathrm{stop}})$---mean speed, its $15$th/$85$th percentiles, mean positive and negative acceleration, the $5$th/$95$th acceleration percentiles, and the stop fraction---and minimize the weighted, clipped relative error between simulated and real fingerprints:
+Matching raw per-vehicle trajectories yields an objective that is rugged, high-variance, and scene-dependent; under ${\sim}10^2$ samples no lightweight surrogate can learn it, so the search degenerates into near-random probing. We instead compress each trajectory set into an eight-dimensional \emph{behavioral fingerprint} $\mathbf{f}=(v_{\mathrm{mean}},\,v_{15},\,v_{85},\,\bar{a}^{+},\,\bar{a}^{-},\,a_{5},\,a_{95},\,s_{\mathrm{stop}})$---mean speed, its $15$th/$85$th percentiles, mean positive and negative acceleration, the $5$th/$95$th acceleration percentiles, and the stop fraction---and minimize the weighted, clipped relative error between simulated and real fingerprints:
 \begin{equation}
   J_b(\theta) = \sum_{k=1}^{8} w_k \,\min\!\left(\frac{|f_k^{\mathrm{sim}}(\theta)-f_k^{\mathrm{real}}|}{\max(|f_k^{\mathrm{real}}|,\epsilon)},\; 3\right).
   \label{eq:jb}
 \end{equation}
-The weights $w_k$ and the per-parameter bounds encode light traffic-domain priors---e.g.\ intersections emphasize the stop fraction, freeways the speed spread. The smoothing is directly visible in Fig.~\ref{fig:landscape}: over 400 real SUMO evaluations on the XAM expressway, the raw per-second speed RMSE surface is highly irregular, whereas $J_b$ yields a structurally smoother landscape---the precondition for a cheap surrogate to guide sequential acquisition.
+The weights $w_k$ and the per-parameter bounds encode light traffic-domain priors---e.g.\ intersections emphasize the stop fraction, freeways the speed spread. The smoothing is directly visible in Fig.~\ref{fig:landscape}: over 400 SUMO runs on the XAM expressway, the raw per-second speed RMSE surface is highly irregular, whereas $J_b$ yields a structurally smoother landscape---the precondition for the surrogate to guide sequential acquisition.
 \begin{figure}[h]
   \centering
   \vspace{-4pt}
@@ -203,8 +202,8 @@ feeding directly into \eqref{eq:lcb}. The lightweight default is a random forest
 
 \subsection{Setup}
 We evaluate on six heterogeneous real-world scenes reconstructed as SUMO networks from SIND~\cite{ref_sind} and UTE~\cite{ref_ute} aerial trajectories (Fig.~\ref{fig:scenes}): three signalized intersections (Tianjin, Changchun, Xi'an) spanning a low-to-high saturation range, and three urban-expressway segments (YTDJ, RML, XAM) covering merge and weaving bottlenecks.
-\begin{figure}[t]
-  \vspace{-12pt}
+\begin{figure}[h]
+  \vspace{-4pt}
   \centering
   \subfloat[\subcap{Tianjin}]{\sceneimg{scene_tianjin.jpg}\label{fig:scene_tj}}
   \hfill
@@ -219,7 +218,7 @@ We evaluate on six heterogeneous real-world scenes reconstructed as SUMO network
   \subfloat[\subcap{XAM}]{\sceneimg{scene_xam.png}\label{fig:scene_xam}}
   \caption{Six heterogeneous evaluation scenes: three signalized intersections (left, SIND) and three urban-expressway segments (right, UTE).}
   \label{fig:scenes}
-  \vspace{-13pt}
+  \vspace{-4pt}
 \end{figure}
 \textbf{Protocol.} Every method receives the same budget $B{=}100$, the same objective $J_b$, the same per-scene bounds, and the seed set $\{42,101,202,303,404\}$; we report the best $J_b$ achieved within the budget.
 \textbf{Baselines.} We compare FLAT-RF and FLAT-MLP ($N_{\mathrm{init}}{=}40$) against four optimizer families: SPSA~\cite{ref_spsa} (gradient estimation), GA (population search), CMA-ES~\cite{ref_cmaes} (evolution strategy), and TPE~\cite{ref_tpe,ref_optuna} (density-estimation Bayesian optimizer).
@@ -229,7 +228,7 @@ We evaluate on six heterogeneous real-world scenes reconstructed as SUMO network
 \label{sec:results}
 Under matched budget, FLAT attains the lowest mean error among all methods (Table~\ref{tab:main}): RF and MLP reach $J_b=0.241$ and $0.240$, ahead of TPE ($+6.7\%$), GA ($+14.7\%$), CMA-ES ($+16.3\%$), and SPSA ($+59.3\%$). Because these baselines cover four different optimization mechanisms, the consistent margin indicates that the advantage is intrinsic to the method rather than a coincidental fit to one algorithm family. The paired Wilcoxon tests (Table~\ref{tab:main}) sharpen this: FLAT-RF wins $20$--$28/30$ pairs against all four baselines (all $p<0.05$); FLAT-MLP is equally significant across all four baselines (lowest $p{=}0.044$, $16/30$ vs.\ TPE), so the lead holds across most (scene, seed) pairs and is not driven by a single scene. Fig.~\ref{fig:panel} shows FLAT keeps the narrowest seed band throughout the budget ($\pm0.006$--$0.009$ vs.\ $\pm0.043$ for SPSA), indicating that the advantage is consistent across seeds rather than driven by lucky initializations. The ranking reflects each family's mechanism: TPE's density-ratio model $p(\theta\mid J_b)$ exploits parameter coupling less directly than our regression surrogate with LCB; CMA-ES cannot sustain more than ${\sim}10$ generations in ten dimensions within the budget; and SPSA's gradient estimates destabilize on rugged scenes (e.g.\ Changchun). FLAT descends steadily past the LHS-to-sequential transition where all four stall. Fig.~\ref{fig:speeddist} corroborates this at the speed level, with mean distributional similarity $\bar{\rho}{=}0.77$.
 
-\begin{table}[b]
+\begin{table}[h]
   \caption{Six-scene mean $J_b$ at budget $100$, five seeds; values shown as mean with seed std. Won/30 and $p$: one-sided paired Wilcoxon, $H_1{:}$ FLAT-RF $<$ baseline, $n{=}30$.}
   \label{tab:main}
   \centering\setlength\tabcolsep{4pt}\footnotesize\renewcommand{\arraystretch}{1.15}
@@ -332,7 +331,7 @@ The advantage concentrates on moderately rugged scenes (e.g.\ YTDJ, RML, Changch
 \section{Conclusion}
 \label{sec:conclusion}
 
-We presented FLAT, a framework that addresses the root cause of poor sample efficiency in surrogate-assisted traffic calibration: raw trajectory objectives are too rugged to be learned from few samples, leaving acquisition without a reliable signal. A behavioral fingerprint smooths the parameter-to-error landscape so that a cheap surrogate can fit it from a few dozen samples, and annealed LCB acquisition then concentrates the remaining budget where it most reduces error. Across six heterogeneous scenes and four optimizer families, FLAT is consistently best under matched budgets; even with unlimited budgets, competitors need $1.7\times$--$4\times$ more simulations to match FLAT's $100$-run quality. Ablations confirm that the gain traces to objective geometry and sequential allocation rather than surrogate capacity. The finding suggests that objective geometry is the bottleneck in sample-limited black-box optimization, not surrogate capacity or acquisition design.
+We presented FLAT, a framework that addresses the root cause of poor sample efficiency in surrogate-assisted traffic calibration: raw trajectory objectives are too rugged to be learned from few samples, leaving acquisition without a reliable signal. A behavioral fingerprint smooths the parameter-to-error landscape so that a sample surrogate can fit it from a few dozen samples, and annealed LCB acquisition then concentrates the remaining budget where it most reduces error. Across six heterogeneous scenes and four optimizer families, FLAT is consistently best under matched budgets; even with unlimited budgets, competitors need $1.7\times$--$4\times$ more simulations to match FLAT's $100$-run quality. Ablations confirm that the gain traces to objective geometry and sequential allocation rather than surrogate capacity. The finding suggests that objective geometry is the bottleneck in sample-limited black-box optimization, not surrogate capacity or acquisition design.
 
 Future work will extend this insight by learning low-dimensional, surrogate-learnable behavioral objectives with self-supervised trajectory encoders, optionally pretrained on large-scale driving corpora such as Waymo and nuPlan, while preserving the sequential acquisition loop. For network-scale calibration, multi-fidelity probes can allocate fixed simulation budgets between simplified and high-fidelity simulators, using the latter as the final arbiter for candidate parameters.
 
