@@ -1,14 +1,14 @@
-"""analyze_significance.py — 主对比配对显著性检验（读已有 CSV，不跑 SUMO）
+"""Compute scene-level exact Wilcoxon comparisons from cached runs.
 
-对每个 BF-SAC 代理（RF / MLP），在 6 场景 × 5 seed = 30 个配对点上，
-与各基线的 error_at_budget 做单侧 Wilcoxon 符号秩检验（BF-SAC 更小更好）。
+The five stochastic runs are averaged within each scene before testing, so the
+inferential unit is the scene rather than the nested scene-by-seed run.  No
+SUMO simulation is executed.
 
-用法:
-  python code/experiments/analyze_significance.py
+Usage:
+    python code/experiments/analyze_significance.py
 """
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
 import numpy as np
@@ -16,116 +16,105 @@ import pandas as pd
 from scipy.stats import wilcoxon
 
 PROJ = Path(__file__).resolve().parents[2]
-EXP = PROJ / "code" / "experiments"
-if str(EXP) not in sys.path:
-    sys.path.insert(0, str(EXP))
-
-from experiment_io import REPLICATE_SEEDS  # noqa: E402
-from plot_style import METHOD_ORDER, SCENE_ORDER  # noqa: E402
-
 RES = PROJ / "outputs" / "results"
-BFSAC_METHODS = ["BF-SAC-RF", "BF-SAC-MLP"]
-BASELINES = [m for m in METHOD_ORDER if m not in BFSAC_METHODS]
+INPUT = RES / "comparison_summary_main.csv"
+OUTPUT = RES / "comparison_scene_level_significance.csv"
+
+SCENE_ORDER = ["Tianjin", "Changchun", "Xian", "YTDJ", "RML", "XAM-N6"]
+REPLICATE_SEEDS = [42, 101, 202, 303, 404]
+BFSAC_METHODS = ["BF-SAC-GP", "BF-SAC-RF", "BF-SAC-MLP"]
+BASELINES = ["SPSA", "GA", "CMA-ES", "TPE"]
 ALPHA = 0.05
-N_PAIRS = len(SCENE_ORDER) * len(REPLICATE_SEEDS)
 
 
-def _load_per_run() -> pd.DataFrame:
-    p = RES / "comparison_per_run.csv"
-    if not p.exists():
-        raise FileNotFoundError(
-            f"Missing {p}. Run: python code/experiments/run_comparison.py --rebuild-csv --mode main"
+def _load_runs() -> pd.DataFrame:
+    if not INPUT.exists():
+        raise FileNotFoundError(f"Missing {INPUT}.")
+    df = pd.read_csv(INPUT)
+    seed_column = "run_seed" if "run_seed" in df.columns else "seed"
+    required = {"scene", "method_key", seed_column, "error_at_budget"}
+    missing = required - set(df.columns)
+    if missing:
+        raise ValueError(f"{INPUT} missing columns: {sorted(missing)}")
+
+    methods = BFSAC_METHODS + BASELINES
+    df = df[df["method_key"].isin(methods)].copy()
+    df[seed_column] = pd.to_numeric(df[seed_column], errors="raise")
+    counts = (
+        df.groupby(["scene", "method_key"])[seed_column]
+        .nunique()
+        .rename("n_seeds")
+        .reset_index()
+    )
+    expected = len(REPLICATE_SEEDS)
+    bad = counts[counts["n_seeds"] != expected]
+    if len(bad) != len(SCENE_ORDER) * len(methods):
+        expected_pairs = pd.MultiIndex.from_product(
+            [SCENE_ORDER, methods], names=["scene", "method_key"]
+        ).to_frame(index=False)
+        bad = expected_pairs.merge(counts, how="left").fillna({"n_seeds": 0})
+        bad = bad[bad["n_seeds"] != expected]
+    if not bad.empty:
+        raise ValueError(
+            "Expected five seeds for every scene/method pair; found:\n"
+            + bad.to_string(index=False)
         )
-    df = pd.read_csv(p)
-    need = {"scene", "method_key", "seed", "error_at_budget"}
-    if not need.issubset(df.columns):
-        raise ValueError(f"comparison_per_run.csv missing columns: {need - set(df.columns)}")
     return df
 
 
-def _lookup(df: pd.DataFrame, scene: str, method: str, seed: int) -> float | None:
-    row = df[(df["scene"] == scene) & (df["method_key"] == method) & (df["seed"] == seed)]
-    if row.empty:
-        return None
-    return float(row.iloc[0]["error_at_budget"])
+def _scene_means(df: pd.DataFrame) -> pd.DataFrame:
+    return (
+        df.groupby(["scene", "method_key"], as_index=False)
+        .agg(error_at_budget=("error_at_budget", "mean"))
+    )
 
 
-def _paired_30(
-    df: pd.DataFrame, reference: str, baseline: str,
-) -> tuple[np.ndarray, np.ndarray, int, int]:
-    """30 个 (scene, seed) 配对：同场景同 seed 同预算，仅方法不同。"""
-    ref_vals, base_vals = [], []
-    wins = 0
-    for scene in SCENE_ORDER:
-        for seed in REPLICATE_SEEDS:
-            rv = _lookup(df, scene, reference, seed)
-            bv = _lookup(df, scene, baseline, seed)
-            if rv is None or bv is None:
-                continue
-            ref_vals.append(rv)
-            base_vals.append(bv)
-            if rv < bv - 1e-9:
-                wins += 1
-    return np.asarray(ref_vals), np.asarray(base_vals), wins, len(ref_vals)
+def _compare(scene_df: pd.DataFrame, reference: str, baseline: str) -> dict[str, object]:
+    pivot = scene_df.pivot(index="scene", columns="method_key", values="error_at_budget")
+    pair = pivot.reindex(SCENE_ORDER)[[reference, baseline]].dropna()
+    differences = pair[reference].to_numpy() - pair[baseline].to_numpy()
+    differences = differences[np.abs(differences) > 1e-12]
+    if len(differences) < 3:
+        raise ValueError(f"Too few non-zero scene differences for {reference} vs {baseline}")
 
-
-def _wilcoxon_less(x: np.ndarray, y: np.ndarray) -> tuple[float, float]:
-    if len(x) < 3:
-        return float("nan"), float("nan")
-    if np.allclose(x - y, 0):
-        return 0.0, 1.0
-    try:
-        stat, p = wilcoxon(x, y, alternative="less", zero_method="wilcox")
-        return float(stat), float(p)
-    except ValueError:
-        return float("nan"), float("nan")
-
-
-def run_global(df: pd.DataFrame) -> pd.DataFrame:
-    rows: list[dict] = []
-    for reference in BFSAC_METHODS:
-        for baseline in BASELINES:
-            ref_v, base_v, wins, n = _paired_30(df, reference, baseline)
-            stat, p = _wilcoxon_less(ref_v, base_v)
-            rows.append({
-                "reference": reference,
-                "baseline": baseline,
-                "n_pairs": n,
-                "pairs_won": wins,
-                "win_rate": round(wins / n, 3) if n else None,
-                "mean_diff": float(np.mean(ref_v - base_v)) if n else None,
-                "wilcoxon_stat": stat,
-                "p_value": p,
-                "significant_005": bool(p < ALPHA) if np.isfinite(p) else False,
-            })
-    return pd.DataFrame(rows)
+    stat, p_value = wilcoxon(differences, alternative="two-sided", method="exact")
+    return {
+        "reference": reference,
+        "baseline": baseline,
+        "n_scenes": len(differences),
+        "scenes_won": int(np.sum(differences < 0)),
+        "win_rate": round(float(np.mean(differences < 0)), 3),
+        "mean_diff": float(np.mean(differences)),
+        "wilcoxon_stat": float(stat),
+        "p_value": float(p_value),
+        "significant_005": bool(p_value < ALPHA),
+        "scenes": ",".join(pair.index.tolist()),
+    }
 
 
 def main() -> None:
-    df = _load_per_run()
-    methods = BFSAC_METHODS + BASELINES
-    main_df = df[df["method_key"].isin(methods)]
-
-    global_df = run_global(main_df)
-
+    scene_df = _scene_means(_load_runs())
+    result = pd.DataFrame(
+        [
+            _compare(scene_df, reference, baseline)
+            for reference in BFSAC_METHODS
+            for baseline in BASELINES
+        ]
+    )
     RES.mkdir(parents=True, exist_ok=True)
-    global_path = RES / "comparison_significance.csv"
-    global_df.to_csv(global_path, index=False, encoding="utf-8-sig")
+    result.to_csv(OUTPUT, index=False, encoding="utf-8-sig")
 
-    print("=" * 72)
-    print(f"Paired Wilcoxon @ {N_PAIRS} scene×seed points (one-sided: BF-SAC < baseline)")
-    print("=" * 72)
+    print("Scene-level exact two-sided Wilcoxon comparisons")
+    print("Five seeds aggregated within each of six scenes; no SUMO run.")
     for reference in BFSAC_METHODS:
-        print(f"\n  [{reference}]")
-        sub = global_df[global_df["reference"] == reference]
-        for _, row in sub.iterrows():
-            sig = "yes" if row["significant_005"] else "no"
+        print(f"\n[{reference}]")
+        for row in result[result["reference"] == reference].itertuples(index=False):
             print(
-                f"    vs {row['baseline']:8s}  p={row['p_value']:.4g}  "
-                f"won {int(row['pairs_won'])}/{int(row['n_pairs'])}  "
-                f"sig={sig}"
+                f"  vs {row.baseline:8s}  p={row.p_value:.4g}  "
+                f"won {row.scenes_won}/{row.n_scenes}  "
+                f"mean diff={row.mean_diff:.6f}"
             )
-    print(f"\nSaved: {global_path}")
+    print(f"\nSaved: {OUTPUT}")
 
 
 if __name__ == "__main__":

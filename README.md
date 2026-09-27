@@ -1,138 +1,48 @@
-# FLAT：昂贵交通仿真的代理辅助标定
+# FLAT: Fingerprint-guided Learnable Acquisition for Traffic Calibration
 
-行为指纹可学习采集标定（**F**ingerprint-guided **L**earnable **A**cquisition for **T**raffic Calibration，**FLAT**）的开源实现，在 **固定 100 次 SUMO 仿真预算** 下标定微观交通数字孪生的跟驰 / 换道参数。
+![FLAT framework](assets/architecture.png)
 
-## 核心思想
+FLAT is a simulation-efficient calibration framework for traffic models. It
+learns a behavioral fingerprint from trajectory data, uses it to define a
+calibration objective, and combines a surrogate model with lower-confidence
+bound acquisition under a fixed SUMO evaluation budget.
 
-单次参数评估需一次完整 SUMO–TraCI 仿真，成本高昂。FLAT 用三步把有限预算花在刀刃上：
+This repository contains the experiment code, public input data, cached main
+comparison results, and lightweight analysis scripts for the accompanying
+study.
 
-1. **行为指纹**：从真实轨迹提取 8 维统计指纹（速度水平 / 分位、加减速强度、停车占比…），以加权相对误差 $J_b$ 度量仿真与真实的差距——把崎岖的「参数 → 误差」关系压平到代理可学。
-2. **LHS 初始设计**：拉丁超立方在 10 维参数空间采 40 个空间填充点，各触发一次仿真。
-3. **序贯 LCB 加点**：训练回归代理，按下置信界 $\text{LCB}=\mu-\kappa\sigma$（κ 从 2.0 线性退火至 0.5）把剩余 60 次仿真定向投放到最有希望的区域。
+## Repository layout
 
-代理可插拔、二选一：**随机森林（默认，轻量稳健）** 或 **MLP 深度集成（高容量，难场景更细）**，序贯机制完全共用。
+- `code/experiments/` — experiment runners and analysis scripts
+- `data/` — scene configurations and public input data
+- `outputs/results/` — cached summaries and released comparison results
+- `assets/` — project figures used by this README
 
-## 仓库结构
-
-| 路径 | 说明 |
-|------|------|
-| [`code/calibration/`](code/calibration/) | FLAT 标定主程序 `unified_calibration.py` |
-| [`code/preprocessing/`](code/preprocessing/) | 由 SIND / UTE 原始轨迹构建 SUMO 场景 |
-| [`code/experiments/`](code/experiments/) | 公平对比、N_init 消融、目标地形扫描与作图（见 [`code/experiments/README.md`](code/experiments/README.md)） |
-| [`data/`](data/) | 原始 / 处理后数据 |
-| [`outputs/results/`](outputs/results/) | 对比 CSV 与 `comparison_cache/*_b100.json` |
-| [`paper/`](paper/) | ICTAI 短文 LaTeX 源稿与 `Figures/` 论文插图 |
-| [`docs/`](docs/) | 文档（见下） |
-
-## 文档
-
-| 文档 | 作用 |
-|------|------|
-| 本 README | 项目概览、安装、一键出图、方法简介 |
-| [`docs/REPRODUCE.md`](docs/REPRODUCE.md) | 完整复现：实验矩阵与规模、一键脚本、代理超参、输出位置 |
-| [`docs/EXPERIMENT.md`](docs/EXPERIMENT.md) | 实验设计、结果与解读（含图表） |
-| [`docs/DATA.md`](docs/DATA.md) | 数据获取、目录结构与预处理 |
-| [`docs/ACADEMIC_NARRATIVE.md`](docs/ACADEMIC_NARRATIVE.md) | 论文叙事骨架 |
-| [`docs/PAPER_OUTLINE_ICTAI.md`](docs/PAPER_OUTLINE_ICTAI.md) | ICTAI 短文写作大纲 |
-
-## 研究场景
-
-六个异构场景（三个 SIND 信号交叉口 + 三个 UTE 城市快速路）：
-`Tianjin`、`Changchun`、`Xian`、`YTDJ`、`RML`、`XAM-N6`。
-
-## 环境
-
-- Python 3.10+；`pip install -r requirements.txt`
-- [Eclipse SUMO](https://eclipse.dev/sumo/)，`sumo` 在系统 `PATH` 中（重跑标定 / 对比时需要）；TraCI 通常随 SUMO 安装
-- 基线 CMA-ES / TPE 分别依赖 `cma` / `optuna`（已列入 `requirements.txt`）
+## Quick start
 
 ```bash
 python -m venv .venv
-# Windows: .venv\Scripts\activate     Linux: source .venv/bin/activate
+# Windows: .venv\Scripts\activate
+# macOS/Linux: source .venv/bin/activate
 pip install -r requirements.txt
+python code/experiments/analyze_significance.py
 ```
 
-## 快速开始（无需 SUMO）
+The significance analysis reads the cached main-comparison summary and writes
+`outputs/results/comparison_scene_level_significance.csv`. It averages the
+five stochastic runs within each scene and applies exact two-sided paired
+Wilcoxon tests across the six scenes; it does not run SUMO.
 
-仓库已提交 **对比 cache**（`outputs/results/comparison_cache/`）与 **release 主图**（`outputs/figures/`），克隆即可查看实验结果。需要重绘或更新显著性表时：
+The experiment runners under `code/experiments/` require a working SUMO/TraCI
+installation. Use their command-line help for the available experiment and
+scene options.
 
-```bash
-pip install -r requirements.txt
-python code/experiments/plot_all_figures.py
-```
+## Data
 
-输出：四张主对比图（PNG / PDF / SVG）及 `comparison_significance.csv`。论文专用子图（标定收敛、N_init 消融、速度分布小提琴等）由各自脚本写入 `paper/Figures/` 与 `outputs/figures/`。若已有 `outputs/results/landscape_dual_XAM-N6.json`，可单独重绘目标地形图：
+The trajectory sources used by the study are described in the experiment
+configuration. Please follow the original licenses and attribution
+requirements for any external dataset.
 
-```bash
-python code/experiments/plot_landscape_dual.py
-```
+## License
 
-补充论文图（无需 SUMO，依赖已提交的标定 JSON / cache）：
-
-```bash
-python code/experiments/plot_calibration_convergence.py   # paper/Figures/calib_conv_*.pdf
-python code/experiments/plot_n_init_sweep.py              # paper/Figures/n_init_*.pdf
-python code/experiments/plot_speed_distribution_violin.py # 行为验证：速度分布 + ρ
-python code/experiments/plot_lcb_contour.py               # LCB 采集示意
-```
-
-LaTeX 编译：`cd paper && pdflatex root && bibtex root && pdflatex root && pdflatex root`（见 [`paper/root.tex`](paper/root.tex)）。
-
-## 完整复现（需要 SUMO）
-
-```bash
-# 1. 数据准备（若从上游原始轨迹起步）
-python code/preprocessing/organize_sind.py
-python code/preprocessing/build_all_sumo.py
-python code/preprocessing/build_ytdj_sumo.py
-python code/preprocessing/build_rml_sumo.py
-python code/preprocessing/build_xam_sumo.py
-
-# 2. FLAT 标定（每场景 100 次 SUMO）
-python code/calibration/unified_calibration.py               # 全场景，RF
-python code/calibration/unified_calibration.py --mlp XAM-N6  # 单场景 + MLP 代理
-
-# 3. 公平对比与消融（100 次预算 × 5 seed，断点续跑）
-python code/experiments/run_batch_parallel.py --workers 12 --phases main
-python code/experiments/run_batch_parallel.py --workers 12 --phases sweep
-
-# 4. 作图
-python code/experiments/plot_all_figures.py
-```
-
-算力机一键全流程：`bash scripts/run_all.sh`（Linux）或 `.\scripts\run_all.ps1`（Windows），见 [`docs/REPRODUCE.md`](docs/REPRODUCE.md)。
-
-环境自检：`python code/experiments/check_sumo_scenes.py`（六场景配置 + 单次 SUMO 试跑，通过则退出码 0）。
-
-## 方法对比
-
-主对比把 FLAT（RF / MLP）放在四个机制各异的基线面前：**SPSA**（局部梯度估计）、
-**GA**（种群进化）、**CMA-ES**（演化策略）、**TPE**（贝叶斯密度估计，Optuna）。
-六场景 × 5 seed、统一 100 次预算下，FLAT 跨四种范式一致领先。详见 [`docs/EXPERIMENT.md`](docs/EXPERIMENT.md)。
-
-## 学习型代理：RF 与 MLP（二选一）
-
-FLAT 的学习型组件是回归 **代理**，学习「10 维参数 → 标定误差 $J_b$」，在固定预算下用廉价预测指导序贯采点。两种实现接口一致、可直接互换（GA / SPSA 是优化器、8 维指纹是人工特征，二者均非学习模型）。
-
-| | 随机森林（默认） | MLP 深度集成（`--mlp`） |
-|---|---|---|
-| 实现 | `RandomForestRegressor`（500 树） | `MLPEnsemble`：10 个 `(64,64)` tanh / lbfgs 网络 |
-| 不确定度 σ | 树间预测离散度 | 成员间分歧（× σ 校准系数 1.2） |
-| 采集函数 | $\text{LCB}=\mu-\kappa\sigma$，κ 退火 2.0→0.5 | 同左，选点逻辑独立实现 |
-| 适用 | 轻量、对小样本稳健 | 容量更高，难拟合响应面更细 |
-| 落盘 | 不落盘 | `mlp_models/*.joblib`，结果带 `__mlp_h64-64_m10` 后缀、与 RF 并存 |
-
-MLP 默认开启 bootstrap + 子采样以维持集成成员分歧——这是不确定度 σ 不塌缩、LCB 探索有效的前提；超参可经 CLI / 环境变量调整，见 [`docs/REPRODUCE.md`](docs/REPRODUCE.md)。
-
-输入 / 输出归一化：RF 路径不归一化（树模型对单调缩放不变）；MLP 对输入按物理边界做 Min-Max、对输出按训练集做 Z-score，训练与推理共用同一套参数（无尺度错位、无泄漏），σ 与 LCB 均落在真实 $J_b$ 尺度上。
-
-## 数据集
-
-- [SIND](https://github.com/SOTIF-AVLab/SinD) — 信号交叉口轨迹
-- [UTE](https://github.com/Ruyi-Feng/Ubiquitous-Traffic-Eye) — 城市快速路轨迹
-
-使用原始数据请遵守各数据提供方的许可协议。
-
-## 许可
-
-MIT — 见 [LICENSE](LICENSE)。数据集许可另行适用。
+Code is released under the MIT License; see [LICENSE](LICENSE).
