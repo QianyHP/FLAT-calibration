@@ -1,0 +1,31 @@
+{
+  "Tianjin": {
+    "rf_r2": 0.971,
+    "seed": 42,
+    "src": "calibrate_one"
+  },
+  "YTDJ": {
+    "rf_r2": 0.9871,
+    "seed": 42,
+    "src": "calibrate_one"
+  },
+  "Changchun": {
+    "rf_r2": 0.9991,
+    "seed": 42,
+    "src": "calibrate_one"
+  },
+  "RML": {
+    "rf_r2": 0.9989,
+    "seed": 42,
+    "src": "calibrate_one"
+  },
+  "Xian": {
+    "rf_r2": 0.9589,
+    "seed": 42,
+    "src": "calibrate_one"
+  },
+  "XAM-N6": {
+    "rf_r2": 0.9936,
+    "src": "json"
+  }
+}

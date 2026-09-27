@@ -1,0 +1,27 @@
+{
+  "scene": "XAM-N6",
+  "mode": "full10d",
+  "source": "outputs/results/landscape_full10d_XAM-N6.json",
+  "n_grid_total": 400,
+  "n_valid_points": 400,
+  "k_neighbors": 5,
+  "percentile": 95,
+  "embedding": "10-D LHS full PARAM_BOUNDS; min-max normalized kNN",
+  "J_b": {
+    "objective": "J_b",
+    "n_points": 400,
+    "mean_local_lipschitz": 0.2570191680268715,
+    "median_local_lipschitz": 0.2485268696631512,
+    "p95_local_lipschitz": 0.4492909273493521,
+    "max_local_lipschitz": 0.7545649521526352
+  },
+  "J_s": {
+    "objective": "J_s",
+    "n_points": 400,
+    "mean_local_lipschitz": 1.1451354172345747,
+    "median_local_lipschitz": 1.0064508242910635,
+    "p95_local_lipschitz": 2.270131951512825,
+    "max_local_lipschitz": 5.6429973526915065
+  },
+  "ratio_Js_over_Jb_p95": 5.052699294209549
+}

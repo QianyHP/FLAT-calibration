@@ -1,0 +1,27 @@
+{
+  "scene": "Xian",
+  "mode": "full10d",
+  "source": "outputs/results/landscape_full10d_Xian.json",
+  "n_grid_total": 400,
+  "n_valid_points": 400,
+  "k_neighbors": 5,
+  "percentile": 95,
+  "embedding": "10-D LHS full PARAM_BOUNDS; min-max normalized kNN",
+  "J_b": {
+    "objective": "J_b",
+    "n_points": 400,
+    "mean_local_lipschitz": 0.23484783638979323,
+    "median_local_lipschitz": 0.19242286870106573,
+    "p95_local_lipschitz": 0.5177159562238,
+    "max_local_lipschitz": 1.0311564390120493
+  },
+  "J_s": {
+    "objective": "J_s",
+    "n_points": 400,
+    "mean_local_lipschitz": 0.6898513552115171,
+    "median_local_lipschitz": 0.5332292923549188,
+    "p95_local_lipschitz": 1.5820450674155049,
+    "max_local_lipschitz": 1.977784637376669
+  },
+  "ratio_Js_over_Jb_p95": 3.0558167048875218
+}
