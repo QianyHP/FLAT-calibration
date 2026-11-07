@@ -5,6 +5,7 @@ scipy
 matplotlib
 scikit-learn
 joblib
+threadpoolctl
 
 # 基线优化器（主对比需要；版本与本地验证环境一致）
 cma>=3.3.0,<5

@@ -8,14 +8,16 @@ Parameters are fixed throughout. Every parameter source has a complete ten-dimen
 
 ## Files
 
-- manifest.json: complete parameter vectors, source/input hashes, protocol and software provenance.
-- per_replay.csv: all 720 individual outcomes, including J_b, time-profile speed RMSE and speed W1; duplicate per-row JSON files are omitted.
-- per_optimization_seed.csv: average ten simulation seeds within each fixed parameter set.
-- summary.csv: per-scene means and sample standard deviations across four original optimization runs.
-- original_vs_replay.csv: matched original search observations and replay means.
-- scene_comparison.csv and global_comparison.csv: scene-level and equal-scene aggregate comparisons.
-- analysis.json: numerical summary and conditional Monte Carlo precision.
-- run_accounting.json: execution cost and failure list.
+- manifest.json: all 72 frozen parameter vectors, source/input hashes, and protocol.
+- per_replay.csv: all 720 individual outcomes, including J_b and auxiliary diagnostics.
+- summary.csv: per-scene means and SDs over the four optimization repeats.
+- global_comparison.csv: equal-scene backend means and simulation-seed checks.
+
+The analysis script reconstructs per-optimization, original-versus-replay,
+scene-comparison, and numerical analysis files from these records. Those derived
+files and duplicate per-row JSON records are omitted from the published tree.
+The original computation used 144 compatible earlier rows and 576 new replays;
+four workers completed the new invocation in 1500.13 seconds, with no failures.
 
 ## Interpretation
 

@@ -1,8 +1,0 @@
-# Scientific packages used for the saved-result reproduction check.
-numpy==1.26.4
-pandas==2.3.3
-scipy==1.15.2
-scikit-learn==1.8.0
-joblib==1.5.2
-matplotlib==3.10.1
-threadpoolctl==3.6.0

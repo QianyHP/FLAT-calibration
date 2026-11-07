@@ -101,3 +101,13 @@ data.zip
 # Scene photos (optional local assets)
 data/raw_data/**/*.jpg
 data/raw_data/**/*.png
+
+# Derived validation outputs: regenerated from the published records.
+outputs/results/probability_score_audit/predictions.csv
+outputs/results/probability_score_audit/splits.json
+outputs/results/replay_surrogates/cache/
+outputs/results/replay_surrogates/per_optimization_seed.csv
+outputs/results/replay_surrogates/original_vs_replay.csv
+outputs/results/replay_surrogates/scene_comparison.csv
+outputs/results/replay_surrogates/analysis.json
+outputs/results/replay_surrogates/run_accounting.json

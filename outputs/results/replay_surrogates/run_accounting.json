@@ -1,9 +1,0 @@
-{
-  "completed": 720,
-  "failures": [],
-  "workers": 4,
-  "new_replays_this_invocation": 576,
-  "imported_rows": 144,
-  "invocation_wall_s": 1500.1305371999988,
-  "new_replay_elapsed_sum_s": 5973.51611200007
-}
