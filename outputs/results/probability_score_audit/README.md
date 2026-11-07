@@ -8,8 +8,8 @@ For each fitted GP, the training-response population mean m and standard deviati
 
 - metrics.json: raw and standardized scores, MACE, coverage, and source hashes.
 - per_subsample.csv: all 20 fit-level results and training-response moments.
-- predictions.csv: all 2,000 held-out predictive means, SDs, and observed outcomes in original units.
-- splits.json: exact training and held-out indices.
+- predictions.csv (generated locally): all 2,000 held-out predictive means, SDs, and observed outcomes in original units.
+- splits.json (generated locally): exact training and held-out indices.
 
 NLL and CRPS assess predictive distribution quality, not interval calibration alone. The interval diagnostics are mixed across the two scenes; they do not support the former statement that only J_b has a well-calibrated posterior. The paper retains the two existing score rows, standardizes their scale, and describes probabilistic fit instead.
 
