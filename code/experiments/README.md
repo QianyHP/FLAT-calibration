@@ -1,8 +1,8 @@
 # 实验脚本（`code/experiments/`）
 
-与 FLAT 标定、方法对比、消融及论文配图相关的脚本入口。完整复现见 [`docs/REPRODUCE.md`](../../docs/REPRODUCE.md)，结果解读见 [`docs/EXPERIMENT.md`](../../docs/EXPERIMENT.md)。
+与 FLAT 标定、方法对比、消融及论文配图相关的脚本入口。完整复现见 [`docs/REPRODUCE.md`](../../docs/REPRODUCE.md)。
 
-> **命名说明**：对外方法名 **FLAT-RF / FLAT-MLP**；代码与 `comparison_cache/` 中历史键 **`BF-SAC-RF` / `BF-SAC-MLP`** 与之对应，作图时经 `plot_style.METHOD_LABELS` 显示为 FLAT。
+> **命名说明**：对外方法名 **FLAT-GP / FLAT-RF / FLAT-MLP**；代码与 `comparison_cache/` 中历史键 **`BF-SAC-GP` / `BF-SAC-RF` / `BF-SAC-MLP`** 与之对应，作图时经 `plot_style.METHOD_LABELS` 显示为 FLAT。
 
 ## 一键出图（无需 SUMO）
 
@@ -60,3 +60,7 @@ python code/experiments/plot_landscape_dual.py         # JSON → PDF/PNG
 | `export_fig1_teaser_assets.py` | 否 | 可选 poster 素材（非 ICTAI 正文） |
 
 共享模块：`experiment_io.py`（cache 路径）、`plot_style.py`（配色与 paper panel 导出）、`plot_convergence_utils.py`。
+
+## Additional validation
+
+See [Reproduction](../../docs/REPRODUCE.md) for the fixed-parameter replay and standardized GP score audit.

@@ -316,13 +316,13 @@ def method_ga(scene: str, seed: int) -> dict:
             for i in range(GA_POP):
                 fitness[i] = ev.evaluate_vector(pop[i])
         else:
-        new_pop = np.zeros_like(pop)
+            new_pop = np.zeros_like(pop)
             for i in range(GA_POP):
                 p1 = _tournament(pop, fitness, rng)
                 p2 = _tournament(pop, fitness, rng)
-            mask = rng.random(dim) < 0.5
+                mask = rng.random(dim) < 0.5
                 child = np.where(mask, p1, p2) + rng.normal(0, (hi - lo) * 0.05)
-            new_pop[i] = np.clip(child, lo, hi)
+                new_pop[i] = np.clip(child, lo, hi)
                 fitness[i] = ev.evaluate_vector(new_pop[i])
             pop = new_pop
         if (wave + 1) % 3 == 0:

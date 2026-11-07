@@ -1,0 +1,121 @@
+{
+  "normalization": "each training subset response mean and population SD; same transform applied to held-out y and predictions; no model refitting changes",
+  "aggregation": "five subsamples, population SD as in original Appendix A",
+  "checks": "original raw NLL/CRPS reproduced; exact affine score transformation verified",
+  "source_hashes": {
+    "outputs\\results\\landscape_full10d_XAM-N6.json": "100626fc9c24cca17a6d635db3b8b810011d7e1fed4d67bdcc2db94b32f42e44",
+    "outputs\\results\\landscape_full10d_Xian.json": "b3f555a511ccab5dfa58cb3b4e167bffe891cf79f44de1e860f9b0a1862d1b48",
+    "code\\calibration\\gp_surrogate.py": "c9cd2188ec8d3ad244e4d30bb27e438e0ece3aa894b442302c97cbea6abd42e8",
+    "code\\experiments\\audit_probability_scores.py": "caa3bab63140d5dfe69183fbe75eedcaa0ea35169295b2d0679d8d7152451f3a"
+  },
+  "scenes": {
+    "XAM-N6": {
+      "jb": {
+        "nll_raw": {
+          "mean": -1.5628837792119064,
+          "std": 0.14860171118791612
+        },
+        "crps_raw": {
+          "mean": 0.02578237121947649,
+          "std": 0.0018986503125813957
+        },
+        "nll_standardized": {
+          "mean": 0.5410656643264738,
+          "std": 0.1428603289262405
+        },
+        "crps_standardized": {
+          "mean": 0.21148145350172207,
+          "std": 0.01699694758185213
+        },
+        "mace": {
+          "mean": 0.071,
+          "std": 0.03132890039564108
+        },
+        "coverage95": {
+          "mean": 0.8879999999999999,
+          "std": 0.05344155686354956
+        }
+      },
+      "js": {
+        "nll_raw": {
+          "mean": 0.25902291803737487,
+          "std": 0.08690278732678847
+        },
+        "crps_raw": {
+          "mean": 0.16916823361479585,
+          "std": 0.014894244256801489
+        },
+        "nll_standardized": {
+          "mean": 1.045940348029665,
+          "std": 0.1094198082856589
+        },
+        "crps_standardized": {
+          "mean": 0.3716565157397501,
+          "std": 0.03285386681873406
+        },
+        "mace": {
+          "mean": 0.041999999999999996,
+          "std": 0.025951878544721963
+        },
+        "coverage95": {
+          "mean": 0.9179999999999999,
+          "std": 0.03867815921162743
+        }
+      }
+    },
+    "Xian": {
+      "jb": {
+        "nll_raw": {
+          "mean": -1.2582712632065034,
+          "std": 0.17295544608904292
+        },
+        "crps_raw": {
+          "mean": 0.035307579635756745,
+          "std": 0.002807930076202831
+        },
+        "nll_standardized": {
+          "mean": 1.0106499158892048,
+          "std": 0.2776554069635253
+        },
+        "crps_standardized": {
+          "mean": 0.34729824854273283,
+          "std": 0.0710364517620605
+        },
+        "mace": {
+          "mean": 0.09000000000000001,
+          "std": 0.04563441683641854
+        },
+        "coverage95": {
+          "mean": 0.892,
+          "std": 0.0591269819963779
+        }
+      },
+      "js": {
+        "nll_raw": {
+          "mean": 0.0925247562833795,
+          "std": 0.4229054986029047
+        },
+        "crps_raw": {
+          "mean": 0.10593280098085575,
+          "std": 0.013288562623348047
+        },
+        "nll_standardized": {
+          "mean": 1.3081872438263935,
+          "std": 0.41803017196989634
+        },
+        "crps_standardized": {
+          "mean": 0.3589876249844395,
+          "std": 0.05771232159529549
+        },
+        "mace": {
+          "mean": 0.10200000000000002,
+          "std": 0.07237748268626093
+        },
+        "coverage95": {
+          "mean": 0.8400000000000001,
+          "std": 0.054772255750516606
+        }
+      }
+    }
+  }
+}

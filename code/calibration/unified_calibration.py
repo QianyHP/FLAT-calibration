@@ -38,10 +38,12 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.neural_network import MLPRegressor
 
+from gp_surrogate import GPSurrogate, gp_pick_lcb_point
+
 PROJ = Path(__file__).resolve().parents[2]
 
-# 代理模型选择："rf"（默认，随机森林）或 "mlp"（MLP 集成平替）。
-# 可用环境变量 BFSAC_SURROGATE 或命令行 --surrogate/--mlp/--rf 覆盖。
+# 代理模型选择："rf"（默认）、"mlp" 或 "gp"。
+# 可用环境变量 BFSAC_SURROGATE 或命令行 --surrogate/--mlp/--rf/--gp 覆盖。
 SURROGATE_KIND = os.environ.get("BFSAC_SURROGATE", "rf").lower()
 
 # ═════════════════════════════════════════════════════════════════════
@@ -222,19 +224,41 @@ _LC_KAPPA_FIXED = os.environ.get("BFSAC_LC_KAPPA")
 LC_KAPPA = float(_LC_KAPPA_FIXED) if _LC_KAPPA_FIXED is not None else LC_KAPPA_START
 
 
+# κ 退火时间表形状（附录B鲁棒性消融用）："linear"（默认，现状）/ "exp"（几何插值）/
+# "const"（不退火，恒为 LC_KAPPA_START）。BFSAC_LC_KAPPA 固定值优先级最高，不受此项影响。
+KAPPA_SCHEDULE = os.environ.get("BFSAC_KAPPA_SCHEDULE", "linear").lower()
+
+
 def _kappa_at_step(j: int, n_seq: int) -> float:
-    """序贯第 j 轮（0-indexed）的 LCB κ：从 LC_KAPPA_START 线性降至 LC_KAPPA_END。"""
+    """序贯第 j 轮（0-indexed）的 LCB κ：默认从 LC_KAPPA_START 线性降至 LC_KAPPA_END。"""
     if _LC_KAPPA_FIXED is not None:
         return float(_LC_KAPPA_FIXED)
+    if KAPPA_SCHEDULE == "const":
+        return LC_KAPPA_START
     if n_seq <= 1:
         return LC_KAPPA_END
     t = j / (n_seq - 1)
+    if KAPPA_SCHEDULE == "exp":
+        start = max(LC_KAPPA_START, 1e-6)
+        end = max(LC_KAPPA_END, 1e-6)
+        return float(start * (end / start) ** t)
     return LC_KAPPA_START + (LC_KAPPA_END - LC_KAPPA_START) * t
+
+
 N_CAND_LOCAL = 2500
-N_CAND_GLOBAL = 2500
-TRUST_FRAC = 0.18   # 信赖域：最优点附近各维 ± 该比例 × 参数跨度
+# 全局候选池大小；BFSAC_N_CAND_GLOBAL=0 即"纯信赖域采样"（附录B候选几何消融用）。
+N_CAND_GLOBAL = _env_int("BFSAC_N_CAND_GLOBAL", 2500)
+# 信赖域半宽（各维 ± 该比例 × 参数跨度）；可用 BFSAC_TRUST_FRAC 覆盖（附录B宽度敏感性用）。
+TRUST_FRAC = _env_float("BFSAC_TRUST_FRAC", 0.18)
 MIN_DIST_REL = 0.02 # 与已评估点最小相对距离（避免重复仿真）
 MIN_VALID_RF = 10
+MIN_VALID_FLOOR = 5
+FAIL_ERROR = 10.0
+
+
+def _surrogate_valid_mask(Y: np.ndarray) -> np.ndarray:
+    y = np.asarray(Y, dtype=float)
+    return np.isfinite(y) & (y < FAIL_ERROR - 1e-9)
 
 # ═════════════════════════════════════════════════════════════════════
 # 公共搜索工具（与具体代理无关：LHS 种子 / 候选采样 / 去重距离）
@@ -282,8 +306,8 @@ def _rf_n_jobs(name: str) -> int:
 def _fit_rf(
     X: np.ndarray, Y: np.ndarray, name: str, *, run_seed: int = 42,
 ) -> RandomForestRegressor | None:
-    valid = ~np.isnan(Y) & (Y < 10.0)
-    if valid.sum() < MIN_VALID_RF:
+    valid = _surrogate_valid_mask(Y)
+    if int(valid.sum()) < MIN_VALID_FLOOR:
         return None
     rf = RandomForestRegressor(
         n_estimators=500, max_depth=20,
@@ -524,8 +548,8 @@ class MLPEnsemble:
 def _fit_mlp(
     X: np.ndarray, Y: np.ndarray, name: str, *, run_seed: int = 42,
 ) -> MLPEnsemble | None:
-    valid = ~np.isnan(Y) & (Y < 10.0)
-    if valid.sum() < MIN_VALID_RF:
+    valid = _surrogate_valid_mask(Y)
+    if int(valid.sum()) < MIN_VALID_FLOOR:
         return None
     ens = MLPEnsemble(
         hidden_layers=MLP_HIDDEN_LAYERS,
@@ -547,8 +571,8 @@ def _update_mlp(
     ens: MLPEnsemble, X: np.ndarray, Y: np.ndarray, name: str, *, round_idx: int, run_seed: int,
 ) -> MLPEnsemble:
     """Phase B 续训：在已有集成上增量更新（warm-start），保留各成员权重。"""
-    valid = ~np.isnan(Y) & (Y < 10.0)
-    if valid.sum() < MIN_VALID_RF:
+    valid = _surrogate_valid_mask(Y)
+    if int(valid.sum()) < MIN_VALID_FLOOR:
         return ens
     return ens.update(
         X[valid], Y[valid], get_param_bounds(name),
@@ -592,15 +616,110 @@ def _save_mlp_model(name: str, model: "MLPEnsemble") -> None:
     print(f"  Saved MLP ensemble: {path}", flush=True)
 
 
+
+# ═════════════════════════════════════════════════════════════════════
+# 代理三：Gaussian Process（GP）
+# ═════════════════════════════════════════════════════════════════════
+
+def _fit_gp(
+    X: np.ndarray, Y: np.ndarray, name: str, *, run_seed: int = 42,
+) -> GPSurrogate | None:
+    valid = _surrogate_valid_mask(Y)
+    n_valid = int(valid.sum())
+    if n_valid < MIN_VALID_FLOOR:
+        return None
+    gp = GPSurrogate(
+        random_state=42 + int(run_seed),
+        min_valid=min(MIN_VALID_RF, n_valid),
+    )
+    gp.fit(X[valid], Y[valid])
+    return gp
+
+
+def _gp_pick_lcb_point(
+    gp: GPSurrogate,
+    bounds: np.ndarray,
+    X_seen: np.ndarray,
+    x_best: np.ndarray,
+    kappa: float,
+    rng: np.random.Generator,
+) -> np.ndarray:
+    return gp_pick_lcb_point(
+        gp, bounds, X_seen, x_best, kappa, rng,
+        propose_candidates=_propose_candidates,
+        min_rel_dist=_min_rel_dist,
+        n_local=N_CAND_LOCAL,
+        n_global=N_CAND_GLOBAL,
+        min_dist_rel=MIN_DIST_REL,
+    )
+
 # ═════════════════════════════════════════════════════════════════════
 # 统一接口：让 calibrate_one 与具体代理无关（按类型分派到对应块，两块互不共用）
 # ═════════════════════════════════════════════════════════════════════
 
 def _fit_surrogate(X: np.ndarray, Y: np.ndarray, name: str, *, run_seed: int = 42):
-    """按 SURROGATE_KIND 选择代理：'mlp' → MLP 集成；其余 → 随机森林。"""
+    """按 SURROGATE_KIND 选择代理：mlp / gp / rf。"""
     if SURROGATE_KIND == "mlp":
         return _fit_mlp(X, Y, name, run_seed=run_seed)
+    if SURROGATE_KIND == "gp":
+        return _fit_gp(X, Y, name, run_seed=run_seed)
     return _fit_rf(X, Y, name, run_seed=run_seed)
+
+
+# 获取（打分）规则消融（附录B）："lcb"（默认，现状）/ "exploit"（argmin μ）/
+# "explore"（argmax σ）/ "random"（候选池均匀随机）/ "explore_then_exploit"
+# （序贯前半程纯探索、后半程纯利用——公平性对照，见 unified_calibration 顶部说明）。
+ACQUISITION_MODE = os.environ.get("BFSAC_ACQUISITION", "lcb").lower()
+
+
+def _predict_mu_sigma(model, X: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """统一 (μ, σ) 提取：跨代理复用同一套获取规则消融逻辑（仅供 ACQUISITION_MODE!=lcb 使用）。"""
+    if isinstance(model, MLPEnsemble):
+        preds = np.stack([m.predict(X) for m in model.members], axis=0)
+        return preds.mean(axis=0), preds.std(axis=0) * MLP_SIGMA_CALIB
+    if isinstance(model, GPSurrogate):
+        return model.predict(X, return_std=True)
+    preds = np.stack([t.predict(X) for t in model.estimators_], axis=0)
+    return preds.mean(axis=0), preds.std(axis=0)
+
+
+def _generic_pick_point(
+    model,
+    bounds: np.ndarray,
+    X_seen: np.ndarray,
+    x_best: np.ndarray,
+    kappa: float,
+    rng: np.random.Generator,
+    *,
+    j: int | None,
+    n_seq: int | None,
+) -> np.ndarray:
+    """ACQUISITION_MODE != "lcb" 时的统一选点：候选几何（信赖域+全局池）保持不变，只换打分规则。"""
+    cand = _propose_candidates(bounds, x_best, N_CAND_LOCAL, N_CAND_GLOBAL, rng)
+    md = _min_rel_dist(cand, X_seen, bounds)
+    ok = md >= MIN_DIST_REL
+
+    if ACQUISITION_MODE == "random":
+        pool = np.where(ok)[0]
+        if len(pool) == 0:
+            pool = np.arange(len(cand))
+        return cand[int(rng.choice(pool))]
+
+    mu, sigma = _predict_mu_sigma(model, cand)
+    if ACQUISITION_MODE == "exploit":
+        score = mu.copy()
+    elif ACQUISITION_MODE == "explore":
+        score = -sigma
+    elif ACQUISITION_MODE == "explore_then_exploit":
+        half = (n_seq or 1) / 2.0
+        score = -sigma if (j is not None and j < half) else mu.copy()
+    else:
+        score = mu - kappa * sigma
+    score = np.asarray(score, dtype=float).copy()
+    score[~ok] = np.inf
+    if not np.any(np.isfinite(score)):
+        return cand[int(rng.integers(0, len(cand)))]
+    return cand[int(np.argmin(score))]
 
 
 def _pick_lcb_point(
@@ -610,15 +729,28 @@ def _pick_lcb_point(
     x_best: np.ndarray,
     kappa: float,
     rng: np.random.Generator,
+    *,
+    j: int | None = None,
+    n_seq: int | None = None,
 ) -> np.ndarray:
-    """统一选点接口：按代理类型分派到各自块内实现（RF/MLP 互不共用建模逻辑）。"""
+    """统一选点接口：按代理类型分派到各自块内实现（RF/MLP 互不共用建模逻辑）。
+
+    ACQUISITION_MODE != "lcb" 时改走 `_generic_pick_point`（附录B获取规则消融），
+    候选几何（信赖域宽度/全局池大小）仍由模块级 TRUST_FRAC / N_CAND_GLOBAL 控制，
+    与默认 LCB 路径共用，保证消融只改变"怎么打分"这一个变量。
+    """
+    if ACQUISITION_MODE != "lcb":
+        return _generic_pick_point(model, bounds, X_seen, x_best, kappa, rng, j=j, n_seq=n_seq)
     if isinstance(model, MLPEnsemble):
         return _mlp_pick_lcb_point(model, bounds, X_seen, x_best, kappa, rng)
+    if isinstance(model, GPSurrogate):
+        return _gp_pick_lcb_point(model, bounds, X_seen, x_best, kappa, rng)
     return _rf_pick_lcb_point(model, bounds, X_seen, x_best, kappa, rng)
 
 
 def _surrogate_config() -> dict | None:
-    """记录 MLP 集成的网络超参（写入结果 JSON，便于复现与适配）；RF 模式返回 None。"""
+    if SURROGATE_KIND == "gp":
+        return {"kernel": "Matern(2.5)+WhiteKernel", "input_scaled": True}
     if SURROGATE_KIND != "mlp":
         return None
     return {
@@ -682,6 +814,8 @@ def _parse_args(argv: list[str]) -> list[str]:
             SURROGATE_KIND = "mlp"
         elif al == "--rf":
             SURROGATE_KIND = "rf"
+        elif al == "--gp":
+            SURROGATE_KIND = "gp"
         elif al.startswith("--surrogate="):
             SURROGATE_KIND = al.split("=", 1)[1]
         elif al == "--bootstrap":
@@ -720,15 +854,67 @@ def _eval_params(
     params: dict,
     real_feat: np.ndarray,
     weights: np.ndarray,
-) -> tuple[float, np.ndarray]:
+    *,
+    real_speed=None,
+    objective_mode: str = "jb",
+) -> tuple[float, float, np.ndarray]:
+    """Run one SUMO evaluation.
+
+    Returns (optimization_error, jb, sim_features).
+    optimization_error is what the surrogate/LCB loop minimizes (J_b or raw RMSE);
+    jb is always the fingerprint error for downstream reporting.
+    """
     try:
-        sf = _run_sumo_traci(name, params)
-        err = feature_error(real_feat, sf, weights)
+        sim_feat, per_sec_sim = _run_sumo_sim(name, params)
+        jb = feature_error(real_feat, sim_feat, weights)
+        if objective_mode == "raw_rmse":
+            if real_speed is None:
+                real_speed = build_real_speed_profile(name)
+            opt_err = per_second_speed_rmse(per_sec_sim, real_speed)
+        else:
+            opt_err = jb
     except Exception as exc:
         print(f"       [!] SUMO failed: {exc}", flush=True)
-        sf = np.full(len(FEATURE_NAMES), np.nan)
-        err = 10.0
-    return float(err), sf
+        sim_feat = np.full(len(FEATURE_NAMES), np.nan)
+        opt_err = jb = 10.0
+    return float(opt_err), float(jb), sim_feat
+
+
+def build_real_speed_profile(name: str):
+    """Per-second mean speed profile from observed data (SIND or UTE)."""
+    sc = SCENARIOS[name]
+    warmup, sim_end = sc["warmup"], sc["sim_end"]
+    if sc["type"] == "SIND":
+        df = pd.read_csv(sc["data"] / "veh_tracks.csv")
+        t_s = df["timestamp_ms"].values / 1000.0
+        speed = np.sqrt(df["vx"].values ** 2 + df["vy"].values ** 2)
+        mask = (t_s >= warmup) & (t_s < sim_end)
+        per_sec = pd.Series(speed[mask], name="speed").groupby(t_s[mask].astype(int)).mean()
+    else:
+        df = pd.read_csv(sc["data"] / "frenet.csv")
+        cols = {c.lower(): c for c in df.columns}
+        spd_col = cols.get("speed(km/h)", cols.get("velocity(km/h)"))
+        time_col = cols.get("time(s)", cols.get("timestamp(s)", cols.get("time")))
+        speed = df[spd_col].values / 3.6
+        if time_col:
+            t_s = df[time_col].values
+            mask = (t_s >= warmup) & (t_s < sim_end)
+            per_sec = pd.Series(speed[mask], name="speed").groupby(t_s[mask].astype(int)).mean()
+        else:
+            t_s = np.arange(len(df)) * 0.1
+            mask = (t_s >= warmup) & (t_s < sim_end)
+            per_sec = pd.Series(speed[mask]).groupby(t_s[mask].astype(int)).mean()
+    return per_sec.sort_index()
+
+
+def per_second_speed_rmse(per_sec_sim: dict, real_speed) -> float:
+    """RMSE of per-second mean speed (sim vs. observed), same as Fig.~2 left panel."""
+    common_secs = sorted(set(per_sec_sim.keys()) & set(real_speed.index))
+    if len(common_secs) < 10:
+        return 10.0
+    sim_means = np.array([np.mean(per_sec_sim[s]) for s in common_secs])
+    real_means = np.array([real_speed[s] for s in common_secs])
+    return float(np.sqrt(np.mean((sim_means - real_means) ** 2)))
 
 
 def compute_features(speeds: np.ndarray, accels: np.ndarray) -> np.ndarray:
@@ -789,8 +975,14 @@ def extract_real_features(name: str) -> np.ndarray:
 # SUMO 仿真（TraCI）
 # ═════════════════════════════════════════════════════════════════════
 
-def _run_sumo_traci(name: str, params: dict) -> np.ndarray:
-    """通过 TraCI 运行 SUMO，动态设置参数，收集速度/加速度，返回特征指纹。"""
+def _run_sumo_sim(
+    name: str, params: dict, *, seed: int | None = None,
+    return_speed_samples: bool = False,
+) -> tuple[np.ndarray, dict] | tuple[np.ndarray, dict, np.ndarray]:
+    """Replay; optionally expose half-open-window speed samples and a fixed seed.
+
+    Default calls retain the original fingerprint, sampling and random-seed policy.
+    """
     import traci
 
     sc = SCENARIOS[name]
@@ -799,7 +991,7 @@ def _run_sumo_traci(name: str, params: dict) -> np.ndarray:
     traci.start(["sumo", "-c", cfg,
                  "--no-step-log", "true",
                  "--no-warnings", "true",
-                 "--seed", str(np.random.randint(1, 99999))])
+                 "--seed", str(np.random.randint(1, 99999) if seed is None else int(seed))])
     try:
         for vtype in traci.vehicletype.getIDList():
             traci.vehicletype.setAccel(vtype, float(params["accel"]))
@@ -814,6 +1006,8 @@ def _run_sumo_traci(name: str, params: dict) -> np.ndarray:
                 )
 
         speeds, accels = [], []
+        distribution_speeds = []
+        per_sec_sim: dict[int, list[float]] = {}
         warmup = sc["warmup"]
         sim_end = sc["sim_end"]
         step = 0
@@ -821,16 +1015,34 @@ def _run_sumo_traci(name: str, params: dict) -> np.ndarray:
         while traci.simulation.getTime() < sim_end:
             traci.simulationStep()
             step += 1
-            if traci.simulation.getTime() < warmup or step % 3 != 0:
+            t = traci.simulation.getTime()
+            if t < warmup:
                 continue
-            for vid in traci.vehicle.getIDList():
-                speeds.append(traci.vehicle.getSpeed(vid))
-                accels.append(traci.vehicle.getAcceleration(vid))
+            vids = traci.vehicle.getIDList()
+            if not vids:
+                continue
+            speeds_now = [traci.vehicle.getSpeed(vid) for vid in vids]
+            accels_now = [traci.vehicle.getAcceleration(vid) for vid in vids]
+            per_sec_sim.setdefault(int(t), []).extend(speeds_now)
+            if step % 3 == 0:
+                speeds.extend(speeds_now)
+                accels.extend(accels_now)
+                if return_speed_samples and t < sim_end:
+                    distribution_speeds.extend(speeds_now)
     finally:
         traci.close()
 
-    return compute_features(np.array(speeds, dtype=float),
+    sim_feat = compute_features(np.array(speeds, dtype=float),
                             np.array(accels, dtype=float))
+    if return_speed_samples:
+        return sim_feat, per_sec_sim, np.asarray(distribution_speeds, dtype=float)
+    return sim_feat, per_sec_sim
+
+
+def _run_sumo_traci(name: str, params: dict) -> np.ndarray:
+    """Legacy wrapper: fingerprint only."""
+    sim_feat, _ = _run_sumo_sim(name, params)
+    return sim_feat
 
 
 # ═════════════════════════════════════════════════════════════════════
@@ -861,36 +1073,50 @@ def calibrate_one(
     surrogate_kind: str | None = None,
     n_init: int | None = None,
     run_seed: int = 42,
+    budget_sumo: int | None = None,
+    objective_mode: str = "jb",
 ) -> dict:
-    """n_init 次 LHS + (BUDGET_SUMO - n_init) 次序贯 LCB，总预算 BUDGET_SUMO。
+    """n_init 次 LHS + (BUDGET_SUMO - n_init) 次序贯 LCB，总预算 BUDGET_SUMO.
 
     n_init: 初始 LHS 点数；默认 N_INIT（40）。n_init=100 时退化为纯 LHS（无序贯加点）。
     surrogate_kind: 覆盖模块级 SURROGATE_KIND（如 run_comparison 指定 MLP 版）。
     run_seed: 实验重复编号；影响 LHS 池、序贯 RNG 与代理随机种子。
+    objective_mode: ``jb`` (fingerprint, default) or ``raw_rmse`` (per-second speed RMSE).
     """
     eff_n_init = N_INIT if n_init is None else int(n_init)
-    if eff_n_init < 1 or eff_n_init > BUDGET_SUMO:
-        raise ValueError(f"n_init 须在 [1, {BUDGET_SUMO}]，收到 {eff_n_init}")
+    max_b = budget_sumo or BUDGET_SUMO
+    if eff_n_init < 1 or eff_n_init > max_b:
+        raise ValueError(f"n_init 须在 [1, {max_b}]，收到 {eff_n_init}")
+    if objective_mode not in ("jb", "raw_rmse"):
+        raise ValueError(f"objective_mode must be 'jb' or 'raw_rmse', got {objective_mode!r}")
 
     global SURROGATE_KIND
     prev_kind = SURROGATE_KIND
     if surrogate_kind is not None:
         SURROGATE_KIND = surrogate_kind.lower()
     try:
-        return _calibrate_one_impl(name, n_init=eff_n_init, run_seed=int(run_seed))
+        return _calibrate_one_impl(
+            name, n_init=eff_n_init, run_seed=int(run_seed),
+            budget_sumo=max_b, objective_mode=objective_mode,
+        )
     finally:
         SURROGATE_KIND = prev_kind
 
 
-def _calibrate_one_impl(name: str, *, n_init: int, run_seed: int = 42) -> dict:
-    n_seq = BUDGET_SUMO - n_init
+def _calibrate_one_impl(
+    name: str, *, n_init: int, run_seed: int = 42, budget_sumo: int = BUDGET_SUMO,
+    objective_mode: str = "jb",
+) -> dict:
+    n_seq = budget_sumo - n_init
     print(f"\n{'=' * 64}")
-    print(f"  BF-SAC (sequential LCB): {name}  surrogate={SURROGATE_KIND}")
-    print(f"  Budget={BUDGET_SUMO}  (init LHS={n_init}, sequential={n_seq})  run_seed={run_seed}")
+    print(f"  BF-SAC (sequential LCB): {name}  surrogate={SURROGATE_KIND}"
+          f"  objective={objective_mode}")
+    print(f"  Budget={budget_sumo}  (init LHS={n_init}, sequential={n_seq})  run_seed={run_seed}")
     if _LC_KAPPA_FIXED is not None:
         print(f"  LCB kappa={LC_KAPPA} (fixed)", end="")
     else:
-        print(f"  LCB kappa={LC_KAPPA_START}→{LC_KAPPA_END} (anneal)", end="")
+        print(f"  LCB kappa={LC_KAPPA_START}→{LC_KAPPA_END} (anneal, schedule={KAPPA_SCHEDULE})", end="")
+    print(f"  acquisition={ACQUISITION_MODE} trust_frac={TRUST_FRAC} n_cand_global={N_CAND_GLOBAL}", end="")
     if SURROGATE_KIND == "mlp":
         print(
             f"  MLP m={MLP_ENSEMBLE_SIZE} subset={MLP_TRAIN_SUBSET}"
@@ -906,29 +1132,40 @@ def _calibrate_one_impl(name: str, *, n_init: int, run_seed: int = 42) -> dict:
 
     print("[1/3] Extracting real behavioral fingerprint …")
     real_feat = extract_real_features(name)
+    real_speed = build_real_speed_profile(name) if objective_mode == "raw_rmse" else None
     for fn, val in zip(FEATURE_NAMES, real_feat):
         print(f"       {fn:<14s} = {val:.4f}")
 
     print(f"[2/3] Phase A: {n_init} LHS initial runs …")
-    X = np.zeros((BUDGET_SUMO, len(PARAM_NAMES)))
-    X[:n_init] = lhs_pool_for_scene(name, bounds_arr, run_seed=run_seed)[:n_init]
-    Y = np.full(BUDGET_SUMO, np.nan)
-    sim_feats = np.zeros((BUDGET_SUMO, len(FEATURE_NAMES)))
+    X = np.zeros((budget_sumo, len(PARAM_NAMES)))
+    _lhs_s = _lhs_seed_for_scene(name) + int(run_seed) * 9973
+    X[:n_init] = lhs_samples_for_scene(budget_sumo, bounds_arr, _lhs_s)[:n_init]
+    Y = np.full(budget_sumo, np.nan)
+    Y_jb = np.full(budget_sumo, np.nan)
+    sim_feats = np.zeros((budget_sumo, len(FEATURE_NAMES)))
     history: list[dict] = []
     t0 = time.time()
     running_best = float("inf")
+    running_best_jb = float("inf")
 
     for i in range(n_init):
         params = dict(zip(PARAM_NAMES, X[i]))
-        err, sf = _eval_params(name, params, real_feat, weights)
-        Y[i] = err
+        opt_err, jb, sf = _eval_params(
+            name, params, real_feat, weights,
+            real_speed=real_speed, objective_mode=objective_mode,
+        )
+        Y[i] = opt_err
+        Y_jb[i] = jb
         sim_feats[i] = sf
-        running_best = min(running_best, err)
+        running_best = min(running_best, opt_err)
+        running_best_jb = min(running_best_jb, jb)
         history.append({
             "sim_index": i + 1,
             "phase": "init",
-            "error": round(err, 6),
+            "error": round(opt_err, 6),
+            "jb": round(jb, 6),
             "best_so_far": round(running_best, 6),
+            "best_jb_so_far": round(running_best_jb, 6),
             "params": {k: round(float(v), 4) for k, v in params.items()},
         })
         if (i + 1) % 10 == 0 or (i + 1) == n_init:
@@ -950,6 +1187,7 @@ def _calibrate_one_impl(name: str, *, n_init: int, run_seed: int = 42) -> dict:
     model = None
 
     for j in range(n_seq):
+        _step_t0 = time.perf_counter()
         if (SURROGATE_KIND == "mlp" and MLP_WARM_START
                 and isinstance(model, MLPEnsemble)):
             # MLP 续训：在上一轮成员权重上增量更新（首轮 model 仍为 None，走下面从零训练）
@@ -963,36 +1201,46 @@ def _calibrate_one_impl(name: str, *, n_init: int, run_seed: int = 42) -> dict:
             break
 
         pred_tr = model.predict(X[:n_seen])
-        valid = ~np.isnan(Y[:n_seen]) & (Y[:n_seen] < 10.0)
+        valid = _surrogate_valid_mask(Y[:n_seen])
         rf_rmse = float(np.sqrt(mean_squared_error(Y[:n_seen][valid], pred_tr[valid])))
         rf_r2 = float(model.score(X[:n_seen][valid], Y[:n_seen][valid]))
 
         best_idx = int(np.nanargmin(Y[:n_seen]))
         x_best = X[best_idx].copy()
         kappa_j = _kappa_at_step(j, n_seq)
-        x_new = _pick_lcb_point(model, bounds_arr, X[:n_seen], x_best, kappa_j, rng)
+        x_new = _pick_lcb_point(model, bounds_arr, X[:n_seen], x_best, kappa_j, rng, j=j, n_seq=n_seq)
+        # 代理重拟合 + 采集选点的墙钟耗时（毫秒）：附录B"在线决策成本可忽略"论证用埋点。
+        step_wall_ms = round((time.perf_counter() - _step_t0) * 1000.0, 2)
         params = dict(zip(PARAM_NAMES, x_new))
 
-        err, sf = _eval_params(name, params, real_feat, weights)
+        opt_err, jb, sf = _eval_params(
+            name, params, real_feat, weights,
+            real_speed=real_speed, objective_mode=objective_mode,
+        )
         X[n_seen] = x_new
-        Y[n_seen] = err
+        Y[n_seen] = opt_err
+        Y_jb[n_seen] = jb
         sim_feats[n_seen] = sf
         n_seen += 1
-        running_best = min(running_best, err)
-        seq_errors.append(err)
+        running_best = float(np.nanmin(Y[:n_seen]))
+        running_best_jb = float(np.nanmin(Y_jb[:n_seen]))
+        seq_errors.append(opt_err)
 
         history.append({
             "sim_index": n_seen,
             "phase": "sequential",
             "lcb_round": j + 1,
-            "error": round(err, 6),
+            "step_wall_ms": step_wall_ms,
+            "error": round(opt_err, 6),
+            "jb": round(jb, 6),
             "best_so_far": round(running_best, 6),
+            "best_jb_so_far": round(running_best_jb, 6),
             "rf_r2": round(rf_r2, 4),
             "params": {k: round(float(v), 4) for k, v in params.items()},
         })
         if (j + 1) % 5 == 0 or j == n_seq - 1:
-            print(f"       seq {j+1:>2d}/{n_seq}  err={err:.4f}  best={running_best:.4f}"
-                  f"  R2={rf_r2:.3f}", flush=True)
+            print(f"       seq {j+1:>2d}/{n_seq}  err={opt_err:.4f}  best={running_best:.4f}"
+                  f"  jb={jb:.4f}  R2={rf_r2:.3f}", flush=True)
 
     if SURROGATE_KIND == "mlp" and model is not None and MLP_SAVE_MODEL:
         _save_mlp_model(name, model)
@@ -1000,17 +1248,19 @@ def _calibrate_one_impl(name: str, *, n_init: int, run_seed: int = 42) -> dict:
     best_idx = int(np.nanargmin(Y[:n_seen]))
     best_params = dict(zip(PARAM_NAMES, X[best_idx]))
     best_feat = sim_feats[best_idx]
-    best_err = float(Y[best_idx])
+    best_opt = float(Y[best_idx])
+    best_jb = float(Y_jb[best_idx])
     init_best_idx = int(np.nanargmin(Y[:n_init]))
     doe_best_err = float(Y[init_best_idx])
 
     seq_best = float(np.min(seq_errors)) if seq_errors else None
-    proxy_beats_doe = bool(best_idx >= n_init and best_err <= doe_best_err - 1e-6)
+    proxy_beats_doe = bool(best_idx >= n_init and best_opt <= doe_best_err - 1e-6)
 
     print(f"\n  Calibrated params:")
     for k, v in best_params.items():
         print(f"       {k:<14s} = {v:.4f}")
-    print(f"  Feature error: {best_err:.4f}  (init best={doe_best_err:.4f})")
+    print(f"  Objective ({objective_mode}): {best_opt:.4f}  J_b={best_jb:.4f}"
+          f"  (init best obj={doe_best_err:.4f})")
     print(f"  Total SUMO runs: {n_seen}  |  sequential improved: {proxy_beats_doe}")
 
     comparison = {}
@@ -1026,11 +1276,14 @@ def _calibrate_one_impl(name: str, *, n_init: int, run_seed: int = 42) -> dict:
     return {
         "scenario": name,
         "calibration_mode": "sequential_lcb",
+        "optimization_objective": objective_mode,
         "surrogate": SURROGATE_KIND,
         "surrogate_config": _surrogate_config(),
         "calibrated_params": {k: round(v, 4) for k, v in best_params.items()},
-        "feature_error": round(best_err, 4),
+        "feature_error": round(best_jb, 4),
+        "optimization_best": round(best_opt, 4),
         "doe_best_error": round(doe_best_err, 4),
+        "doe_best_jb": round(float(np.nanmin(Y_jb[:n_init])), 4),
         "sequential_best_error": round(seq_best, 4) if seq_best is not None else None,
         "surrogate_verified_error": round(seq_best, 4) if seq_best is not None else None,
         "proxy_beats_doe": proxy_beats_doe,

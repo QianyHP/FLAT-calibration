@@ -1,0 +1,64 @@
+# Reproduction
+
+Install `requirements.txt` in Python 3.10+ (the saved score audit used scikit-learn 1.8.0; see the environment note below).
+
+## Saved results, without SUMO
+
+```bash
+python code/experiments/analyze_replay_surrogates.py
+python code/experiments/audit_probability_scores.py
+```
+
+The first command reconstructs the six-scene and global replay summaries from
+`outputs/results/replay_surrogates/per_replay.csv` and the frozen parameter
+manifest. Ten simulation repetitions are averaged within each original parameter
+set before comparing the four optimization repeats. They are not 40 independent
+optimization runs. These are new simulation realizations, not held-out traffic data.
+External-baseline replay is not claimed; matching original parameters were unavailable.
+
+The second command refits 20 GPs on saved 400-point landscapes and checks that raw
+scores reproduce the archived scores before reporting standardized scores.
+Each fit uses 100 training points, a fixed 100-point holdout, and training-only
+mean and population standard deviation. All diagnostics, including interval
+coverage, are retained in `outputs/results/probability_score_audit/`.
+Predictive scores do not by themselves establish posterior interval calibration.
+GP fitting can vary by scientific-library version; the raw-score reproduction
+assertion intentionally stops on a mismatch rather than replacing old results.
+
+## Fixed-parameter SUMO replay
+
+```bash
+python code/experiments/run_replay_surrogates.py --preflight
+python code/experiments/run_replay_surrogates.py --workers 4 --resume
+```
+
+The public runner loads the 72 complete parameter vectors directly from the
+published manifest. It uses the same evaluation functions as the original replay,
+without depending on superseded pilot campaigns or rerunning optimization.
+The original manifest preserves the original runner hashes and computation accounting;
+the public entry point is a packaging adaptation, not the byte-identical original runner.
+All 720 individual replay records are included. `--resume` verifies existing
+successful CSV/cache records and only runs missing ones; no new simulation is required to
+read or aggregate them. The manifest's 144 reused + 576 new accounting describes
+the original computation, not a new invocation.
+
+For a new replay, provide the original SinD/UTE inputs, derived scene files, and
+recorded SUMO version listed in `manifest.json`. The preflight checks their
+hashes and reports any missing or changed input. It does not substitute another
+scene or optimize replacement parameters. Obtain external trajectories from the
+upstream datasets under their original terms; raw data are not redistributed here.
+
+## Main experiments and figures
+
+The original comparison CSVs and baseline caches are preserved. The calibration
+module now includes the GP backend as well as RF/MLP. Run its `--help` for options.
+The PDF assets in `outputs/figures/` are synchronized with the current manuscript.
+Earlier main-comparison scripts and plotting entry points remain available under
+`code/experiments/`; the additional checks above do not rebuild their search results.
+
+## Environment
+
+The original audit and replay records identify input and implementation hashes.
+Use the original scientific-library versions when reproducing GP scores exactly;
+see `requirements-validation.txt` for the versions used to verify this release.
+The release verification ran on Python 3.13.2; use Python 3.11+ with these pins.
