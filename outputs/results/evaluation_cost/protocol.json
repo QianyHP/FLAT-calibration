@@ -1,0 +1,33 @@
+{
+  "scenes": [
+    "Tianjin",
+    "Changchun",
+    "Xian",
+    "YTDJ",
+    "RML",
+    "XAM-N6"
+  ],
+  "simulation_seeds": [
+    20001,
+    20002,
+    20003
+  ],
+  "optimization_seed": 101,
+  "parameters": "fixed original GP final parameters; no new optimization",
+  "timing": "serial end-to-end simulation evaluation including SUMO startup, TraCI collection, fingerprint and score; reference extraction excluded",
+  "reference": "training-only constant Gaussian, same frozen predictions, splits, response scales, and five-subsample aggregation as Appendix A",
+  "simulation_count": 18,
+  "platform": "Windows-11-10.0.26200-SP0",
+  "sumo_version": "Eclipse SUMO sumo Version 1.22.0",
+  "source_sha256": {
+    "code\\experiments\\probe_polish_evidence.py": "575f29a6c5f80a54482be201beb0a86443359badb89d1c3f0b74e8e8d4c4c87d",
+    "code\\calibration\\unified_calibration.py": "86e8ce48888261c9f777e4c26a5f9f78e29370c0cc33791a8a5e684d5c1ffef8",
+    "outputs\\results\\probability_score_audit\\predictions.csv": "17e443f9902f8674731a9ac0349170ea11c37de4f6bc3d9576d7997be7535c90",
+    "outputs\\results\\probability_score_audit\\per_subsample.csv": "d80e2b5247d3c0ac14cdaf3c086255d2ffd6607a6b502fd603247536e36713e6"
+  },
+  "processor": "11th Gen Intel(R) Core(TM) i7-11800H @ 2.30GHz; 8 physical cores, 16 logical processors",
+  "completed_simulation_count": 18,
+  "simulation_evaluation_seconds_total": 89.10718019997148,
+  "postprocessing_script_sha256": "a9e05eb6339b1a01aaae677668bc024d21535320628504500b5d324f7b0cafa7",
+  "postprocessing_note": "Ratio of mean CRPS added after the fixed simulation probe; original execution source hash retained."
+}

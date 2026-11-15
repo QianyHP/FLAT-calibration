@@ -41,7 +41,10 @@ scene options.
   optimization repeats, and ten shared SUMO seeds (720 replays). The largest
   gap in equal-scene mean behavioral error is 4.1%.
 - GP predictive scores: NLL and CRPS evaluated on held-out parameter points,
-  using each training subset's response scale for cross-objective comparison.
+  using each training subset's response scale, with a constant-Gaussian reference.
+
+- Serial evaluation cost: fixed-parameter measurements across six scenes.
+- Reference IVW weights: one utility in `code/calibration/compute_ivw_weights.py`.
 
 See [Reproduction](docs/REPRODUCE.md) for commands, source-data requirements,
 and the scope of these checks. Cached replay analysis requires no SUMO runs.

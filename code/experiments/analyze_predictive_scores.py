@@ -1,4 +1,4 @@
-"""Reproduce Appendix A scores and audit response-scale effects; no SUMO calls."""
+"""Held-out GP predictive scores and constant-Gaussian reference; no SUMO calls."""
 import os
 for _key in ('OMP_NUM_THREADS','OPENBLAS_NUM_THREADS','MKL_NUM_THREADS'):
     os.environ[_key] = '1'
@@ -15,6 +15,29 @@ from predictive_scores import _nll, _crps_gaussian
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT/'outputs/results/probability_score_audit'
+
+
+def summarize_reference(folder=OUT):
+    pred = pd.read_csv(folder / 'predictions.csv')
+    moments = pd.read_csv(folder / 'per_subsample.csv').set_index(['scene', 'objective', 'rep'])
+    rows = []
+    for key, g in pred.groupby(['scene', 'objective', 'rep']):
+        m = moments.loc[key]
+        z = (g.y.to_numpy() - m.train_mean) / m.train_std
+        # The reference is fit on training data only: N(train mean, train SD^2).
+        ref_nll = float(np.mean(.5 * np.log(2 * np.pi) + .5 * z**2))
+        ref_crps = float(np.mean(z * (2 * norm.cdf(z) - 1) + 2 * norm.pdf(z) - 1 / np.sqrt(np.pi)))
+        rows.append(dict(scene=key[0], objective=key[1], rep=key[2],
+                         gp_nll=m.nll_standardized, reference_nll=ref_nll,
+                         gp_crps=m.crps_standardized, reference_crps=ref_crps,
+                         crps_skill=1 - m.crps_standardized / ref_crps,
+                         nll_gain=ref_nll - m.nll_standardized))
+    df = pd.DataFrame(rows)
+    df.to_csv(folder / 'gaussian_reference_per_subsample.csv', index=False)
+    summary = df.groupby(['scene', 'objective']).mean(numeric_only=True).drop(columns='rep')
+    summary['crps_reduction_ratio_of_means'] = 1 - summary.gp_crps / summary.reference_crps
+    summary.to_csv(folder / 'gaussian_reference_summary.csv')
+    print(summary.to_string(), flush=True)
 
 
 def main():
@@ -68,8 +91,16 @@ def main():
                 checks='original raw NLL/CRPS reproduced; exact affine score transformation verified',
                 source_hashes=provenance,scenes=summary)
     (OUT/'metrics.json').write_text(json.dumps(output,indent=2),encoding='utf-8')
+    summarize_reference()
     print(json.dumps(summary,indent=2))
 
 
 if __name__=='__main__':
-    main()
+    import argparse
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--from-predictions', action='store_true', help='Summarize saved predictions and training moments without refitting')
+    args = parser.parse_args()
+    if args.from_predictions:
+        summarize_reference()
+    else:
+        main()

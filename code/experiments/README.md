@@ -63,4 +63,9 @@ python code/experiments/plot_landscape_dual.py         # JSON → PDF/PNG
 
 ## Additional validation
 
-See [Reproduction](../../docs/REPRODUCE.md) for the fixed-parameter replay and standardized GP score audit.
+See [Reproduction](../../docs/REPRODUCE.md) for the fixed-parameter replay and GP predictive scores, Gaussian references, evaluation cost and reference-weight calculation.
+
+| Analysis | Command |
+|---|---|
+| Held-out GP scores and Gaussian reference | `python code/experiments/analyze_predictive_scores.py` |
+| Serial evaluation cost | `python code/experiments/measure_evaluation_cost.py --output outputs/results/evaluation_cost_new` |
