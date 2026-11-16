@@ -88,6 +88,20 @@ variance weights. It uses SI feature units and writes the weights and sampling
 metadata to JSON. Zero variance requires an explicit positive `--variance-floor`.
 Calibration defaults are unchanged by running this utility.
 
+## Landscape slopes
+
+```bash
+python code/experiments/plot_lipschitz_k_sensitivity.py
+```
+
+The two 400-point 10-D LHS designs supply the response-standardized local
+slope comparison. Each objective is divided by its own population standard
+deviation on the same valid design. Parameter coordinates are min--max scaled;
+for each point, the maximum absolute difference quotient over its k nearest
+neighbors is recorded, then summarized by the 95th percentile. The script
+exports both paper panels and `landscape_lipschitz_k_sensitivity.json`, including
+the response scales and all k=1--10 results. Raw objective samples are unchanged.
+
 ## Main-result figures
 
 ```bash

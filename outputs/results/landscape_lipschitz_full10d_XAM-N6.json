@@ -7,21 +7,26 @@
   "k_neighbors": 5,
   "percentile": 95,
   "embedding": "10-D LHS full PARAM_BOUNDS; min-max normalized kNN",
+  "response_scale": "per-objective population standard deviation on the valid design",
+  "response_std": {
+    "J_b": 0.12179688075540783,
+    "J_s": 0.4426595314305637
+  },
   "J_b": {
     "objective": "J_b",
     "n_points": 400,
-    "mean_local_lipschitz": 0.2570191680268715,
-    "median_local_lipschitz": 0.2485268696631512,
-    "p95_local_lipschitz": 0.4492909273493521,
-    "max_local_lipschitz": 0.7545649521526352
+    "mean_local_lipschitz": 2.110227835333622,
+    "median_local_lipschitz": 2.040502746225843,
+    "p95_local_lipschitz": 3.6888541361877483,
+    "max_local_lipschitz": 6.195273207923532
   },
   "J_s": {
     "objective": "J_s",
     "n_points": 400,
-    "mean_local_lipschitz": 1.1451354172345747,
-    "median_local_lipschitz": 1.0064508242910635,
-    "p95_local_lipschitz": 2.270131951512825,
-    "max_local_lipschitz": 5.6429973526915065
+    "mean_local_lipschitz": 2.586943996289398,
+    "median_local_lipschitz": 2.2736454381507816,
+    "p95_local_lipschitz": 5.128392794743022,
+    "max_local_lipschitz": 12.74794046443497
   },
-  "ratio_Js_over_Jb_p95": 5.052699294209549
+  "ratio_Js_over_Jb_p95": 1.3902400597609337
 }
