@@ -163,7 +163,7 @@ def draw_scene_panel(
         xlabel=r"Neighborhood size $k$",
     )
     if show_legend:
-        ax.legend(loc="lower left", fontsize=4.2, handlelength=0.9,
+        ax.legend(loc="lower right", fontsize=4.2, handlelength=0.9,
                   columnspacing=0.4, borderpad=0.25, labelspacing=0.22)
 
 
