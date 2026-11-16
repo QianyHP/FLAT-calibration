@@ -24,7 +24,6 @@ from plot_style import (  # noqa: E402
     APPENDIX_A1_XLIM,
     APPENDIX_A1_XTICKS,
     APPENDIX_K_REPORT,
-    APPENDIX_OBJ_COLORS,
     APPENDIX_OBJ_MARKERS,
     APPENDIX_PAPER_LINEWIDTH,
     APPENDIX_PAPER_MARKER_SIZE,
@@ -47,6 +46,7 @@ FAIL_VALUE = 10.0
 K_GRID = list(range(1, 11))
 PERCENTILE = 95
 RES = PROJ / "outputs" / "results"
+_OBJ_COLORS = {"js": "#DC2626", "jb": "#6366F1"}
 _OBJ_ORDER = (("js", r"$\hat L_{J_s}$"), ("jb", r"$\hat L_{J_b}$"))
 
 
@@ -120,7 +120,7 @@ def compute_all() -> dict:
 
 
 def _draw_obj_curve(ax, ks: np.ndarray, vals: np.ndarray, obj: str, *, z_mark: int) -> None:
-    color = APPENDIX_OBJ_COLORS[obj]
+    color = _OBJ_COLORS[obj]
     marker = APPENDIX_OBJ_MARKERS[obj]
     mark_mask = np.isin(ks, APPENDIX_A1_MARKER_K)
     ax.plot(ks, vals, "-", color=color, lw=APPENDIX_PAPER_LINEWIDTH, zorder=3, alpha=0.95,
@@ -159,11 +159,11 @@ def draw_scene_panel(
         ax,
         show_ylabel=show_ylabel,
         show_xlabel=show_xlabel,
-        ylabel=r"Standardized $\hat L$",
+        ylabel=r"$\hat L$",
         xlabel=r"Neighborhood size $k$",
     )
     if show_legend:
-        ax.legend(loc="center right", fontsize=4.2, handlelength=0.9,
+        ax.legend(loc="lower left", fontsize=4.2, handlelength=0.9,
                   columnspacing=0.4, borderpad=0.25, labelspacing=0.22)
 
 
