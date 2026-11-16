@@ -36,6 +36,8 @@ def summarize_reference(folder=OUT):
     df.to_csv(folder / 'gaussian_reference_per_subsample.csv', index=False)
     summary = df.groupby(['scene', 'objective']).mean(numeric_only=True).drop(columns='rep')
     summary['crps_reduction_ratio_of_means'] = 1 - summary.gp_crps / summary.reference_crps
+    summary['crps_gain_mean_percent'] = 100 * summary.crps_skill
+    summary['crps_gain_std_percent'] = 100 * df.groupby(['scene', 'objective']).crps_skill.std(ddof=0)
     summary.to_csv(folder / 'gaussian_reference_summary.csv')
     print(summary.to_string(), flush=True)
 

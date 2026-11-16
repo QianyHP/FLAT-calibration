@@ -37,9 +37,10 @@ two objectives, five training subsets, 100 training points and a fixed
 100-point holdout. It reproduces the archived raw scores, then reports NLL and
 CRPS on each training subset's response scale. A constant Gaussian estimated
 from the same training responses supplies the reference scores; it is N(0,1)
-on each training-response z-score scale. The paper reports CRPS gain as
-`100 * (1 - mean GP CRPS / mean reference CRPS)`, using the five-subsample
-mean scores. The second command recomputes reference comparisons from saved
+on each training-response z-score scale. The paper computes CRPS gain within each training subset as
+`100 * (1 - GP CRPS / reference CRPS)`, then reports its mean and population
+standard deviation over the five subsets, matching the other predictive scores.
+This spread describes subset variability rather than a confidence interval. The second command recomputes reference comparisons from saved
 predictions without fitting.
 
 Outputs are in `outputs/results/probability_score_audit/`: fit-level scores,
