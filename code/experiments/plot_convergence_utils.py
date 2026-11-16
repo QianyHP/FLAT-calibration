@@ -27,6 +27,9 @@ def draw_mean_with_band(
     label: str | None = None,
     ci_z: float = CI_Z,
     alpha: float = CI_ALPHA,
+    linestyle: str = "-",
+    line_alpha: float = 0.97,
+    sync_band_alpha: bool = True,
 ) -> None:
     """绘制均值曲线 + 半透明 fill_between 置信带。"""
     if x.size == 0:
@@ -35,22 +38,23 @@ def draw_mean_with_band(
     y_lo = y_mean - ci_z * std
     y_hi = y_mean + ci_z * std
     has_band = bool(np.any(std > 1e-12))
+    band_alpha = min(1.0, alpha * line_alpha) if sync_band_alpha else alpha
 
     if has_band:
         if step:
             ax.fill_between(
                 x, y_lo, y_hi, step="post",
-                color=color, alpha=alpha, linewidth=0, zorder=zorder - 1,
+                color=color, alpha=band_alpha, linewidth=0, zorder=zorder - 1,
             )
         else:
             ax.fill_between(
                 x, y_lo, y_hi,
-                color=color, alpha=alpha, linewidth=0, zorder=zorder - 1,
+                color=color, alpha=band_alpha, linewidth=0, zorder=zorder - 1,
             )
 
     if step:
         ax.step(x, y_mean, where="post", color=color, linewidth=linewidth,
-                zorder=zorder, label=label)
+                linestyle=linestyle, alpha=line_alpha, zorder=zorder, label=label)
     else:
-        ax.plot(x, y_mean, color=color, linewidth=linewidth,
-                zorder=zorder, label=label, alpha=0.97)
+        ax.plot(x, y_mean, color=color, linewidth=linewidth, linestyle=linestyle,
+                zorder=zorder, label=label, alpha=line_alpha)

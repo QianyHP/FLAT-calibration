@@ -65,6 +65,20 @@ variance weights. It uses SI feature units and writes the weights and sampling
 metadata to JSON. Zero variance requires an explicit positive `--variance-floor`.
 Calibration defaults are unchanged by running this utility.
 
+## Main-result figures
+
+```bash
+python code/experiments/plot_calibration_convergence.py
+python code/experiments/plot_method_comparison.py
+```
+
+These plots read the frozen `comparison_convergence_main.csv` and
+`comparison_summary_main.csv`, rather than mutable simulation caches. The
+calibration panels use saved final-training-set R² labels from
+`surrogate_fit_metrics.csv`; these are distinct from the appendix holdout scores.
+Paper panel PDFs are written to `paper/figure/` and mirrored to the matching
+paths under `outputs/figures/`.
+
 ## Main experiments and environment
 
 The calibration module provides GP, RF and MLP backends. Main comparison CSVs,

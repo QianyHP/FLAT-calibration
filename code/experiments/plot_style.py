@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import shutil
 
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
@@ -290,6 +291,9 @@ def _save_panel(fig: plt.Figure, stem: str, out_dir: Path) -> Path:
     kwargs = dict(bbox_inches=None, pad_inches=0, facecolor="white", edgecolor="none")
     pdf = out_dir / f"{stem}.pdf"
     fig.savefig(pdf, **kwargs)
+    if out_dir.resolve() == PAPER_FIG_DIR.resolve():
+        FIG_DIR.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(pdf, FIG_DIR / pdf.name)
     png = out_dir / f"{stem}.png"
     fig.savefig(png, dpi=PAPER_DPI, **kwargs)
     return pdf
