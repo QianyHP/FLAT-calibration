@@ -2,6 +2,29 @@
 
 Install `requirements.txt` in Python 3.10+ and add SUMO to `PATH` for simulation runs.
 
+## Optimizer protocols and budget accounting
+
+Every simulator evaluation counts toward the main budget of `B=100`, including
+initialization. FLAT uses 40 LHS evaluations and 60 sequential LCB evaluations;
+all four baselines use the same evaluation cap within each scene.
+
+| Method | Protocol and budget |
+|---|---|
+| FLAT | 40-point LHS followed by 60 sequential evaluations; LCB exploration weight decreases linearly from 2.0 to 0.5. Each step draws 2,500 local and 2,500 global candidates. The local box extends 18% of each parameter span on either side of the incumbent, clipped to the search bounds; the relative near-duplicate distance is 0.02. |
+| SPSA | Random start; `a=0.22`, `c=0.15`, `A=20`, `alpha=0.602`, `gamma=0.101`. Perturbations and updates use the original parameter coordinates, clipped to the bounds. Initialization, both evaluations in each perturbation pair, and any final fill evaluation count toward the cap. |
+| GA | Random population of 10; tournament size 3; uniform crossover; Gaussian mutation with standard deviation 0.05 of each parameter span. Every evaluated individual counts toward the cap. |
+| CMA-ES | Random start in normalized `[0,1]` coordinates; initial step size `sigma0=0.3`; bounded search with implementation-default adaptation. Every evaluated candidate counts toward the cap; any remaining evaluations after termination evaluate the incumbent. |
+| TPE | Optuna `TPESampler` with a supplied run seed and implementation-default settings; continuous suggestions over the parameter bounds; 100 trials, one simulator evaluation per trial. |
+
+The implementations are in [`run_comparison.py`](../code/experiments/run_comparison.py)
+and [`unified_calibration.py`](../code/calibration/unified_calibration.py).
+The extended-baseline experiment uses the same settings with an evaluation cap
+of 500, implemented in
+[`run_efficiency_extended.py`](../code/experiments/run_efficiency_extended.py).
+These are separate extended searches; the comparison records the first evaluation
+that reaches the corresponding FLAT-at-100 threshold, assigning 501 when it is
+not reached by evaluation 500.
+
 ## Predictive scores
 
 ```bash
